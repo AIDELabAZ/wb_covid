@@ -24,7 +24,7 @@
 	global 			pack 	1
 		
 * Specify Stata version in use
-    global stataVersion 16.1    // set Stata version
+    global stataVersion 17.0    // set Stata version
     version $stataVersion
 
 	
@@ -52,13 +52,20 @@
 		global 		output_f "G:/My Drive/wb_covid/output"
 	}
 	
+
+	if `"`c(username)'"' == "Lorin Rudin-Rush" {
+		global 		code  	"C:/Users/Lorin Rudin-Rush/Documents/GitHub/wb_covid"
+		global 		data	"G:/My Drive/wb_covid/data"
+		global 		output_f "G:/My Drive/wb_covid/output"
+	}
+	
 	
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
 * **********************************************************************
 
 * install packages if global is set to 1
-if $pack == 0 {
+if $pack == 1 {
 	
 	* for packages/commands, make a local containing any required packages
 		loc userpack "blindschemes mdesc estout distinct winsor2 palettes catplot grc1leg2 colrspace" 
@@ -82,6 +89,10 @@ if $pack == 0 {
 
 	* install -xfill- package
 		net install xfill, replace from(https://www.sealedenvelope.com/)
+		
+	* install -customsave package
+		net install StataConfig, ///
+		from(https://raw.githubusercontent.com/etjernst/Materials/master/stata/) replace
 
 	* update all ado files
 		ado update, update
