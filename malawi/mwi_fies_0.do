@@ -57,7 +57,27 @@
 * keep relevant
 	keep 			y4_ HHID* fies_* 
 	
-* save 
-	save			"$export/wave_00/r0_fies", replace
+* ***********************************************************************
+**#  merge in hh data & save
+* ***********************************************************************	
 
+preserve 
+	
+* load data
+	use 			"$root/wave_00/HH_MOD_A", clear
+	
+	keep 			y4_hhid y3_hhid ihs_region hh_a01 reside panelweight_2019
+	
+	tempfile 		temp1
+	save 			`temp1'
+
+restore 
+	
+	merge 			1:1 y4_hhid using "`temp1'", assert(3) nogen
+	
+	
+* save 
+	save			"$export/wave_00/r0_fies", replace	
+	
+	
 /* END */	
