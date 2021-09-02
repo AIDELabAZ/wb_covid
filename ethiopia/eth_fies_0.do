@@ -1,16 +1,16 @@
 * Project: WB COVID
-* Created on: Aug 2021
-* Created by: amf
+* Created on: 2 September 2021
+* Created by: lirr
 * Edited by: lirr
-* Last edited: 2 Sep 2021
+* Last edited: 2 September 2021
 * Stata v.17
 
 * does
-	* reads in baseline Malawi data
+	* reads in baseline ethiopia data
 	* pulls FIES data questions
 
 * assumes
-	* raw malawi data 
+	* raw ethiopia data 
 
 * TO DO:
 	* complete
@@ -21,13 +21,13 @@
 * **********************************************************************
 
 * define
-	global	root	=	"$data/malawi/raw"
-	global	export	=	"$data/malawi/refined"
-	global	logout	=	"$data/malawi/logs"
+	global	root	=	"$data/ethiopia/raw"
+	global	export	=	"$data/ethiopia/refined"
+	global	logout	=	"$data/ethiopia/logs"
 
 * open log
 	cap log 		close
-	log using		"$logout/mal_fies", append
+	log using		"$logout/eth_fies", append
 
 	
 * ***********************************************************************
@@ -35,7 +35,7 @@
 * ***********************************************************************
 		
 * load data
-	use 			"$root/wave_00/HH_MOD_H", clear
+	use 			"$root/wave_00/HH/sect8_hh_w4", clear
 
 * replace counts with binary indicators	
 	lab def 		yesno 1 "Yes" 0 "No" 

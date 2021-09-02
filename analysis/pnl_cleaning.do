@@ -115,7 +115,7 @@
 	 }
 
 * define yes/no label
-	lab	def				yesno 0 "No" 1 "Yes"
+	lab	def				yesno 0 "No" 1 "Yes", replace
 
 * generate household id
 	replace 			hhid_eth = "e" + hhid_eth if hhid_eth != ""
@@ -598,8 +598,6 @@
 
 	replace				ac_clean = 0 if ac_clean == 1 & country == 3
 	replace				ac_clean = 1 if ac_clean == 2 & country == 3
-
-	drop				ac_bank ac_bank_why
 
 * access to staple
 	lab val				ac_staple .
@@ -1084,7 +1082,7 @@
 * close the log
 	log	close
 
-
+/*
 * **********************************************************************
 * 13 - generate variable-country-wave crosswalk
 * **********************************************************************
