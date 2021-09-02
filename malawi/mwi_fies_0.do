@@ -57,6 +57,7 @@
 * keep relevant
 	keep 			y4_ HHID* fies_* 
 	
+	
 * ***********************************************************************
 **#  merge in hh data & save
 * ***********************************************************************	
@@ -74,6 +75,12 @@ preserve
 restore 
 	
 	merge 			1:1 y4_hhid using "`temp1'", assert(3) nogen
+	rename 			ihs_region region_broad
+	rename 			hh_a01 region
+	rename 			reside sector
+	rename 			panelweight_2019 phw_pnl
+	
+	order 			y4 y3 HHID* region* sector* fies*
 	
 	
 * save 
