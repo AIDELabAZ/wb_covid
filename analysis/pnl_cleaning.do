@@ -495,25 +495,6 @@
 
 	lab val				ac_med yesno
 
-/* access to medical services
-	replace				ac_medserv_need = . if country == 1
-	replace				ac_medserv = . if country == 1
-	replace				ac_medserv_why = . if country == 1
-
-	replace				ac_medserv_need = 0 if ac_medserv == . & country == 2
-	replace				ac_medserv_need = 1 if ac_medserv_need == . & country == 2
-
-	replace				ac_medserv_need = 0 if ac_medserv == . & country == 3
-	replace				ac_medserv_need = 1 if ac_medserv_need == . & country == 3
-	replace				ac_medserv = 0 if ac_medserv == 2
-
-	replace				ac_medserv_need = 0 if ac_medserv == . & country == 4
-	replace				ac_medserv_need = 1 if ac_medserv_need == . & country == 4
-	replace				ac_medserv = . if ac_medserv == 3 & country == 4
-
-	lab val				ac_medserv yesno
-	lab val				ac_medserv_need yesno
-*/
 * access to soap
 	lab val				ac_soap .
 	lab var				ac_soap "Unable to access soap"
@@ -567,8 +548,6 @@
 	replace				ac_clean = 0 if ac_clean == 1 & country == 2
 	replace				ac_clean = 1 if ac_clean == 2 & country == 2
 	lab val				ac_clean yesno
-
-	drop				ac_water ac_water_why ac_staple_def
 
 * access to staples in Nigeria
 	replace				ac_rice = 0 if ac_rice == 1 & country == 3
@@ -644,9 +623,9 @@
 * **********************************************************************
 
 * turn concern into binary
-	replace				concern_01 = 0 if concern_01 == 3 | concern_01 == 4
-	replace				concern_01 = 1 if concern_01 == 2
-	lab val				concern_01 yesno
+	replace				concern_1 = 0 if concern_1 == 3 | concern_1 == 4
+	replace				concern_1 = 1 if concern_1 == 2
+	lab val				concern_1 yesno
 
 	replace				concern_2 = 0 if concern_2 == 3 | concern_2 == 4
 	replace				concern_2 = 1 if concern_2 == 2
@@ -1071,10 +1050,6 @@
 	order 				shock_10 shock_11 shock_12 shock_13 shock_14 shock_15, after(shock_9)
 	order 				symp_10 symp_11 symp_12 symp_13 symp_14 symp_15, after(symp_9)
 	order 				know_10, after(know_9)
-
-	compress
-	describe
-	summarize
 
 * save file
 	save			"$export/lsms_panel", replace

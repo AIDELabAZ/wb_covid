@@ -57,17 +57,44 @@
 * keep relevant
 	keep 			y4_ HHID* fies_* 
 
+	
+* ***********************************************************************
+**#  merge in hh data & save
+* ***********************************************************************	
+
+preserve 
+	
+* load data
+	use 			"$root/wave_00/HH_MOD_A", clear
+	
+	keep 			y4_hhid y3_hhid ihs_region hh_a01 reside panelweight_2019
+	
+	tempfile 		temp1
+	save 			`temp1'
+
+restore 
+	
+	merge 			1:1 y4_hhid using "`temp1'", assert(3) nogen
+	rename 			ihs_region region_broad
+	rename 			hh_a01 region
+	rename 			reside sector
+	rename 			panelweight_2019 phw_pnl
+	
+	order 			y4 y3 HHID* region* sector* fies*
+
+	
 * **********************************************************************
 **# 2 - end matter, clean up to save
 * **********************************************************************
 	
 	compress
 	
-* save 
-	save			"$export/wave_00/r0_fies", replace
-
 * close the log
 	log	close
+	
+	
+* save 
+	save			"$export/wave_00/r0_fies", replace	
 	
 	
 /* END */	
