@@ -2,7 +2,7 @@
 * Created on: 2 September 2021
 * Created by: lirr
 * Edited by: lirr
-* Last edited: 2 September 2021
+* Last edited: 7 September 2021
 * Stata v.17
 
 * does
@@ -39,23 +39,29 @@
 
 * replace counts with binary indicators	
 	lab def 		yesno 1 "Yes" 0 "No" 
-	foreach 		x in a b c d e {
-		replace 		hh_h02`x' = 1 if hh_h02`x' > 1 & hh_h02`x' < .
-		lab val 		hh_h02`x' yesno
+	foreach 		x in a b c d e f g h{
+		replace 		s8q02`x' = 1 if s8q02`x' > 1 & s8q02`x' < .
+		lab val 		s8q02`x' yesno
 	}
-	replace 		hh_h01 = 0 if hh_h01 == 2
-	lab val 		hh_h01 yesno
+	
+	replace 		s8q01 = 0 if s8q01 == 2
+	lab val 		s8q01 yesno
+	
 	
 * rename variables
-	rename 			hh_h01 fies_4
-	rename 			hh_h02a fies_5
-	rename 			hh_h02b fies_8
-	rename 			hh_h02c fies_7
-	rename 			hh_h02d fies_2
-	rename 			hh_h02e fies_9
+	rename 			s8q01 	fies_4
+	rename 			s8q02a 	fies_5
+	rename			s8q02b 	fies_6
+	rename 			s8q02c 	fies_8
+	rename 			s8q02d 	fies_7
+	rename 			s8q02e 	fies_2
+	rename 			s8q02f  fies_9
+	rename			s8q02g	fies_1
+	rename			s8q02h	fies_3
+
 
 * keep relevant
-	keep 			y4_ HHID* fies_* 
+	keep 			ea_ household_ fies_* 
 
 * **********************************************************************
 **# 2 - end matter, clean up to save
