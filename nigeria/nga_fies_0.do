@@ -1,8 +1,8 @@
 * Project: WB COVID
-* Created on: September 2021
+* Created on: 7 September 2021
 * Created by: lirr
 * Edited by: lirr
-* Last edited: 2 Sep 2021
+* Last edited: 8 Sep 2021
 * Stata v.17
 
 * does
@@ -36,81 +36,32 @@
 * ***********************************************************************
 		
 * load data
-	use 			"$root/wave_00/HH_MOD_H", clear
+	use 			"$root/wave_00/sect12_harvestw4", clear
 
 * replace counts with binary indicators	
 	lab def 		yesno 1 "Yes" 0 "No" 
-	foreach 		x in a b c d e {
-		replace 		hh_h02`x' = 1 if hh_h02`x' > 1 & hh_h02`x' < .
-		lab val 		hh_h02`x' yesno
+	foreach 		x in a b c d e f g h i j {
+		replace 		s12q8`x' = 0 if s12q8`x' == 2
+		lab val 		s12q8`x' yesno
 	}
-	replace 		hh_h01 = 0 if hh_h01 == 2
-	lab val 		hh_h01 yesno
+* generates fies_2 variable	
+	gen 			fies_2 = 1 if s12q8g == 1 | s12q8i == 1
+	replace			fies_2 = 0 if fies_2 > 1
+	lab val 		fies_2 yesno
 	
 * rename variables
-	rename 			hh_h01 fies_4
-	rename 			hh_h02a fies_5
-	rename 			hh_h02b fies_8
-	rename 			hh_h02c fies_7
-	rename 			hh_h02d fies_2
-	rename 			hh_h02e fies_9
-
+	rename 			s12q8a fies_4
+	rename 			s12q8b fies_5
+	rename 			s12q8e fies_8
+	rename 			s12q8d fies_7
+	rename 			s12q8f fies_1
+	rename 			s12q8j fies_9
+	rename 			s12q8h fies_3
+	rename 			s12q8c fies_6
+	
 * keep relevant
-	keep 			y4_ HHID* fies_* 
+	keep 			ea hhid* fies_* 
 
-	
-* ***********************************************************************
-**# merge in hh data
-* ***********************************************************************	
-
-preserve 
-	
-* load data
-	use 			"$root/wave_00/HH_MOD_A", clear
-
-* keep relevant variables
-	keep 			y4_hhid y3_hhid ihs_region hh_a01 reside panelweight_2019
-
-* save tempfile
-	tempfile 		temp1
-	save 			`temp1'
-
-restore 
-
-* merge with fies data	
-	merge 			1:1 y4_hhid using "`temp1'", assert(3) nogen
-	rename 			ihs_region region_broad
-	rename 			hh_a01 region
-	rename 			reside sector
-	rename 			panelweight_2019 phw_pnl
-
-	
-* ***********************************************************************
-**# merge in HOH gender 
-* ***********************************************************************
-
-preserve 
-		
-* load data
-	use 			"$root/wave_00/HH_MOD_B", clear
-	
-* get HOH gender
-	rename 			hh_b03 sexhh 
-	keep 			if hh_b04 == 1
-	keep 			sexhh y4 HHID*
-
-* save tempfile
-	tempfile 		temp2
-	save 			`temp2'
-
-restore 
-
-* merge with master fies data	
-	merge 			1:1 y4_hhid using "`temp2'", assert(3) nogen
-	
-	order 			y4 y3 HHID* phw region* sector* sexhh fies_2 ///
-						fies_4 fies_5 fies_7 fies_8 fies_9
-	
 
 * **********************************************************************
 **# 2 - end matter, clean up to save
