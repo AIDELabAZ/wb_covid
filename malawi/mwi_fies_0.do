@@ -1,8 +1,8 @@
 * Project: WB COVID
 * Created on: Aug 2021
 * Created by: amf
-* Edited by: amf
-* Last edited: Aug 2021
+* Edited by: lirr
+* Last edited: 2 Sep 2021
 * Stata v.17
 
 * does
@@ -16,9 +16,9 @@
 	* complete
 
 
-* **********************************************************************
+************************************************************************
 **# setup
-* **********************************************************************
+************************************************************************
 
 * define
 	global	root	=	"$data/malawi/raw"
@@ -30,9 +30,9 @@
 	log using		"$logout/mal_fies", append
 
 	
-* ***********************************************************************
-**#  FIES data
-* ***********************************************************************
+*************************************************************************
+**# FIES data
+*************************************************************************
 		
 * load data
 	use 			"$root/wave_00/HH_MOD_H", clear
@@ -56,31 +56,69 @@
 
 * keep relevant
 	keep 			y4_ HHID* fies_* 
-	
 
-* ***********************************************************************
-**#  merge in hh data & save
-* ***********************************************************************	
+	
+*************************************************************************
+**# merge in hh data
+*************************************************************************	
 
 preserve 
 	
 * load data
 	use 			"$root/wave_00/HH_MOD_A", clear
-	
+
+* keep relevant variables
 	keep 			y4_hhid y3_hhid ihs_region hh_a01 reside panelweight_2019
-	
+
+* save tempfile
 	tempfile 		temp1
 	save 			`temp1'
 
 restore 
-	
+
+* merge with fies data	
 	merge 			1:1 y4_hhid using "`temp1'", assert(3) nogen
 	rename 			ihs_region region_broad
 	rename 			hh_a01 region
 	rename 			reside sector
 	rename 			panelweight_2019 phw_pnl
+
 	
-	order 			y4 y3 HHID* region* sector* fies*
+*************************************************************************
+**# merge in HOH gender 
+*************************************************************************
+
+preserve 
+		
+* load data
+	use 			"$root/wave_00/HH_MOD_B", clear
+	
+* get HOH gender
+	rename 			hh_b03 sexhh 
+	keep 			if hh_b04 == 1
+	keep 			sexhh y4 HHID*
+
+* save tempfile
+	tempfile 		temp2
+	save 			`temp2'
+
+restore 
+
+* merge with master fies data	
+	merge 			1:1 y4_hhid using "`temp2'", assert(3) nogen
+	
+	order 			y4 y3 HHID* phw region* sector* sexhh fies_2 ///
+						fies_4 fies_5 fies_7 fies_8 fies_9
+	
+
+************************************************************************
+**# 2 - end matter, clean up to save
+************************************************************************
+	
+	compress
+	
+* close the log
+	log	close
 	
 	
 * save 

@@ -1,7 +1,7 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
-* Stata v.16.1
+* Stata v.17.0
 
 * does
 	* establishes an identical workspace between users
@@ -16,9 +16,9 @@
 	* add all do-files
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * set $pack to 0 to skip package installation
 	global 			pack 	0
@@ -28,14 +28,14 @@
     version $stataVersion
 
 	
-* **********************************************************************
-* 0 (a) - Create user specific paths
-* **********************************************************************
+************************************************************************
+**# 0 (a) - Create user specific paths
+************************************************************************
 
 
 * Define root folder globals
     if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/wb_covid"
+        global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/wb_covid"
 		global 		data	"G:/My Drive/wb_covid/data"
 		global 		output_f "G:/My Drive/wb_covid/output"
     }
@@ -52,7 +52,6 @@
 		global 		output_f "G:/My Drive/wb_covid/output"
 	}
 	
-
 	if `"`c(username)'"' == "Lorin Rudin-Rush" {
 		global 		code  	"C:/Users/Lorin Rudin-Rush/Documents/GitHub/wb_covid"
 		global 		data	"G:/My Drive/wb_covid/data"
@@ -60,9 +59,9 @@
 	}
 	
 	
-* **********************************************************************
-* 0 (b) - Check if any required packages are installed:
-* **********************************************************************
+************************************************************************
+**# 0 (b) - Check if any required packages are installed:
+************************************************************************
 
 * install packages if global is set to 1
 if $pack == 1 {
@@ -103,16 +102,16 @@ if $pack == 1 {
 }
 
 
-* **********************************************************************
-* 1 - run household data cleaning .do file
-* **********************************************************************
+************************************************************************
+**# 1 - run household data cleaning .do file
+************************************************************************
 
 	do 			"$code/analysis/pnl_cleaning.do" 	//runs all cleaning files 
 	
 	
-* **********************************************************************
-* 2 - run analysis .do files
-* **********************************************************************
+************************************************************************
+**# 2 - run analysis .do files
+************************************************************************
 
 
 

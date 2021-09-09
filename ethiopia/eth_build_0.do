@@ -119,12 +119,20 @@
 * load data
 	use 			"$root/wave_0`w'/HH/sect12b1_hh_w4", clear
 	rename 			household_id hhid_eth
-	
+
 * rename variables 
 	rename 			s12bq12 bus_months_op
 	rename 			s12bq13 bus_days_op
 	rename 			s12bq16 bus_avg_sales
 	rename 			s12bq24 bus_perc_hh_inc
+
+	
+	gen inc_noperc= 1 if (bus_avg_sales > 0 & bus_avg_sales < .) & bus_perc_hh_inc == 0
+	gen noinc_perc  = 1 if bus_avg_sales == 0 & (bus_perc_hh_inc > 0 & bus_perc_hh_inc < .)
+	tab noinc_perc
+	tab inc_noperc
+	
+	keep hhid_eth bus* noinc_perc inc_noperc
 /*	
 	keep bus_*
 
