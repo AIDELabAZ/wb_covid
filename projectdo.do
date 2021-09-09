@@ -47,7 +47,7 @@
     }
 
 	if `"`c(username)'"' == "annfu" {
-		global 		code  	"C:/Users/annfu/git/wb_covid"
+		global 		code  	"C:/Users/annfu/git/wb_covid2"
 		global 		data	"G:/My Drive/wb_covid/data"
 		global 		output_f "G:/My Drive/wb_covid/output"
 	}

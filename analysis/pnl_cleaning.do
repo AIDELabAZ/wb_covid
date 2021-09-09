@@ -21,22 +21,6 @@
 * 0 - setup
 * **********************************************************************
 
-* Define root folder globals
-    if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-    }
-
-    if `"`c(username)'"' == "aljosephson" {
-        global 		code  	"C:/Users/aljosephson/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-    }
-
-	if `"`c(username)'"' == "annfu" {
-		global 		code  	"C:/Users/annfu/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-	}
-
 * run do files for each country (takes a little while to run)
 	run				"$code/ethiopia/eth_build_master"
 	run 			"$code/malawi/mwi_build_master"
@@ -131,7 +115,7 @@
 	 }
 
 * define yes/no label
-	lab	def				yesno 0 "No" 1 "Yes"
+	lab	def				yesno 0 "No" 1 "Yes", replace
 
 * generate household id
 	replace 			hhid_eth = "e" + hhid_eth if hhid_eth != ""
@@ -584,8 +568,6 @@
 	replace				ac_clean = 1 if ac_clean == 2 & country == 2
 	lab val				ac_clean yesno
 
-	drop				ac_water ac_water_why ac_staple_def
-
 * access to staples in Nigeria
 	replace				ac_rice = 0 if ac_rice == 1 & country == 3
 	replace				ac_rice = 1 if ac_rice == 2 & country == 3
@@ -614,8 +596,6 @@
 
 	replace				ac_clean = 0 if ac_clean == 1 & country == 3
 	replace				ac_clean = 1 if ac_clean == 2 & country == 3
-
-	drop				ac_bank ac_bank_why
 
 * access to staple
 	lab val				ac_staple .
@@ -662,9 +642,9 @@
 * **********************************************************************
 
 * turn concern into binary
-	replace				concern_01 = 0 if concern_01 == 3 | concern_01 == 4
-	replace				concern_01 = 1 if concern_01 == 2
-	lab val				concern_01 yesno
+	replace				concern_1 = 0 if concern_1 == 3 | concern_1 == 4
+	replace				concern_1 = 1 if concern_1 == 2
+	lab val				concern_1 yesno
 
 	replace				concern_2 = 0 if concern_2 == 3 | concern_2 == 4
 	replace				concern_2 = 1 if concern_2 == 2
@@ -1100,7 +1080,7 @@
 * close the log
 	log	close
 
-
+/*
 * **********************************************************************
 * 13 - generate variable-country-wave crosswalk
 * **********************************************************************

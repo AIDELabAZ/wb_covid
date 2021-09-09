@@ -242,6 +242,8 @@
 	
 	gen				main_pay_annual = main_pay_per_month * main_months
 	
+take means of annual pay by unit
+	
 * calc annual wages from secondary job
 
 ANN YOU ARE HERE
