@@ -37,7 +37,7 @@
 * make wave folder within refined folder if it does not already exist 
 	capture mkdir "$export/wave_0`w'" 	
 	
-	
+
 * ***********************************************************************
 *  household data
 * ***********************************************************************
@@ -77,36 +77,6 @@
 * save tempfile 
 	tempfile 		temp0
 	save 			`temp0'
-	
-	
-* ***********************************************************************
-*  labor & time use  
-* ***********************************************************************	
-	
-* load data
-	use 			"$root/wave_0`w'/HH_MOD_E", clear
-
-* generate epmloyment vars based on hours
-	gen 			farm_emp = 0 if hh_e07a == 0 | hh_e07b == 0 | hh_e07c == 0 
-	replace 		farm_emp = 1 if (hh_e07a > 0 & hh_e07a < .) | ///
-						(hh_e07b > 0 & hh_e07b < .) | (hh_e07c > 0 & hh_e07c < .)
-	
-	gen 			bus_emp = 0 if hh_e08 == 0 | hh_e09 == 0
-	replace 		bus_emp = 1 if (hh_e08 > 0 & hh_e08 < .) | ///
-						(hh_e09 > 0 & hh_e09 < .) 
-	
-	gen 			casual_emp = 0 if hh_e10 == 0
-	replace 		casual_emp = 1 if hh_e10 > 0 & hh_e10 < .
-	
-	gen 			wage_emp = 0 if hh_e11 == 0
-	replace 		wage_emp = 1 if hh_e11 > 0 & hh_e11 < .	
-	
-* collapse to hh level
-	collapse 		(max) farm_emp bus_emp casual_emp wage_emp, by(y4)	
-
-* save tempfile 
-	tempfile 		temp1
-	save 			`temp1'	
 
 	
 * ***********************************************************************
@@ -117,33 +87,174 @@
 	use 			"$root/wave_0`w'/HH_MOD_P", clear	
 	
 * rename variables
-	rename 			hh_p01 inc_
 	replace 		hh_p0a = hh_p0a - 100
-	keep 			y4 HHID* inc_ hh_p0a
+	egen 			temp = rowtotal(hh_p03a-hh_p03c) if hh_p02 == . & hh_p01 == 1
+	replace 		hh_p02 = temp if hh_p02 == . & temp < .
+	rename 			hh_p01 inc_
+	rename 			hh_p02 amnt_
+	keep 			y4 HHID* inc_ hh_p0a amnt_
 	
-* reshape data and rename/generate inc vars
-	reshape 		wide inc_, i(y4) j(hh_p0a)
+* reshape data and rename vars
+	reshape 		wide inc_ amnt_, i(y4) j(hh_p0a)
+	lab	def			yesno 0 "No" 1 "Yes"
+	
+	ds inc_* 
+	foreach 		var in `r(varlist)' {
+		replace 		`var' = 0 if `var' == 2
+		lab val 		`var' yesno
+	}
+	ds amnt_* 
+	foreach 		var in `r(varlist)' {
+		replace 		`var' = 0 if `var' == . 
+	}
 
-	rename 			inc_1 remit_inc
-	replace 		remit_inc = 0 if remit_inc == 2
-	gen 			asst_inc = 0 if inc_2 == 2 | inc_3 == 2
-	replace			asst_inc = 1 if inc_2 == 1 | inc_3 == 1	
-	gen 			pen_inc = 0 if inc_5 == 2 | inc_5 == 2
-	replace			pen_inc = 1 if inc_16 == 1 | inc_16 == 1	
-	gen 			isp_inc = 0 if inc_4 == 2 | inc_6 ==2 | inc_7 == 2 | ///
-						inc_8 == 2 | inc_9 == 2 | inc_10 == 2
-	replace			isp_inc = 1 if inc_4 == 1 | inc_6 == 1 | inc_7 == 1 | ///
-						inc_8 == 1 | inc_9 == 1 | inc_10 == 1
-	gen 			oth_inc = 0 if inc_11 == 2 | inc_12 == 2 | inc_13 == 2 | ///
-						inc_14 == 2 
-	replace			oth_inc = 1 if inc_11 == 1 | inc_12 == 1 | inc_13 == 1 | ///
-						inc_14 == 1
-						
-	keep 			y4 *_inc	
+	rename 			inc_1 cash_trans_0
+	rename 			amnt_1 cash_trans_amnt_0
+	rename 			inc_2 food_trans_0
+	rename 			amnt_2 food_trans_amnt_0
+	rename 			inc_3 kind_trans_0
+	rename 			amnt_3 kind_trans_amnt_0
+	rename 			inc_4 save_inc_0
+	rename 			amnt_4 save_inc_amnt_0
+	rename 			inc_5 pen_pub_0
+	rename 			amnt_5 pen_pub_amnt_0
+	rename 			inc_6 rent_nonag_0
+	rename 			amnt_6 rent_nonag_amnt_0
+	rename 			inc_7 rent_0
+	rename 			amnt_7 rent_amnt_0
+	rename 			inc_8 rent_shop_0
+	rename 			amnt_8 rent_shop_amnt_0
+	rename 			inc_9 rent_veh_0
+	rename 			amnt_9 rent_veh_amnt_0
+	rename 			inc_10 sales_re_0
+	rename 			amnt_10 sales_re_amnt_0
+	rename 			inc_11 asset_nonag_0
+	rename 			amnt_11 asset_nonag_amnt_0
+	rename 			inc_12 asset_ag_0
+	rename 			amnt_12 asset_ag_amnt_0
+	rename 			inc_13 inherit_0
+	rename 			amnt_13 inherit_amnt_0
+	rename 			inc_14 gamb_0
+	rename 			amnt_14 gamb_amnt_0	
+	rename 			inc_15 oth_inc1_0
+	rename 			amnt_15 oth_inc1_amnt_0
+	rename 			inc_16 pen_priv_0
+	rename 			amnt_16 pen_priv_amnt_0	
 
 * save tempfile 
+	tempfile 		temp1
+	save 			`temp1'	
+	
+	
+* ***********************************************************************
+*  transfers form children
+* ***********************************************************************	
+	
+* load data
+	use 			"$root/wave_0`w'/HH_MOD_O", clear
+	
+* rename vars
+	rename 			hh_o11 cash_child_0
+	replace 		cash_child_0 = 0 if cash_child_0 == 2
+	rename 			hh_o14 cash_child_amnt_0
+	rename 			hh_o15 kind_child_0
+	replace 		kind_child_0 = 0 if kind_child_0 == 2
+	rename 			hh_o17 kind_child_amnt_0
+	replace 		cash_child_0 = 0 if hh_o0a == 2
+	replace 		kind_child_0 = 0 if hh_o0a == 2
+	
+* collapse vars to hh level
+	collapse 		(max) cash_child_0  kind_child_0 ///
+						(sum) cash_child_amnt_0 kind_child_amnt_0, by(y4)
+						
+* save tempfile 
 	tempfile 		temp2
-	save 			`temp2'
+	save 			`temp2'	
+	
+
+* ***********************************************************************
+*  safety nets/assistance
+* ***********************************************************************	
+
+* load data
+	use 			"$root/wave_0`w'/HH_MOD_R", clear
+
+*format and reshape 
+	rename 			hh_r01 inc_
+	replace 		hh_r02a = hh_r02a + hh_r02b if hh_r02a != . & hh_r02b != .
+	replace 		hh_r02a = hh_r02b if hh_r02a == . & hh_r02b != .
+	replace 		hh_r02a = hh_r02c if hh_r02a == . 
+	rename 			hh_r02a amnt_
+	keep 			inc_ amnt_ y4 hh_r0a	
+	reshape 		wide inc_ amnt_, i(y4) j(hh_r0a)		
+	drop 			inc_105 inc_108 amnt_105 amnt_106 amnt_107 amnt_108
+
+* rename variables 
+	rename 			inc_101 asst_maize_0
+	rename 			amnt_101 kg_maize_0
+	rename 			inc_102 asst_food_0
+	rename 			amnt_102 asst_food_amnt_0
+	rename 			inc_104 input_for_wrk_0
+	rename 			amnt_104 input_for_wrk_amnt_0
+	rename 			inc_106 tnp_0 
+	rename 			inc_107 supp_feed_0
+	rename 			inc_111 cash_gov_0
+	rename 			amnt_111 cash_gov_amnt_0
+	rename 			inc_112 cash_ngo_0
+	rename 			amnt_112 cash_ngo_amnt_0
+	rename 			inc_113 oth_inc2_0
+	rename 			amnt_113 oth_inc2_amnt_0
+	rename 			inc_1031 masaf_0
+	rename 			amnt_1031 masaf_amnt_0
+	rename 			inc_1032 cash_for_wrk_0
+	rename 			amnt_1032 cash_for_wrk_amnt_0
+	
+* save tempfile 
+	tempfile 		temp3
+	save 			`temp3'	
+	
+	
+* ***********************************************************************
+*  labor & time use  
+* ***********************************************************************	
+	
+* load data
+	use 			"$root/wave_0`w'/HH_MOD_E", clear
+	
+* rename indicator vars	
+	rename 			hh_e06_4 wage_emp_0
+	rename 			hh_e06_6 casual_emp_0
+
+* calc annual wages from main job
+	gen 			days_per_month = 365/12
+	gen 			weeks_per_month = 365/7/12
+	
+	rename 			hh_e22 main_months
+	rename 			hh_e23 main_wks_per_month
+	rename 			hh_e24 main_hrs_per_wk
+	rename 			hh_e25 main_pay
+	rename 			hh_e26a main_pay_period
+	rename 			hh_e26b main_pay_unit
+	
+	gen 			main_pay_per_month = main_pay if main_pay_unit == 5
+	replace 		main_pay_per_month = (main_pay / main_pay_period) * days_per_month if main_pay_unit == 3
+	replace 		main_pay_per_month = (main_pay / main_pay_period) * weeks_per_month if main_pay_unit == 4
+	
+	gen				main_pay_annual = main_pay_per_month * main_months
+	
+* calc annual wages from secondary job
+
+ANN YOU ARE HERE
+* combine main and secondary job incomes
+
+
+*calc annual income from casual labor
+	
+
+
+* save tempfile 
+	tempfile 		temp4
+	save 			`temp4'	
 
 	
 * ***********************************************************************
