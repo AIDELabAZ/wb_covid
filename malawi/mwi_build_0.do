@@ -18,7 +18,7 @@
 
 
 * **********************************************************************
-* 0 - setup
+**# setup
 * **********************************************************************
 
 * define
@@ -39,12 +39,12 @@
 	
 
 * ***********************************************************************
-*  household data
+**# household data
 * ***********************************************************************
-	
-* load data
-	use 			"$root/wave_0`w'/HH_MOD_B", clear
 
+* load data
+	use 			"$root/wave_0`w'/HH_MOD_B", clear	
+	
 * rename other variables 
 	rename 			PID ind_id 
 	rename 			hh_b03 sex_mem
@@ -80,7 +80,7 @@
 
 	
 * ***********************************************************************
-*  other income  
+**# other income  
 * ***********************************************************************
 		
 * load data
@@ -96,7 +96,7 @@
 	
 * reshape data and rename vars
 	reshape 		wide inc_ amnt_, i(y4) j(hh_p0a)
-	lab	def			yesno 0 "No" 1 "Yes"
+	lab	def			yesno 0 "No" 1 "Yes", replace
 	
 	ds inc_* 
 	foreach 		var in `r(varlist)' {
@@ -147,7 +147,7 @@
 	
 	
 * ***********************************************************************
-*  transfers form children
+**# transfers form children
 * ***********************************************************************	
 	
 * load data
@@ -173,7 +173,7 @@
 	
 
 * ***********************************************************************
-*  safety nets/assistance
+**# safety nets/assistance
 * ***********************************************************************	
 
 * load data
@@ -215,44 +215,101 @@
 	
 	
 * ***********************************************************************
-*  labor & time use  
+**# labor & time use  
 * ***********************************************************************	
 	
 * load data
 	use 			"$root/wave_0`w'/HH_MOD_E", clear
-	
+
 * rename indicator vars	
 	rename 			hh_e06_4 wage_emp_0
-	rename 			hh_e06_6 casual_emp_0
+	rename 			hh_e06_6 casual_emp_0	
+	foreach 		var in wage casual {
+		replace 		`var'_emp_0 = 0 if `var'_emp_0 == 2	
+	}
 
-* calc annual wages from main job
-	gen 			days_per_month = 365/12
-	gen 			weeks_per_month = 365/7/12
-	
-	rename 			hh_e22 main_months
-	rename 			hh_e23 main_wks_per_month
-	rename 			hh_e24 main_hrs_per_wk
-	rename 			hh_e25 main_pay
-	rename 			hh_e26a main_pay_period
-	rename 			hh_e26b main_pay_unit
-	
-	gen 			main_pay_per_month = main_pay if main_pay_unit == 5
-	replace 		main_pay_per_month = (main_pay / main_pay_period) * days_per_month if main_pay_unit == 3
-	replace 		main_pay_per_month = (main_pay / main_pay_period) * weeks_per_month if main_pay_unit == 4
-	
-	gen				main_pay_annual = main_pay_per_month * main_months
-	
-take means of annual pay by unit
-	
-* calc annual wages from secondary job
+* calc wage income	
+	* generate conversion variables
+		gen 			days_per_month = 365/12
+		gen 			weeks_per_month = 365/7/12
+		
+	* rename main wage job variables	
+		rename 			hh_e22 main_months
+		rename 			hh_e25 main_pay
+		rename 			hh_e26a main_pay_period
+		rename 			hh_e26b main_pay_unit
+		rename 			hh_e27 main_pay_kind
+		rename 			hh_e28a main_pay_kind_period
+		rename 			hh_e28b main_pay_kind_unit
+		rename 			hh_e31 main_cost
+		
+	* convert all main income to monthly 
+		* salary payments
+		gen 			main_pay_per_month = (main_pay / main_pay_period) if main_pay_unit == 5
+		replace 		main_pay_per_month = (main_pay / main_pay_period) * days_per_month if main_pay_unit == 3
+		replace 		main_pay_per_month = (main_pay / main_pay_period) * weeks_per_month if main_pay_unit == 4
+		* in-kind payments
+		gen 			main_pay_kind_per_month = (main_pay_kind / main_pay_kind_period) if main_pay_kind_unit == 5
+		replace 		main_pay_kind_per_month = (main_pay_kind / main_pay_kind_period) * days_per_month if main_pay_kind_unit == 3
+		replace 		main_pay_kind_per_month = (main_pay_kind / main_pay_kind_period) * weeks_per_month if main_pay_kind_unit == 4		
+		*combine salary and in-kind
+		replace 		main_pay_per_month = main_pay_per_month + main_pay_kind_per_month if main_pay_kind_per_month != .
+		
+	* calc annual mian income (subtract $ paid for apprenticeships)
+		gen				main_pay_annual = (main_pay_per_month * main_months) 
+		replace 		main_pay_annual = main_pay_annual - main_cost if main_cost !=.
 
-ANN YOU ARE HERE
-* combine main and secondary job incomes
+	/* NOTE: the respondents who reported salaries on a weekly basis have significantly lower annual salaries than 
+		other respondents (less than half) - this seems strange but is left as-is becuase we see no obvious errors
+		sum main_pay_annual if main_pay_unit == 5
+		sum main_pay_annual if main_pay_unit == 4
+		sum main_pay_annual if main_pay_unit == 3
+	*/
 
+	* rename seocndary wage job variables	
+		rename 			hh_e36 sec_months
+		rename 			hh_e39 sec_pay
+		rename 			hh_e40a sec_pay_period
+		rename 			hh_e40b sec_pay_unit
+		rename 			hh_e41 sec_pay_kind
+		rename 			hh_e42a sec_pay_kind_period
+		rename 			hh_e42b sec_pay_kind_unit
+		rename 			hh_e45 sec_cost
+		
+	* convert all incomes to monthly (already month in this case)
+		* salary payments
+		gen 			sec_pay_per_month = (sec_pay / sec_pay_period) if sec_pay_unit == 5
+		* in-kind payments
+		gen 			sec_pay_kind_per_month = (sec_pay_kind / sec_pay_kind_period) if sec_pay_kind_unit == 5
+		*combine salary and in-kind
+		replace 		sec_pay_per_month = sec_pay_per_month + sec_pay_kind_per_month if sec_pay_kind_per_month != .
+		
+	* calc annual income (subtract $ paid for apprenticeships)
+		gen				sec_pay_annual = (sec_pay_per_month * sec_months) 
+		replace 		sec_pay_annual = sec_pay_annual - sec_cost if sec_cost !=.
 
-*calc annual income from casual labor
-	
+	* combine main and secondary job incomes
+		gen 			wage_emp_amnt_0 = main_pay_annual + sec_pay_annual if sec_pay_annual != .
+		replace 		wage_emp_amnt_0 = main_pay_annual if wage_emp_amnt_0 == .
 
+	* NOTE: significant outliers that should probably be dropped 
+
+* calc income from casual labor
+	* rename variables 
+		rename 			hh_e56 cas_months_per_year
+		rename 			hh_e57 cas_wks_per_month
+		rename 			hh_e58 cas_days_per_wk
+		rename 			hh_e59 cas_pay_per_day
+		
+	* calc annual casual salary
+		gen 			casual_emp_amnt_0 = cas_pay_per_day * cas_days_per_wk * ///
+							cas_wks_per_month * cas_months_per_year
+
+* drop irrelevant 	
+	keep 				y4 *emp*
+
+* collapse to hh level (note that this makes missing values 0)
+	collapse 			(sum) *amnt* (max) wage_emp_0 casual_emp_0, by (y4)
 
 * save tempfile 
 	tempfile 		temp4
@@ -260,18 +317,118 @@ ANN YOU ARE HERE
 
 	
 * ***********************************************************************
-* merge  
+**# crop & tree income
+* ***********************************************************************	
+
+* load & format rainy data
+	use 			"$root/wave_0`w'/AG_MOD_I", clear
+
+	rename 			ag_i01 rainy
+	replace 		rainy = 0 if rainy == 2
+	collapse 		(sum) ag_i03 (max) rainy, by(y4)
+	rename 			ag_i03 rainy_sales
+
+preserve 
+
+* load & format dimba data
+	use 			"$root/wave_0`w'/AG_MOD_O", clear
+
+	rename 			ag_o01 dimba
+	replace 		dimba = 0 if dimba == 2
+	collapse 		(sum) ag_o03 (max) dimba, by(y4)
+	rename 			ag_o03 dimba_sales	
+	
+	* save tempfile 
+		tempfile 		tempd
+		save 			`tempd'	
+	
+* combine rainy & dimba crop sales 
+restore
+	
+	merge 			1:1 y4 using `tempd', nogen
+	
+	gen 			crop_inc_amnt_0 = rainy_sales
+	replace 		crop_inc_amnt_0 = rainy_sales + dimba_sales if dimba_sales != .
+	gen 			crop_inc_0 = 0 
+	replace 		crop_inc_0 = 1 if rainy == 1 | dimba == 1
+	
+	* save tempfile 
+		tempfile 		tempc
+		save 			`tempc'	
+		
+* load & format tree data
+	use 			"$root/wave_0`w'/AG_MOD_Q", clear	
+
+	rename 			ag_q01 tree_inc_0
+	replace 		tree_inc_0 = 0 if tree_inc_0 == 2
+	rename 			ag_q03 tree_inc_amnt_0
+	collapse 		(sum) tree_inc_amnt_0 (max) tree_inc_0, by(y4)
+
+* merge crop & tree 	
+	merge 			1:1 y4 using `tempc', nogen
+	
+* save tempfile 
+	tempfile 		temp5
+	save 			`temp5'	
+
+	
+* ***********************************************************************
+**# livestock 
+* ***********************************************************************	
+
+* load & format tree data
+	use 			"$root/wave_0`w'/AG_MOD_R1", clear	
+	
+	rename 			ag_r17 live_inc_amnt_0 
+	collapse		(sum) live_inc_amnt_0, by(y4)
+	gen 			live_inc_0 = cond(live_inc_amnt_0 > 0, 1,0)
+
+* save tempfile 
+	tempfile 		temp6
+	save 			`temp6'	
+
+	
+* ***********************************************************************
+**# livestock products
+* ***********************************************************************	
+
+* load & format tree data
+	use 			"$root/wave_0`w'/AG_MOD_S", clear	
+	
+	rename 			ag_s04 live_prod_0
+	replace 		live_prod_0 = 0 if live_prod_0 == 2
+	rename 			ag_s06 live_prod_amnt_0
+	collapse 		(sum) live_prod_amnt_0 (max) live_prod_0, by(y4)
+	replace 		live_prod_0 = 0 if live_prod_0 == .
+
+* save tempfile 
+	tempfile 		temp
+	save 			`temp7'	
+	
+
+* ***********************************************************************
+**# fishery income
+* ***********************************************************************	
+
+* ***********************************************************************
+**# NFE income 
+* ***********************************************************************	
+
+* ***********************************************************************
+**# plot rental  
+* ***********************************************************************	
+	
+* ***********************************************************************
+**# merge  
 * ***********************************************************************	
 	
 * combine dataset 
 	use 			`temp0', clear
+	merge 			1:1 y4 using `temp0', assert(3) nogen
 	merge 			1:1 y4 using `temp1', assert(3) nogen
 	merge 			1:1 y4 using `temp2', assert(3) nogen
-	lab def 		yesno 1 "Yes" 0 "No"
-	ds *_inc *_emp
-	foreach 		var in `r(varlist)' {
-		lab val 	`var' yesno
-	}
+	merge 			1:1 y4 using `temp3', assert(3) nogen
+	merge 			1:1 y4 using `temp4', assert(3) nogen
 	
 * add country & wave 
 	gen 			wave = 0
