@@ -47,7 +47,6 @@
 	foreach 		r in "$waves" {
 		do 			"$code/uganda/uga_build_`r'"
 	}
-	do 				"$code/uganda/uga_build_0"
 	
 	
 * **********************************************************************
@@ -739,11 +738,9 @@
 
 * final clean 
 	compress
-	rename HHID hhid_uga
-	drop if hhid_uga == .
-
-* append baseline 
-	append 			using "$export/wave_00/r0"	
+	rename 			HHID hhid_uga
+	drop 			if hhid_uga == .
+	isid 			hhid_uga wave
 	
 * save file
 	customsave , idvar(baseline_hhid) filename("uga_panel.dta") ///

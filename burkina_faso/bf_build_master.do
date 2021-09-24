@@ -52,11 +52,11 @@
 	    if 			`r' == 1 {
 					use	"$export/wave_01/r1", clear
 		}
+		if 			`r' > 1 & `r' < 10 {
+					append using "$export/wave_0`r'/r`r'"
+		}		
 		if 			`r' == 10  {
 					append using "$export/wave_`r'/r`r'"
-		}
-		else {
-					append using "$export/wave_0`r'/r`r'"
 		}
 	}
 	compress
@@ -606,6 +606,7 @@
 	compress	
 	rename 			hhid hhid_bf 
 	label 			var hhid_bf "household id unique - Burkina Faso"
+	isid 			hhid_bf wave
 	
 * save file
 	customsave, 	idvar(hhid_bf) filename("bf_panel.dta") ///

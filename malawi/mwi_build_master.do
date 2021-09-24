@@ -48,7 +48,6 @@
 	foreach 		r in "$waves" {
 		do 			"$code/malawi/mwi_build_`r'"
 	}
-	do 				"$code/malawi/mwi_build_0"
 
 	
 * ***********************************************************************
@@ -60,13 +59,12 @@
 	    if 			`r' == 1 {
 			use		"$export/wave_01/r1", clear
 		}
-		if 			`r' < 10 {
-			append 	using "$export/wave_0`r'/r`r'"
+		if 			`r' > 1 & `r' < 10 {
+			append	using "$export/wave_0`r'/r`r'"
+		}		
+		if 			`r' >= 10 {
+			append 	using "$export/wave_`r'/r`r'"
 		}	
-		else {
-			append	using "$export/wave_`r'/r`r'"
-		}
-
 	}
 	compress 
 
@@ -1031,9 +1029,7 @@
 	compress
 	rename 			y4_hhid hhid_mwi
 	lab var			hhid_mwi "household ID malawi"
-
-* append baseline 
-	append 			using "$export/wave_00/r0"	
+	isid 			hhid_mwi wave
 	
 * save file
 		customsave , idvar(hhid_mwi) filename("mwi_panel.dta") ///

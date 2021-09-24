@@ -49,7 +49,6 @@
 	foreach 		r in "$waves" {
 		do 			"$code/ethiopia/eth_build_`r'"
 	}
-	do 				"$code/ethiopia/eth_build_0"
 	
 	
 * ***********************************************************************
@@ -920,9 +919,7 @@
 	compress	
 	rename 			household_id hhid_eth 
 	label 			var hhid_eth "household id unique - ethiopia"
-	
-* append baseline 
-	append 			using "$export/wave_00/r0"
+	isid 			hhid_eth wave
 	
 * save file
 	customsave, 	idvar(hhid_eth) filename("eth_panel.dta") ///

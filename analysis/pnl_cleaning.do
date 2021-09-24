@@ -118,30 +118,27 @@
 	lab	def				yesno 0 "No" 1 "Yes", replace
 
 * generate household id
-	replace 			hhid_eth = "e" + hhid_eth if hhid_eth != ""
-	replace 			hhid_mwi = "m" + hhid_mwi if hhid_mwi != ""
-	tostring			hhid_nga, replace
-	replace 			hhid_nga = "n" + hhid_nga if hhid_nga != "."
-	replace				hhid_nga = "" if hhid_nga == "."
-	rename 				hhid_uga hhid_uga1
-	egen 				hhid_uga = group(hhid_uga1)
-	tostring 			hhid_uga, replace
-	replace 			hhid_uga = "" if country != 4
-	replace 			hhid_uga = "u" + hhid_uga if hhid_uga != ""
-	tostring			hhid_bf, replace
-	replace 			hhid_bf = "b" + hhid_bf if hhid_bf != "."
-	replace				hhid_bf = "" if hhid_bf == "."
-
-	gen					HHID = hhid_eth if hhid_eth != ""
-	replace				HHID = hhid_mwi if hhid_mwi != ""
-	replace				HHID = hhid_nga if hhid_nga != ""
-	replace				HHID = hhid_uga if hhid_uga != ""
-	replace				HHID = hhid_bf if hhid_bf != ""
+	gen 				hhid_eth1 = "e" + hhid_eth if hhid_eth != ""
+	gen					hhid_mwi1 = "m" + hhid_mwi if hhid_mwi != ""
+	tostring			hhid_nga, gen(hhid_nga1)
+	replace 			hhid_nga1 = "n" + hhid_nga1 if hhid_nga1 != "."
+	replace				hhid_nga1 = "" if hhid_nga1 == "."
+	tostring 			hhid_uga, gen(hhid_uga1) format("%12.0f")
+	replace 			hhid_uga1 = "u" + hhid_uga1 if hhid_uga1 != "."
+	replace				hhid_uga1 = "" if hhid_uga1 == "."
+	tostring			hhid_bf, gen(hhid_bf1)
+	replace 			hhid_bf1 = "b" + hhid_bf1 if hhid_bf1 != "."
+	replace				hhid_bf1 = "" if hhid_bf1 == "."
+	gen					HHID = hhid_eth1 if hhid_eth1 != ""
+	replace				HHID = hhid_mwi1 if hhid_mwi1 != ""
+	replace				HHID = hhid_nga1 if hhid_nga1 != ""
+	replace				HHID = hhid_uga1 if hhid_uga1 != ""
+	replace				HHID = hhid_bf1 if hhid_bf1 != ""
 	sort				HHID
 	egen				hhid = group(HHID)
-	drop				HHID hhid_eth hhid_mwi hhid_nga hhid_uga* hhid_bf
+	drop				HHID hhid_eth1 hhid_mwi1 hhid_nga1 hhid_uga1 hhid_bf1
 	lab var				hhid "Unique household ID"
-	order 				country hhid resp_id hhid*
+	order 				country wave hhid resp_id hhid*
 
 * generate weights
 	foreach x in cs pnl {
@@ -783,7 +780,7 @@
 	replace 			rem_for = 2 if rem_for == 0
 	replace 			rem_dom = . if rem_dom <0
 	replace 			rem_for = . if rem_for <0
-	replace				remit_inc = 0 if rem_dom == 2 | rem_for == 2
+	gen					remit_inc = 0 if rem_dom == 2 | rem_for == 2
 	replace 			remit_inc = 1 if rem_dom == 1 | rem_for == 1
 	lab val 			remit_inc yesno
 	* others fine as is: bus_inc farm_inc wage_inc
@@ -1085,7 +1082,7 @@
 * 13 - generate variable-country-wave crosswalk
 * **********************************************************************
 	preserve
-	drop 				country wave baseline
+	drop 				country wave baseline hhid_*
 	ds
 	restore
 	foreach 			var in `r(varlist)' {
@@ -1118,7 +1115,7 @@
 		restore
 	}
 	preserve
-	drop 				country wave urban baseline
+	drop 				country wave urban baseline hhid_*
 	ds
 	clear
 	foreach 			var in `r(varlist)' {
@@ -1128,6 +1125,5 @@
 	export 				excel "$export/variable_country_wave_crosswalk.xlsx", ///
 							sheetreplace sheet(Vars_waves) first(var)
 	restore
-
 
 /* END */
