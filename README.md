@@ -1,5 +1,5 @@
 # Understanding households’ resilience to and recovery from COVID-19 in Sub-Saharan Africa
-This README describes the directory structure & should enable users to replicate all tables and figures for work related to the World Bank LSMS and World Bank COVID phone surveys. For more information on the project, visit the project OSF website: https://osf.io/u2raq/. The relevant survey data are available under under the High-Frequency Phone Survey collection: http://bit.ly/microdata-hfps.   
+This README describes the directory structure for cleaning and managing the World Bank COVID phone surveys. The relevant survey data are available under under the High-Frequency Phone Survey collection: http://bit.ly/microdata-hfps.   
 
  ## Index
 
