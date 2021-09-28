@@ -32,22 +32,6 @@
 	global	root	=	"$data/nigeria/raw"
 	global	export	=	"$data/nigeria/refined"
 	global	logout	=	"$data/nigeria/logs"
-
-* Define root folder globals
-    if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-    }
-
-    if `"`c(username)'"' == "aljosephson" {
-        global 		code  	"C:/Users/aljosephson/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-    }
-
-	if `"`c(username)'"' == "annfu" {
-		global 		code  	"C:/Users/annfu/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-	}
 	
 * open log
 	cap log 		close
@@ -62,7 +46,6 @@
 	foreach 		r in "$waves" {
 		do 			"$code/nigeria/nga_build_`r'"
 	}
-	do 				"$code/nigeria/nga_build_0"
 	
 
 * ***********************************************************************
@@ -74,10 +57,10 @@
 	    if 			`r' == 1 {
 			use		"$export/wave_01/r1", clear
 		}
-		else if 			`r' > 1 & `r' < 10 {
+		else if 	`r' > 1 & `r' < 10 {
 		    append 	using "$export/wave_0`r'/r`r'"
 		}
-		else {
+		if 			`r' >= 10 {
 			append 	using "$export/wave_`r'/r`r'"
 		}
 	}
@@ -719,10 +702,8 @@
 
 * final clean 
 	compress
-	rename hhid hhid_nga 
-	
-* append baseline 
-	append 			using "$export/wave_00/r0"
+	rename 			hhid hhid_nga
+	isid 			hhid_nga wave
 
 * save file
 		customsave , idvar(hhid_nga) filename("nga_panel.dta") ///

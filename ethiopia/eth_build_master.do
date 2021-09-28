@@ -7,7 +7,7 @@
 
 * does
 	* appends rounds of Ethiopia data
-	* formats and cleans master dataset 
+	* formats and cleans master dataset
 	* outputs panel data
 
 * assumes
@@ -21,7 +21,7 @@
 		* update global list of waves below
 		* check variable crosswalk for differences/new variables & update code if needed
 		* check QC flags for issues/discrepancies
-		
+
 
 * **********************************************************************
 * 0 - setup
@@ -29,8 +29,8 @@
 
 * define list of waves
 	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9"
-	
-* define 
+
+* define
 	global			root	=	"$data/ethiopia/raw"
 	global			export	=	"$data/ethiopia/refined"
 	global			logout	=	"$data/ethiopia/logs"
@@ -49,11 +49,10 @@
 	foreach 		r in "$waves" {
 		do 			"$code/ethiopia/eth_build_`r'"
 	}
-	do 				"$code/ethiopia/eth_build_0"
-	
-	
+
+
 * ***********************************************************************
-* 2 - create ethiopia panel 
+* 2 - create ethiopia panel
 * ***********************************************************************
 
 * append round datasets to build master panel
@@ -65,8 +64,8 @@
 			append 	using "$export/wave_0`r'/r`r'"
 		}
 	}
-	compress 
-	
+	compress
+
 * merge in consumption aggregate
 	merge m:1		household_id using "$root/wave_00/Ethiopia ESS 2018-19 Quintiles.dta", nogenerate
 	rename 			quintile quints
@@ -75,16 +74,16 @@
 						4 "Quintile 4" 5 "Quintile 5"
 	lab val			quints lbqui
 	drop 			if wave == .
-	
+
 * create country variable
 	gen				country = 1
-	
+
 * replace all missing values as . (not .a, .b, etc.)
 	quietly: ds, has(type numeric)
 	foreach var in `r(varlist)' {
 		replace 		`var' = . if `var' > .
-	} 
-	
+	}
+
 
 * ***********************************************************************
 * 3 - clean ethiopia panel
@@ -98,7 +97,7 @@
 	}
 	lab var			phw_cs "sampling weights - cross section"
 
-* administrative variables 	
+* administrative variables
 	rename			ii4_resp_id resp_id
 	rename			cs4_sector sector
 	rename			cs5_eaid ea
@@ -120,7 +119,7 @@
 	rename			bi_same_hhh same_hhh
 	rename			ii4_resp_same same
 	rename			ii4_resp_gender sex
-	rename			ii4_resp_age age	
+	rename			ii4_resp_age age
 	rename			ii4_resp_relhhh relate_hoh
 	* replace missing round 1 values based on respondant id (NEW CODE - J&A TO CHECK)
 	* round 1 did not report respondant age, sex, or relation to hhh
@@ -131,9 +130,9 @@
 		replace 		age = min_age if age == . & wave == 1
 		gen 			relate_temp = relate_hoh if wave == 2
 		xfill 			relate_temp, i(unique)
-		replace 		relate_hoh = relate_temp if relate_hoh == . & wave == 1 
+		replace 		relate_hoh = relate_temp if relate_hoh == . & wave == 1
 		drop 			min_age unique relate_temp
-	
+
 * covid variables (wave 1 only)
 	rename			kn1_heard know
 	rename			kn2_meas_handwash know_1
@@ -157,7 +156,7 @@
 	rename			kn3_gov_11 gov_11
 	rename			kn3_gov_12 gov_12
 
-* access variables 
+* access variables
 	* staples & medical care & bank
 		rename			ac1_atb_med ac_med
 		rename			ac2_atb_med_why ac_med_why
@@ -170,43 +169,43 @@
 		rename			ac1_atb_oil ac_oil
 		rename			ac2_atb_oil_why ac_oil_why
 		rename			ac6_med ac_medserv_need
-		replace 		ac_medserv_need = ac1_medtreat if ac_medserv_need == .		
+		replace 		ac_medserv_need = ac1_medtreat if ac_medserv_need == .
 		forval 			x = 1/7 {
 			gen 			ac_medserv_need_type_`x' = .
 			replace 		ac_medserv_need_type_`x' = 0 if ac2_medtreat_type != ""
-		}	
-		forval 			x = 1/7 {	
+		}
+		forval 			x = 1/7 {
 			replace 		ac_medserv_need_type_`x'= 1 if strpos(ac2_medtreat_type,"`x'")!=0
 		}
-		rename 			ac3_fp_access ac_medserv_type_1 
-		rename 			ac3_vacc_access ac_medserv_type_2 
-		rename 			ac3_mat_access ac_medserv_type_3 
-		rename 			ac3_ch_access ac_medserv_type_4 
-		rename 			ac3_ah_access ac_medserv_type_5 
-		rename 			ac3_ec_access ac_medserv_type_6 
-		rename 			ac3_pharm_access ac_medserv_type_7 
-		
-		rename 			ac4_fp_access_reason ac_medserv_type_1_why  
+		rename 			ac3_fp_access ac_medserv_type_1
+		rename 			ac3_vacc_access ac_medserv_type_2
+		rename 			ac3_mat_access ac_medserv_type_3
+		rename 			ac3_ch_access ac_medserv_type_4
+		rename 			ac3_ah_access ac_medserv_type_5
+		rename 			ac3_ec_access ac_medserv_type_6
+		rename 			ac3_pharm_access ac_medserv_type_7
+
+		rename 			ac4_fp_access_reason ac_medserv_type_1_why
 		rename 			ac4_vacc_access_reason ac_medserv_type_2_why
 		rename 			ac4_mat_access_reason ac_medserv_type_3_why
 		rename 			ac4_ch_access_reason ac_medserv_type_4_why
 		rename 			ac4_ah_access_reason ac_medserv_type_5_why
 		rename 			ac4_ec_access_reason ac_medserv_type_6_why
-		rename 			ac4_pharm_access_reason ac_medserv_type_7_why	
+		rename 			ac4_pharm_access_reason ac_medserv_type_7_why
 		rename			ac7_med_access ac_medserv
 		rename			ac8_med_access_reas ac_medserv_why
 		rename			ac9_bank ac_bank_need
-	
+
 	* covid test & vaccine
 		rename 			bh8_cov_test cov_test
-		rename 			bh9_cov_vaccine cov_vac 
+		rename 			bh9_cov_vaccine cov_vac
 		rename 			bh10_cov_vaccine_why_1 cov_vac_no_why_2_3
 		rename 			bh10_cov_vaccine_why_2 cov_vac_no_why_7
 		rename 			bh10_cov_vaccine_why_3 cov_vac_no_why_8
 		rename 			bh10_cov_vaccine_why_4 cov_vac_no_why_1
 		rename 			bh10_cov_vaccine_why_5 cov_vac_no_why_9
 
-	* education 
+	* education
 		rename			ac3_sch_child sch_child
 		rename 		 	ac3a_pri_sch_child sch_child_prim
 		rename 		 	ac3b_sec_sch_child sch_child_sec
@@ -222,27 +221,27 @@
 		rename 			ac5_edu_type__96 edu_other
 
 		drop 			ac5a_pri_edu_type ac5a_pri_edu_type__98 ac5a_pri_edu_type__99 ///
-							ac5a_pri_edu_type_other 
-		rename 			ac5a_pri_edu_type_1 edu_1_prim 
-		rename 			ac5a_pri_edu_type_2 edu_2_prim  
-		rename 			ac5a_pri_edu_type_3 edu_3_prim 
-		rename 			ac5a_pri_edu_type_4 edu_4_prim 
-		rename 			ac5a_pri_edu_type_5 edu_5_prim 	
+							ac5a_pri_edu_type_other
+		rename 			ac5a_pri_edu_type_1 edu_1_prim
+		rename 			ac5a_pri_edu_type_2 edu_2_prim
+		rename 			ac5a_pri_edu_type_3 edu_3_prim
+		rename 			ac5a_pri_edu_type_4 edu_4_prim
+		rename 			ac5a_pri_edu_type_5 edu_5_prim
 
-		rename 			ac4b_sec_child edu_act_sec 
+		rename 			ac4b_sec_child edu_act_sec
 		drop 			ac5b_sec_edu_type ac5b_sec_edu_type__98 ac5b_sec_edu_type__99 ///
 							ac5b_sec_edu_type_other
-		rename 			ac5b_sec_edu_type_1 edu_1_sec 
-		rename 			ac5b_sec_edu_type_2 edu_2_sec  
-		rename 			ac5b_sec_edu_type_3 edu_3_sec 
-		rename 			ac5b_sec_edu_type_4 edu_4_sec 
-		rename 			ac5b_sec_edu_type_5 edu_5_sec 
+		rename 			ac5b_sec_edu_type_1 edu_1_sec
+		rename 			ac5b_sec_edu_type_2 edu_2_sec
+		rename 			ac5b_sec_edu_type_3 edu_3_sec
+		rename 			ac5b_sec_edu_type_4 edu_4_sec
+		rename 			ac5b_sec_edu_type_5 edu_5_sec
 
 		drop 			ac5_edu_type__98 ac5_edu_type__99 ac5_edu_type_other ///
 							 ac5a_pri_edu_type__96 ac5b_sec_edu_type__96
-	
+
 		rename 			ac3_sch_open sch_reopen
-		rename 			ac3_* *	
+		rename 			ac3_* *
 		rename 			ac4_sch_reg_boys sch_reopen_boy
 		rename 			ac4_sch_reg_girls sch_reopen_girl
 
@@ -310,7 +309,7 @@
 									& inded11_attend_reason`x' != 8
 				}
 			}
-			
+
 			forval 			x = 1/13 {
 				replace 	sch_child = 1 if inded1_attend_school`x' == 1
 				replace 	edu_act = 1 if inded4_attend_edclose`x' == 1
@@ -321,16 +320,16 @@
 					replace 	sch_child_reg_why_`q' = 1 if ///
 									inded10_register_reason`x' == `q'
 				}
-				replace		sch_att_why_1 = 1 if inded11_attend_reason`x' == 1	
-				replace		sch_att_why_6 = 1 if inded11_attend_reason`x' == 2	
-				replace		sch_att_why_16 = 1 if inded11_attend_reason`x' == 3	
-				replace		sch_att_why_17 = 1 if inded11_attend_reason`x' == 4	
+				replace		sch_att_why_1 = 1 if inded11_attend_reason`x' == 1
+				replace		sch_att_why_6 = 1 if inded11_attend_reason`x' == 2
+				replace		sch_att_why_16 = 1 if inded11_attend_reason`x' == 3
+				replace		sch_att_why_17 = 1 if inded11_attend_reason`x' == 4
 				replace		sch_att_why_8 = 1 if inded11_attend_reason`x' == 5
-				replace		sch_att_why_18 = 1 if inded11_attend_reason`x' == 6	
-				replace		sch_att_why_7 = 1 if inded11_attend_reason`x' == 7	
-				replace		sch_att_why_19 = 1 if inded11_attend_reason`x' == 8	
-			}	
-			
+				replace		sch_att_why_18 = 1 if inded11_attend_reason`x' == 6
+				replace		sch_att_why_7 = 1 if inded11_attend_reason`x' == 7
+				replace		sch_att_why_19 = 1 if inded11_attend_reason`x' == 8
+			}
+
 	* water and soap
 	 * only in round 4
 		rename 			wa1_water_drink ac_drink
@@ -344,13 +343,13 @@
 		lab val 		ac_drink_why ac_drink_why
 		lab var 		ac_drink "Had Enough Drinking Water in Last 7 Days"
 		lab var 		ac_drink_why "Main Reason Not Enough Drinking Water in Last 7 Days"
-		
+
 		rename 			wa3_water_wash ac_water
 		rename 			wa4_water_wash_why ac_water_why
 		lab var 		ac_water "Had Enough Handwashing Water in Last 7 Days"
 		lab var 		ac_water_why "Main Reason Not Enough Handwashing Water in Last 7 Days"
 
-		rename 			wa5_soap_wash ac_soap		
+		rename 			wa5_soap_wash ac_soap
 		rename 			wa6_soap_wash_why ac_soap_why
 		replace 		ac_soap_why = ac_soap_why - 4
 		replace 		ac_soap_why = 8 if ac_soap_why == 7
@@ -361,17 +360,17 @@
 		lab val 		ac_soap_why ac_soap_why
 		lab var 		ac_soap "Had Enough Handwashing Soap in Last 7 Day"
 		lab var 		ac_soap_why "Main Reason Not Enough Handwashing Soap in Last 7 Days"
-	
-	* credit 
+
+	* credit
 	 * first addition in R5
-		rename 			cr1_since_loan ac_cr_loan 
+		rename 			cr1_since_loan ac_cr_loan
 		forval 			x = 1/11 {
 			rename 		cr2_since_lender_`x' ac_cr_lend_`x'
 		}
 		replace 		ac_cr_lend_1 = 1 if ac_cr_lend_11 == 1
 		drop 			ac_cr_lend_11
 		lab var 		ac_cr_lend_1 "friend or relative"
-		
+
 		rename 			cr3_since_reas_1 ac_cr_why_1
 		rename 			cr3_since_reas_2 ac_cr_why_4
 		replace 		ac_cr_why_4 = 1 if cr3_since_reas_3 == 1
@@ -384,13 +383,13 @@
 		rename 			cr3_since_reas_11 ac_cr_why_9
 		drop 			cr3_since_reas_3 cr3_since_reas_5 cr3_since_reas_6 ///
 							cr3_since_reas_7 cr3_since_reas_8
-		
+
 		forval    		x = 1/12 {
 			rename 		cr4_since_who_`x' ac_cr_who_`x'
 		}
 		rename 			cr5_since_duedate ac_cr_due
 		rename 			cr6_before_loan ac_cr_bef
-	
+
 		rename 			cr7_before_reas_1 ac_cr_bef_why_1
 		rename 			cr7_before_reas_2 ac_cr_bef_why_4
 		replace 		ac_cr_bef_why_4 = 1 if cr7_before_reas_3 == 1
@@ -403,15 +402,15 @@
 		rename 			cr7_before_reas_11 ac_cr_bef_why_9
 		drop 			cr7_before_reas_3 cr7_before_reas_5 cr7_before_reas_6 ///
 							cr7_before_reas_7 cr7_before_reas_8
-											
+
 		forval 			x = 1/12 {
 			rename		cr8_before_who_`x' ac_cr_bef_who_`x'
 		}
 		rename 			cr9_worry ac_cr_worry
 		rename 			cr10_missed_pay ac_cr_miss
-		rename 			cr11_delay_chg ac_cr_delay	
-	
-* employment variables 	
+		rename 			cr11_delay_chg ac_cr_delay
+
+* employment variables
 	rename			em1_work_cur emp
 	rename			em6_work_cur_act emp_act
 	lab def 		emp_act -96 "Other" 1 "Agriculture" 2 "Industry/manufacturing" ///
@@ -420,7 +419,7 @@
 						7 "Personal Services" 8 "Construction" 9 "Education/Health" ///
 						10 "Mining" 11 "Professional/scientific/technical activities" ///
 						12 "Electic/water/gas/waste" 13 "Buying/selling" ///
-						14 "Finance/insurance/real estate" 15 "Tourism" 16 "Food processing" 
+						14 "Finance/insurance/real estate" 15 "Tourism" 16 "Food processing"
 	lab val 		emp_act emp_act
 	rename			em6_work_cur_act_other emp_act_other
 	rename			em7_work_cur_status emp_stat
@@ -448,7 +447,7 @@
 						3 "NO COSTUMERS / FEWER CUSTOMERS" 4 "CAN'T GET INPUTS" ///
 						5 "CAN'T TRAVEL / TRANSPORT GOODS FOR TRADE" ///
 						7 "ILLNESS IN THE HOUSEHOLD" 8 "NEED TO TAKE CARE OF A FAMILY MEMBER" ///
-						9 "SEASONAL CLOSURE" 10 "VACATION" 
+						9 "SEASONAL CLOSURE" 10 "VACATION"
 	lab val 		bus_closed clsd
 	rename			em15c_bus_new bus_new
 	rename			em16_bus_sector bus_sect
@@ -464,26 +463,26 @@
 	replace 		bus_why = 7 if em19_bus_inc_low_why_7 == 1
 	replace			bus_why = 8 if em19_bus_inc_low_why__98 == 1
 	replace 		bus_why = 9 if em19_bus_inc_low_why__96 == 1
-	lab def			bus_why 1 "markets closed - covid" 2 "markets closed - other" 3 "seasonal closure" /// 
+	lab def			bus_why 1 "markets closed - covid" 2 "markets closed - other" 3 "seasonal closure" ///
 								4 "no customers" 5 "unable to get inputs" 6 "unable to sell output" ///
 								7 "illness in household" 8 "do not know" 9 "other"
-	lab val 		bus_why bus_why 
+	lab val 		bus_why bus_why
 	lab var 		bus_why "reason for family business less than usual"
-	
+
 	rename 			em20a_bus_emp employ_hire
 	rename 			em20b_bus_family_emp employ_fam
 	rename 			em20c_bus_family_unpaid employ_fam_unpaid
 	rename 			em20d_bus_emp_before employ_hire_prev
-	
-	rename 			em20e_bus_resp_1 bus_beh_4 
-	rename 			em20e_bus_resp_2 bus_beh_8 
+
+	rename 			em20e_bus_resp_1 bus_beh_4
+	rename 			em20e_bus_resp_2 bus_beh_8
 	rename 			em20e_bus_resp_3 bus_beh_6
 	gen 			bus_beh = 0 if em20e_bus_resp_0 == 1
 	replace 		bus_beh = 1 if bus_beh_4 == 1 | bus_beh_8 == 1 | bus_beh_6 == 1
 	rename			em20_farm farm_emp
 	replace 		farm_emp = 1 if em20a_farm == 1
-	replace 		farm_emp = em21_farm if farm_emp == .	
-	rename			em21_farm_norm farm_norm 
+	replace 		farm_emp = em21_farm if farm_emp == .
+	rename			em21_farm_norm farm_norm
 	replace 		farm_norm = em22_farm_norm if farm_norm == .
 	forval 			x = 1/7 {
 	    rename 		em22_farm_norm_why_`x' farm_why_`x'
@@ -494,12 +493,12 @@
 	replace 		wage_off = em25_we_layoff if wage_off == .
 	rename			em25_we_layoff_covid wage_off_covid
 	replace 		wage_off_covid = em26_we_layoff_covid if wage_off_covid == .
- /* Change pre-COVID employment to "yes" if the respondent is currently employed - interviewers in rounds 4 and 5 
- asked every respondent question 2 from the employment section (em2_work_pre), regardless of their answer to question 1 
+ /* Change pre-COVID employment to "yes" if the respondent is currently employed - interviewers in rounds 4 and 5
+ asked every respondent question 2 from the employment section (em2_work_pre), regardless of their answer to question 1
  (em1_work_cur), whereas in rounds 1-3, respondents were only asked question 2 if they responded "no" to question 1 */
 	replace emp_pre = 1 if emp == 1 & emp_pre == .
 
-* income variables 	
+* income variables
 	rename			lc1_farm farm_inc
 	rename			lc2_farm_chg farm_chg
 	rename			lc1_bus bus_inc
@@ -521,7 +520,7 @@
 	rename			lc1_other oth_inc
 	rename			lc2_other_chg oth_chg
 	rename			lc3_total_chg tot_inc_chg
-	
+
 * generate any shock variable
 	gen				shock_any = 1 if farm_inc == 1 & (farm_chg == 3 | farm_chg == 4)
 	replace			shock_any = 1 if bus_inc == 1 & (bus_chg == 3 | bus_chg == 4)
@@ -536,14 +535,14 @@
 	replace			shock_any = 0 if shock_any == .
 	lab var			shock_any "Experience some shock"
 
-* coping variables 	
+* coping variables
 	forval 			x = 1/15 {
 	    rename 		lc4_total_chg_cope_`x' cope_`x'
 	}
 	rename			lc4_total_chg_cope_0 cope_16
 	rename			lc4_total_chg_cope__96 cope_17
 
-* migration 
+* migration
 	rename 			mig1_hh mig
 	rename 			mig2_num mig_num
 	forval 			x = 1/4 {
@@ -552,17 +551,17 @@
 		rename 			mig5_reason`x' mig_why_mem`x'
 		rename 			mig6_work`x' mig_work_mem`x'
 	}
-	
+
 	forval 			x = 2/12 {
 		gen 			temp`x' = 0
 		replace 		temp`x' = 1 if retmig_index_hhm_name`x' != ""
 	}
 	gen 			num_new_mems = temp2 + temp3 + temp4 + temp5 + temp6 + temp7 ///
-						+ temp8 + temp9 + temp10 + temp11 + temp12 
+						+ temp8 + temp9 + temp10 + temp11 + temp12
 	drop			temp*
 	replace 		num_new_mems = . if wave != 8
 
-	
+
 	forval 			q = 1/5 {
 		forval 			x = 2/12 {
 			gen 			temp`q'_mem`x' = 1 if retmig5_join_reason`x' == `q'
@@ -599,7 +598,7 @@
 						retmig11_return7 == 3 | retmig11_return8 == 2 | retmig11_return8 == 3 | ///
 						retmig11_return9 == 2 | retmig11_return9 == 3 | retmig11_return10 == 2 | ///
 						retmig11_return10 == 3 | retmig11_return11 == 2 | retmig11_return11 == 3 | ///
-						retmig11_return12 == 2 | retmig11_return12 == 3 
+						retmig11_return12 == 2 | retmig11_return12 == 3
 	replace 		join_ret = 1 if retmig11_return2 == 1 | retmig11_return3 == 1 | ///
 						retmig11_return4 == 1 | retmig11_return5 == 1 | retmig11_return6 == 1 | ///
 						retmig11_return7 == 1 | retmig11_return8 == 1 | retmig11_return9 == 1 | ///
@@ -610,32 +609,32 @@
 							retmig12_return_reason5 == `x' | retmig12_return_reason6 == `x' | ///
 							retmig12_return_reason7 == `x' | retmig12_return_reason8 == `x' | ///
 							retmig12_return_reason9 == `x' | retmig12_return_reason10 == `x' | ///
-							retmig12_return_reason11 == `x' | retmig12_return_reason12 == `x' 
+							retmig12_return_reason11 == `x' | retmig12_return_reason12 == `x'
 	}
 	gen 			join_same_job = 0 if retmig13_job_same2 == 0 | retmig13_job_same3 == 0 | ///
 						retmig13_job_same4 == 0 | retmig13_job_same5 == 0 | retmig13_job_same6 == 0 | ///
 						retmig13_job_same7 == 0 | retmig13_job_same8 == 0 | retmig13_job_same9 == 0 | ///
-						retmig13_job_same10 == 0 | retmig13_job_same11 == 0 | retmig13_job_same12 == 0 	
+						retmig13_job_same10 == 0 | retmig13_job_same11 == 0 | retmig13_job_same12 == 0
 	replace			join_same_job = 1 if retmig13_job_same2 == 1 | retmig13_job_same3 == 1 | ///
 						retmig13_job_same4 == 1 | retmig13_job_same5 == 1 | retmig13_job_same6 == 1 | ///
 						retmig13_job_same7 == 1 | retmig13_job_same8 == 1 | retmig13_job_same9 == 1 | ///
-						retmig13_job_same10 == 1 | retmig13_job_same11 == 1 | retmig13_job_same12 == 1 
+						retmig13_job_same10 == 1 | retmig13_job_same11 == 1 | retmig13_job_same12 == 1
 	forval 			x = 1/5 {
 	    gen 			join_left_why_`x' = 1 if retmig15_leave_reason2 == `x' | ///
 							retmig15_leave_reason3 == `x' | retmig15_leave_reason4 == `x' | ///
 							retmig15_leave_reason5 == `x' | retmig15_leave_reason6 == `x' | ///
 							retmig15_leave_reason7 == `x' | retmig15_leave_reason7 == `x' | ///
 							retmig15_leave_reason9 == `x' | retmig15_leave_reason10 == `x' | ///
-							retmig15_leave_reason11 == `x' | retmig15_leave_reason12 == `x' 
+							retmig15_leave_reason11 == `x' | retmig15_leave_reason12 == `x'
 	}
 	gen 			join_left_same_job = 0 if retmig16_job_same2 == 0 | retmig16_job_same3 == 0 | ///
 						retmig16_job_same4 == 0 | retmig16_job_same5 == 0 | retmig16_job_same6 == 0 | ///
 						retmig16_job_same7 == 0 | retmig16_job_same8 == 0 | retmig16_job_same9 == 0 | ///
-						retmig16_job_same10 == 0 | retmig16_job_same11 == 0 | retmig16_job_same12 == 0  
+						retmig16_job_same10 == 0 | retmig16_job_same11 == 0 | retmig16_job_same12 == 0
 	replace 		join_left_same_job = 1 if retmig16_job_same2 == 1 | retmig16_job_same3 == 1 | ///
 						retmig16_job_same4 == 1 | retmig16_job_same5 == 1 | retmig16_job_same6 == 1 | ///
 						retmig16_job_same7 == 1 | retmig16_job_same8 == 1 | retmig16_job_same9 == 1 | ///
-						retmig16_job_same10 == 1 | retmig16_job_same11 == 1 | retmig16_job_same12 == 1 
+						retmig16_job_same10 == 1 | retmig16_job_same11 == 1 | retmig16_job_same12 == 1
 
 * assistance variables - updated via convo with Talip 9/1
 	gen				asst_food = as1_assist_type_1
@@ -650,18 +649,18 @@
 	replace			asst_cash = 1 if as1_assist_type_2 == 1 & as3_forwork_value_cash > 0
 	lab var			asst_cash "Recieved cash assistance"
 	lab val			asst_cash assist
-	
-	rename			as1_assist_type__96 asst_kind 
+
+	rename			as1_assist_type__96 asst_kind
 	lab var			asst_kind "Recieved in-kind assistance"
 	lab val			asst_kind assist
-	
+
 	gen				asst_any = 0 if asst_food == 0 | asst_cash == 0 | ///
 						asst_kind == 0
 	replace 		asst_any = 1 if asst_food == 1 | asst_cash == 1 | ///
 						asst_kind == 1
 	lab var			asst_any "Recieved any assistance"
 	lab val			asst_any assist
-	
+
 	drop			as1_assist_type as1_assist_type_1 as1_assist_type_2 ///
 						as1_assist_type_3 as1_assist_type_0 as1_assist_type__98 ///
 						as1_assist_type__99 ///
@@ -673,44 +672,44 @@
 						as4_cash_source as4_cash_source_other as3_other_value ///
 						as2_other_psnp as4_other_source as4_other_source_other
 
-* perceptions of distribution of aid etc. 
+* perceptions of distribution of aid etc.
 	rename 			as5_assist_fair perc_aidfair
-	rename 			as6_assist_tension perc_aidten 
-	
-* agriculture 
+	rename 			as6_assist_tension perc_aidten
+
+* agriculture
 	rename			ag1_crops ag_crop
 	rename			ag1a_crops_plan ag_plan
-	rename 			ag2_crops_able ag_chg	
-	rename			ag3_crops_reas_1 ag_nocrop_1 
+	rename 			ag2_crops_able ag_chg
+	rename			ag3_crops_reas_1 ag_nocrop_1
 	rename 			ag3_crops_reas_2 ag_nocrop_2
 	rename 			ag3_crops_reas_3 ag_nocrop_3
 	rename			ag3_crops_reas_4 ag_nocrop_10
-	rename			ag3_crops_reas_5 ag_nocrop_4	 
+	rename			ag3_crops_reas_5 ag_nocrop_4
 	rename 			ag3_crops_reas_6 ag_nocrop_5
 	rename 			ag3_crops_reas_7 ag_nocrop_6
-	rename 			ag3_crops_reas_8 ag_nocrop_7	
+	rename 			ag3_crops_reas_8 ag_nocrop_7
 	rename 			ag3_crops_reas_9 ag_nocrop_11
-	rename 			ag3_crops_reas__96 ag_nocrop_9 
-	
+	rename 			ag3_crops_reas__96 ag_nocrop_9
+
 	forval 			x = 1/6 {
 	    gen 		ag_ac_seed_why_`x' = .
-		replace 	ag_ac_seed_why_`x' = 0 if ag5_crops_reas_seeds != .	
+		replace 	ag_ac_seed_why_`x' = 0 if ag5_crops_reas_seeds != .
 		replace 	ag_ac_seed_why_`x' = 1 if ag5_crops_reas_seeds == `x'
 	}
 
 	forval 			x = 1/6 {
 	    gen 		ag_ac_fert_why_`x' = .
-		replace 	ag_ac_fert_why_`x' = 0 if ag4_crops_reas_fert != .	
+		replace 	ag_ac_fert_why_`x' = 0 if ag4_crops_reas_fert != .
 		replace 	ag_ac_fert_why_`x' = 1 if ag4_crops_reas_fert == `x'
 	}
 
 	drop			ag4_crops_reas_fert
-	rename 			ag6_ext_need ag_ext_need 
+	rename 			ag6_ext_need ag_ext_need
 	rename 			ag7_ext_receive ag_ext
 	rename 			ag8_travel_norm ag_trav_lab_norm
 	rename 			ag9_travel_curr ag_trav_lab
-  
-	* post-harvest 
+
+	* post-harvest
 	replace 		ag_crop = ph1_crops if ph1_crops < .
 	rename 			ph2_crops_main ag_main
 	rename 			ph3_crops_area_q ag_main_area
@@ -724,7 +723,7 @@
 	rename 			ph8_crops_harvest_covid_how_2 harv_cov_why_3
 	rename 			ph8_crops_harvest_covid_how_3 harv_cov_why_4
 	rename 			ph8_crops_harvest_covid_how_4 harv_cov_why_5
-	
+
 * locusts
  * first addition in R4 (only in r4)
 	rename 			lo1_keb	loc_keb_any
@@ -735,7 +734,7 @@
 	rename			lo3_impact_3 loc_imp_3
 	rename			lo3_impact_4 loc_imp_4
 	rename 			lo4_destr loc_dam
-	drop 			lo3_impact__99 
+	drop 			lo3_impact__99
 	rename 			lo5_sprayed	loc_sprayed
 	rename 			lo5_protect_* loc_protect_*
 	drop 			loc_protect__96 loc_protect_other
@@ -752,7 +751,7 @@
 	replace 		swift_toilet = 2 if swift_toilet != 4 & swift_toilet != .
 	replace 		swift_toilet = 1 if swift_toilet == 4
 	lab def 		toilet 1 "No facility" 2 "Other"
-	lab val 		swift_toilet toilet 
+	lab val 		swift_toilet toilet
 	rename 			sw4_floor swift_floor
 	rename 			sw5_rooms swift_rooms
 	rename 			sw6a_items_1 swift_milk
@@ -776,10 +775,10 @@
 	rename 			sw7_purchase_4 swift_batt
 	rename 			sw8a_preferredfoods swift_pref
 	rename 			sw8b_mealsreduced swift_num_meal
-	
-* fies variables 	
+
+* fies variables
 	rename			fi7_outoffood fies_1
-	replace 		fies_1 = fi1_outoffood if fies_1 ==. & fi1_outoffood != . 
+	replace 		fies_1 = fi1_outoffood if fies_1 ==. & fi1_outoffood != .
 	rename			fi8_hungrynoteat fies_2
 	replace 		fies_2 = fi2_hungrynoteat if fies_2 ==. & fi2_hungrynoteat != .
 	rename			fi6_noteatfullday fies_3
@@ -790,8 +789,8 @@
 	rename			fi4_skipmeal fies_7
 	rename			fi5_ateless fies_8
 	lab def 		yn 1 "Yes" 2 "No"
-	lab val			fies* yn	
-	
+	lab val			fies* yn
+
 * drop unnecessary variables
 	drop			kn3_gov kn3_gov_0 kn3_gov__98 kn3_gov__99 kn3_gov__96 ///
 						kn3_gov_other ac2_atb_med_why_other ac2_atb_teff_why_other ///
@@ -810,7 +809,7 @@
 						ir1_endearly ir1_whyendearly ir1_whyendearly_other ///
 						ir_lang ir_understand ir_confident em15b_bus_prev_closed_other ///
 						key em19_bus_inc_low_why__* em19_bus_inc_low_why hh_id hhh_id ///
-						start_date hhh_gender hhh_age same loc_chg same_hhh ///			
+						start_date hhh_gender hhh_age same loc_chg same_hhh ///
 						cr2_since_lender cr2_since_lender__96 cr2_since_lender_other ///
 						cr3_since_reas cr3_since_reas__96 cr3_since_reas_other ///
 						cr4_since_who cr4_since_who__96 cr4_since_who_other ///
@@ -833,7 +832,7 @@
 						ag4_crops_reas_fert_other lo7_support_other ph5_crops_harvest_u_other ///
 						ph8_crops_harvest_covid_how ag_live_affect_other em20a_farm other_access ///
 						submissiondate
-						
+
 * rename regions
 	replace 		region = 1001 if region == 1
 	replace 		region = 1002 if region == 2
@@ -846,16 +845,16 @@
 	replace			region = 1009 if region == 13
 	replace			region = 1010 if region == 14
 	replace			region = 1011 if region == 15
-	
+
 	lab def			region 1001 "Tigray" 1002 "Afar" 1003 "Amhara" 1004 ///
 						"Oromia" 1005 "Somali" 1006 "Benishangul-Gumuz" 1007 ///
 						"SNNPR" 1008 "Gambela" 1009 "Harar" 1010 ///
 						"Addis Ababa" 1011 "Dire Dawa"
 	lab val			region region
-	 
+
 /*
 * **********************************************************************
-* 4 - QC check 
+* 4 - QC check
 * **********************************************************************
 
 * compare numerical variables to other rounds & flag if 25+ percentage points different
@@ -878,10 +877,10 @@
 			foreach q in "$waves"  {
 				gen flag_`var'_`q'`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
 			}
-		}	
+		}
 		keep 		*flag*
 
-	* drop if all missing	
+	* drop if all missing
 		foreach 	v of varlist _all {
 			capture assert mi(`v')
 			if 		!_rc {
@@ -891,9 +890,9 @@
 		gen 		n = _n
 		tempfile 	temp`var'
 		save 		`temp`var''
-		restore   
+		restore
 	}
-		
+
 * create dataset of flags
 	preserve
 	ds, 			has(type numeric)
@@ -903,10 +902,10 @@
 	foreach 		var in `r(varlist)' {
 		merge 		1:1 n using `temp`var'', nogen
 	}
-	reshape 		long flag_, i(n) j(variables) string 
+	reshape 		long flag_, i(n) j(variables) string
 	drop 			if flag_ == .
 	drop 			n
-	sort 			variable	
+	sort 			variable
 	export 			excel using "$export/eth_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
@@ -916,14 +915,12 @@
 * 5 - end matter, clean up to save
 * **********************************************************************
 
-* final clean 
-	compress	
-	rename 			household_id hhid_eth 
+* final clean
+	compress
+	rename 			household_id hhid_eth
 	label 			var hhid_eth "household id unique - ethiopia"
-	
-* append baseline 
-	append 			using "$export/wave_00/r0"
-	
+	isid 			hhid_eth wave
+
 * save file
 	customsave, 	idvar(hhid_eth) filename("eth_panel.dta") ///
 					path("$export") dofile(eth_build_master) user($user)

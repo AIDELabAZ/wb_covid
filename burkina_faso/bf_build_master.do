@@ -27,22 +27,6 @@
 	global	root	=	"$data/burkina_faso/raw"
 	global	export	=	"$data/burkina_faso/refined"
 	global	logout	=	"$data/burkina_faso/logs"
-
-* Define root folder globals
-    if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-    }
-
-    if `"`c(username)'"' == "aljosephson" {
-        global 		code  	"C:/Users/aljosephson/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-    }
-
-	if `"`c(username)'"' == "annfu" {
-		global 		code  	"C:/Users/annfu/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-	}
 	
 * open log
 	cap log 		close
@@ -68,11 +52,11 @@
 	    if 			`r' == 1 {
 					use	"$export/wave_01/r1", clear
 		}
+		if 			`r' > 1 & `r' < 10 {
+					append using "$export/wave_0`r'/r`r'"
+		}		
 		if 			`r' == 10  {
 					append using "$export/wave_`r'/r`r'"
-		}
-		else {
-					append using "$export/wave_0`r'/r`r'"
 		}
 	}
 	compress
@@ -622,6 +606,7 @@
 	compress	
 	rename 			hhid hhid_bf 
 	label 			var hhid_bf "household id unique - Burkina Faso"
+	isid 			hhid_bf wave
 	
 * save file
 	customsave, 	idvar(hhid_bf) filename("bf_panel.dta") ///

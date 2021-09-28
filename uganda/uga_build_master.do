@@ -34,22 +34,6 @@
 	global	export	=	"$data/uganda/refined"
 	global	logout	=	"$data/uganda/logs"
 
-* Define root folder globals
-    if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-    }
-
-    if `"`c(username)'"' == "aljosephson" {
-        global 		code  	"C:/Users/aljosephson/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-    }
-
-	if `"`c(username)'"' == "annfu" {
-		global 		code  	"C:/Users/annfu/git/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-	}	
-	
 * open log
 	cap log 		close
 	log using		"$logout/uga_build", append
@@ -63,7 +47,6 @@
 	foreach 		r in "$waves" {
 		do 			"$code/uganda/uga_build_`r'"
 	}
-	do 				"$code/uganda/uga_build_0"
 	
 	
 * **********************************************************************
@@ -755,11 +738,9 @@
 
 * final clean 
 	compress
-	rename HHID hhid_uga
-	drop if hhid_uga == .
-
-* append baseline 
-	append 			using "$export/wave_00/r0"	
+	rename 			HHID hhid_uga
+	drop 			if hhid_uga == .
+	isid 			hhid_uga wave
 	
 * save file
 	customsave , idvar(baseline_hhid) filename("uga_panel.dta") ///
