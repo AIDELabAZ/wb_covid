@@ -114,8 +114,10 @@
 		 }
 	 }
 
-* define yes/no label
+* define yes/no male/female labels
 	lab	def				yesno 0 "No" 1 "Yes", replace
+	lab def 			mf 1 "Male" 2 "Female"
+	lab val 			sexhh mf
 
 * generate household id
 	gen 				hhid_eth1 = "e" + hhid_eth if hhid_eth != ""
