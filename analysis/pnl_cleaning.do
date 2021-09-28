@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
-* Edited by: alj
-* Last edit: 28 September 2020
-* Stata v.16.1
+* Edited by: lirr
+* Last edit: 2 September 2021
+* Stata v.17.0
 
 * does
 	* merges together all countries
@@ -17,9 +17,9 @@
 	* add new rounds
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * run do files for each country (takes a little while to run)
 	run				"$code/ethiopia/eth_build_master"
@@ -42,9 +42,9 @@
 	log using			"$logout/analysis", append
 
 
-* **********************************************************************
-* 1 - build data set
-* **********************************************************************
+************************************************************************
+**# 1 - build data set
+************************************************************************
 
 * read in data
 	use					"$eth/eth_panel", clear
@@ -92,9 +92,9 @@
 	lab val				region region
 
 
-* **********************************************************************
-* 2 - revise ID variables as needed
-* **********************************************************************
+************************************************************************
+**# 2 - revise ID variables as needed
+************************************************************************
 
 * drop variables with open responses
 	drop 				dis_gov* sup_cmpln_done sup_cmpln_who emp_safos
@@ -161,9 +161,9 @@
 	replace 			relate_hoh = . if relate_hoh == -98 | relate_hoh == 98
 
 
-* **********************************************************************
-* 3 - revise knowledge, myths, behavior, and coping variables
-* **********************************************************************
+************************************************************************
+**# 3 - revise knowledge, myths, behavior, and coping variables
+************************************************************************
 
 * know
 	replace 			know = 0 if know == 2
@@ -248,9 +248,9 @@
 	}
 
 
-* **********************************************************************
-* 4 - revise access variables as needed
-* **********************************************************************
+************************************************************************
+**# 4 - revise access variables as needed
+************************************************************************
 
 * access to medicine
 	replace				ac_med = . if ac_med < 0 & country == 1
@@ -494,25 +494,6 @@
 
 	lab val				ac_med yesno
 
-/* access to medical services
-	replace				ac_medserv_need = . if country == 1
-	replace				ac_medserv = . if country == 1
-	replace				ac_medserv_why = . if country == 1
-
-	replace				ac_medserv_need = 0 if ac_medserv == . & country == 2
-	replace				ac_medserv_need = 1 if ac_medserv_need == . & country == 2
-
-	replace				ac_medserv_need = 0 if ac_medserv == . & country == 3
-	replace				ac_medserv_need = 1 if ac_medserv_need == . & country == 3
-	replace				ac_medserv = 0 if ac_medserv == 2
-
-	replace				ac_medserv_need = 0 if ac_medserv == . & country == 4
-	replace				ac_medserv_need = 1 if ac_medserv_need == . & country == 4
-	replace				ac_medserv = . if ac_medserv == 3 & country == 4
-
-	lab val				ac_medserv yesno
-	lab val				ac_medserv_need yesno
-*/
 * access to soap
 	lab val				ac_soap .
 	lab var				ac_soap "Unable to access soap"
@@ -636,9 +617,9 @@
 	lab var 			ac_sauce_why "Reason unable to access sauce"
 
 
-* **********************************************************************
-* 5 - clean concerns
-* **********************************************************************
+************************************************************************
+**# 5 - clean concerns
+************************************************************************
 
 * turn concern into binary
 	replace				concern_1 = 0 if concern_1 == 3 | concern_1 == 4
@@ -650,9 +631,9 @@
 	lab val				concern_2 yesno
 
 
-* **********************************************************************
-* 6 - income changes
-* **********************************************************************
+************************************************************************
+**# 6 - income changes
+************************************************************************
 	replace 			tot_inc_chg = . if tot_inc_chg == -98 | tot_inc_chg == -99
 	loc inc				farm_inc bus_inc wage_inc isp_inc pen_inc gov_inc ngo_inc oth_inc asst_inc
 	foreach 			var of varlist `inc' {
@@ -792,9 +773,9 @@
 	replace 			bus_beh = 0 if bus_beh == 2
 
 
-* **********************************************************************
-* 7 - clean food security information
-* **********************************************************************
+************************************************************************
+**# 7 - clean food security information
+************************************************************************
 
 	loc fies				fies_01 fies_02 fies_03 fies_04 fies_05 fies_06 fies_07 fies_08
 
@@ -803,9 +784,9 @@
 	gen 				fies_percent = fies_count / 8
 
 
-* **********************************************************************
-* 8 - clean education & early childhood development questions
-* **********************************************************************
+************************************************************************
+**# 8 - clean education & early childhood development questions
+************************************************************************
 
 	replace 			sch_att = 0 if sch_att == 2
 	replace				edu_cont = 0 if edu_cont == 2
@@ -886,9 +867,9 @@
 	replace 			ecd_hv_bks = . if ecd_hv_bks == 98
 
 
-* **********************************************************************
-* 9 - clean agriculture and livestock variables
-* **********************************************************************
+************************************************************************
+**# 9 - clean agriculture and livestock variables
+************************************************************************
 
 	replace 			ag_crop = 0 if ag_crop == 2 | ag_crop == 3
 	replace 			ag_crop = . if ag_crop < 0
@@ -925,9 +906,9 @@
 		lab val 		ag_chg yesno
 
 
-* **********************************************************************
-* 10 - clean employment variables
-* **********************************************************************
+************************************************************************
+**# 10 - clean employment variables
+************************************************************************
 
 	foreach 			var in emp_pre emp emp_same contrct emp_cont_1 ///
 							emp_cont_2 emp_cont_3 emp_cont_4 rtrn_emp wage_emp {
@@ -1026,9 +1007,9 @@
 	lab val 		bus_closed clsd
 
 
-* **********************************************************************
-* 11 - shocks
-* **********************************************************************
+************************************************************************
+**# 11 - shocks
+************************************************************************
 
 	lab var 		shock_1 "Death or disability of an adult working member of the household"
 	lab var 		shock_2 "Death of someone who sends remittances to the household"
@@ -1047,9 +1028,9 @@
 	lab var 		shock_15 "Disruption of farming, livestock, fishing activities"
 
 
-* **********************************************************************
-* 12 - end matter, clean up to save
-* **********************************************************************
+************************************************************************
+**# 12 - end matter, clean up to save
+************************************************************************
 
 	order 				wave, after(hhid)
 	order 				know* curb* gov* satis* info* bh* ac_cr* ac_*  sch* edu_c* edu* emp* ///
@@ -1069,10 +1050,6 @@
 	order 				symp_10 symp_11 symp_12 symp_13 symp_14 symp_15, after(symp_9)
 	order 				know_10, after(know_9)
 
-	compress
-	describe
-	summarize
-
 * save file
 	save			"$export/lsms_panel", replace
 
@@ -1080,9 +1057,9 @@
 	log	close
 
 /*
-* **********************************************************************
-* 13 - generate variable-country-wave crosswalk
-* **********************************************************************
+************************************************************************
+**# 13 - generate variable-country-wave crosswalk
+************************************************************************
 	preserve
 	drop 				country wave baseline hhid_*
 	ds

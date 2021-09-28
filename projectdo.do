@@ -16,21 +16,21 @@
 	* complete
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * set $pack to 0 to skip package installation
 	global 			pack 	0
-		
+
 * Specify Stata version in use
     global stataVersion 17.0    // set Stata version
     version $stataVersion
 
-	
-* **********************************************************************
-* 0 (a) - Create user specific paths
-* **********************************************************************
+
+************************************************************************
+**# 0 (a) - Create user specific paths
+************************************************************************
 
 
 * Define root folder globals
@@ -51,19 +51,25 @@
 		global 		data	"G:/My Drive/wb_covid/data"
 		global 		output_f "G:/My Drive/wb_covid/output"
 	}
-	
-	
-* **********************************************************************
-* 0 (b) - Check if any required packages are installed:
-* **********************************************************************
+
+	if `"`c(username)'"' == "Lorin Rudin-Rush" {
+		global 		code  	"C:/Users/Lorin Rudin-Rush/Documents/GitHub/wb_covid"
+		global 		data	"G:/My Drive/wb_covid/data"
+		global 		output_f "G:/My Drive/wb_covid/output"
+	}
+
+
+************************************************************************
+**# 0 (b) - Check if any required packages are installed:
+************************************************************************
 
 * install packages if global is set to 1
 if $pack == 1 {
-	
+
 	* for packages/commands, make a local containing any required packages
-		loc userpack "blindschemes mdesc estout distinct winsor2 palettes catplot grc1leg2 colrspace" 
-	
-	* install packages that are on ssc	
+		loc userpack "blindschemes mdesc estout distinct winsor2 palettes catplot grc1leg2 colrspace"
+
+	* install packages that are on ssc
 		foreach package in `userpack' {
 			capture : which `package', all
 			if (_rc) {
@@ -83,6 +89,10 @@ if $pack == 1 {
 	* install -xfill- package
 		net install xfill, replace from(https://www.sealedenvelope.com/)
 
+	* install -customsave package
+		net install StataConfig, ///
+		from(https://raw.githubusercontent.com/etjernst/Materials/master/stata/) replace
+
 	* update all ado files
 		ado update, update
 
@@ -92,11 +102,11 @@ if $pack == 1 {
 }
 
 
-* **********************************************************************
-* 1 - run household data cleaning .do file
-* **********************************************************************
+************************************************************************
+**# 1 - run household data cleaning .do file
+************************************************************************
 
-	do 			"$code/analysis/pnl_cleaning.do" 	//runs all cleaning files 
-	
+	do 			"$code/analysis/pnl_cleaning.do" 	//runs all cleaning files
+
 
 /* END */
