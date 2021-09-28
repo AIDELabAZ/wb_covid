@@ -1,7 +1,7 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
-* Stata v.16.1
+* Stata v.17.0
 
 * does
 	* establishes an identical workspace between users
@@ -13,7 +13,7 @@
 	* access to all data and code
 
 * TO DO:
-	* add all do-files
+	* complete
 
 
 * **********************************************************************
@@ -21,10 +21,10 @@
 * **********************************************************************
 
 * set $pack to 0 to skip package installation
-	global 			pack 	1
+	global 			pack 	0
 		
 * Specify Stata version in use
-    global stataVersion 16.1    // set Stata version
+    global stataVersion 17.0    // set Stata version
     version $stataVersion
 
 	
@@ -35,7 +35,7 @@
 
 * Define root folder globals
     if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/wb_covid"
+        global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/wb_covid"
 		global 		data	"G:/My Drive/wb_covid/data"
 		global 		output_f "G:/My Drive/wb_covid/output"
     }
@@ -58,7 +58,7 @@
 * **********************************************************************
 
 * install packages if global is set to 1
-if $pack == 0 {
+if $pack == 1 {
 	
 	* for packages/commands, make a local containing any required packages
 		loc userpack "blindschemes mdesc estout distinct winsor2 palettes catplot grc1leg2 colrspace" 
@@ -98,11 +98,5 @@ if $pack == 0 {
 
 	do 			"$code/analysis/pnl_cleaning.do" 	//runs all cleaning files 
 	
-	
-* **********************************************************************
-* 2 - run analysis .do files
-* **********************************************************************
-
-
 
 /* END */
