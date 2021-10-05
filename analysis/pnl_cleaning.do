@@ -162,6 +162,25 @@
 
 
 * **********************************************************************
+* 2.5 - measure attrition
+* **********************************************************************	
+	
+* drop households who did not respond in round 1 (only interested in attrition)
+	drop 				if phw_cs >= . & wave == 1
+
+* generate excel counting attrition in each wave
+	preserve
+		keep 			if phw_cs >= .
+		gen 			attrition = 1
+		collapse 		(sum) attrition, by(country wave)
+		export 			excel using "$export\attrition.xlsx", first(var) replace
+	restore
+
+* drop missing values (attrition) 
+	drop 				if phw_cs >= .
+
+	
+* **********************************************************************
 * 3 - revise knowledge, myths, behavior, and coping variables
 * **********************************************************************
 
