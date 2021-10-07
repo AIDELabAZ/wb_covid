@@ -23,10 +23,10 @@
 
 * run do files for each country (takes a little while to run)
 	run				"$code/ethiopia/eth_build_master"
-	run 			"$code/malawi/mwi_build_master"
+	run				"$code/malawi/mwi_build_master"
 	run				"$code/nigeria/nga_build_master"
-	run 			"$code/uganda/uga_build_master"
-	run 			"$code/burkina_faso/bf_build_master"
+	run				"$code/uganda/uga_build_master"
+	run				"$code/burkina_faso/bf_build_master"
 
 * define
 	global	eth		=	"$data/ethiopia/refined"

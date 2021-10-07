@@ -89,10 +89,6 @@ if $pack == 1 {
 	* install -xfill- package
 		net install xfill, replace from(https://www.sealedenvelope.com/)
 
-	* install -customsave package
-		net install StataConfig, ///
-		from(https://raw.githubusercontent.com/etjernst/Materials/master/stata/) replace
-
 	* update all ado files
 		ado update, update
 

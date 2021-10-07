@@ -186,6 +186,7 @@
 	rename 			s2q5 sex_mem
 	rename 			s2q6 age_mem
 	rename 			s2q7 relat_mem	
+	replace			relat_mem = s2q9 if relat_mem == . 
 	
 * generate counting variables
 	gen				hhsize = 1 if curr_mem == 1
