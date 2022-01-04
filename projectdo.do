@@ -1,6 +1,8 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
+* Edited by: alj
+* Edited on: 4 January 2022
 * Stata v.17.0
 
 * does
@@ -14,6 +16,7 @@
 
 * TO DO:
 	* complete
+	* 4 JANUARY ALJ ISSUES: MWI - "satis variable already define"
 
 
 ************************************************************************
@@ -24,7 +27,8 @@
 	global 			pack 	0
 
 * Specify Stata version in use
-    global stataVersion 17.0    // set Stata version
+  *  global stataVersion 17.0    // set Stata version
+  	global stataVersion 16.1 
     version $stataVersion
 
 
@@ -41,7 +45,7 @@
     }
 
     if `"`c(username)'"' == "aljosephson" {
-        global 		code  	"C:/Users/aljosephson/git/wb_covid"
+        global 		code  	"C:/Users/aljosephson/git/AIDELabAZ/wb_covid"
 		global 		data	"G:/My Drive/wb_covid/data"
 		global 		output_f "G:/My Drive/wb_covid/output"
     }
