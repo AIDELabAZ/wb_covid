@@ -1,12 +1,12 @@
 * Project: WB COVID
 * Created on: Oct 2020
 * Created by: jdm
-* Edited by: amf
-* Last edit: Nov 2020 
-* Stata v.16.1
+* Edited by: lirr
+* Last edit:  02 June 2022
+* Stata v.17.0
 
 * does
-	* reads in nineth round of Ethiopia data
+	* reads in ninth round of Ethiopia data
 	* builds round 9
 	* outputs round 9
 
@@ -45,6 +45,7 @@
 
 * load roster data
 	use				"$root/wave_0`w'/210125_WB_LSMS_HFPM_HH_Survey_Roster-Round`w'_Clean-Public", clear
+	*** obs == 9207
 	
 * rename other variables 
 	rename 			individual_id ind_id 
@@ -68,7 +69,8 @@
 	
 * collapse data
 	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem ///
-						(max) sexhh, by(household_id)	
+						(max) sexhh, by(household_id)
+	*** obs == 2077					
 	replace 		new_mem = 1 if new_mem > 0 & new_mem < .
 	lab var			hhsize "Household size"
 	lab var 		hhsize_adult "Household size - only adults"
@@ -77,7 +79,8 @@
 
 * save temp file
 	tempfile 		temp_hhsize
-	save 			`temp_hhsize'	
+	save 			`temp_hhsize'
+	*** obs == 2077
 	
 	
 * ***********************************************************************
@@ -86,6 +89,7 @@
 
 * load microdata
 	use				"$root/wave_0`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear
+	*** obs == 2077
 
 * generate round variable
 	gen				wave = `w'
@@ -120,6 +124,7 @@
 	use 			`temp_hhsize', clear
 	merge 			1:1 household_id using `temp_micro', assert(3) nogen
 	//merge 			1:1 household_id using `temp_fies', nogen
+					*** obs == 2077
 
 * rename variables inconsistent with other rounds	
 	* livestock 
@@ -141,8 +146,10 @@
 	drop 			em14_work_cur_notable_why_other as4_food_source_other ///
 						as4_forwork_source_other as4_cash_source_other ///
 						as4_other_source_other 
-	
+						*** obs == 2077
+						
 	destring 		cs5_eaid cs3b_kebeleid, replace
+					*** obs == 2077
 	
 * save round file
 	save			"$export/wave_0`w'/r`w'", replace		

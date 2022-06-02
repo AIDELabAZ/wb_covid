@@ -1,7 +1,7 @@
 * Project: WB COVID
 * Created on: June 2022
 * Created by: lirr
-* Edited by: amf
+* Edited by: lirr
 * Last edit: 01 June 2022
 * Stata v.17.0
 
@@ -46,6 +46,7 @@
 
 * load roster data
 	use 			"$root/wave_`w'/R`w'_WB_LSMS_HFPM_HH_Survey_Public_Roster", clear
+	*** obs == 9728
 	
 * rename house roster variables
 	rename			individual_id ind_id
@@ -64,12 +65,13 @@
 	
 * create hh head gender
 	gen				sexhh = .
-	replace			sexhh = sex_mem if relat_mem -- 1
+	replace			sexhh = sex_mem if relat_mem == 1
 	lab var			sexhh "Sex of household head"
 
 * collapse data
 	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem ///
 						(max) sexhh, by(household_id)
+	***	obs == 2176
 
 	replace			new_mem = 1 if new_mem > 0 & new_mem < .
 	lab var			hhsize "Household size"
@@ -80,12 +82,42 @@
 * save temp file
 	tempfile 		temp_hhsize
 	save 			`temp_hhsize'
-	
-				
-
+	*** obs -== 2176
 	
 	
+*************************************************************************
+**# - format microdata 
+*************************************************************************
+	
+* load microdata
+	use "$root/wave_`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear
+	*** obs == 2178
+	
+* generate round variable
+	gen				wave = `w'
+	lab var			wave "Wave number"
+	
+* save temp file
+	tempfile		temp_micro
+	save			`temp_micro'
+	*** obs == 2178
+	
+	
+*************************************************************************
+**# - merge to build complete dataset for the round
+*************************************************************************
 
+* merge to build complete dataset for the round
+	use 			`temp_hhsize', clear
+	merge			1:1 household_id using `temp_micro', assert(3) nogen
+	/* note households 041013088801410025 & 130108010100203100 appear in 
+	   the microdata but not the roster data for round 10, they appear in both
+	   roster and microdata for round 9 */
+	   
 
-
+	
+	
+	
+	
+	
 	
