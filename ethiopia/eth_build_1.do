@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: Oct 2020
 * Created by: jdm
-* Edited by: amf
-* Last edit: October 2020 
-* Stata v.16.1
+* Edited by: lirr
+* Last edit: 03 June 2022 
+* Stata v.17.0
 
 * does
 	* reads in first round of Ethiopia data
@@ -18,9 +18,9 @@
 	* complete
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# - setup
+************************************************************************
 
 * define 
 	global	root	=	"$data/ethiopia/raw"
@@ -40,12 +40,13 @@
 	capture mkdir "$export/wave_0`w'" 
 	
 	
-* ***********************************************************************
-*  1 - roster data - get household size and gender of household head 
-* ***********************************************************************
+*************************************************************************
+**# - roster data - get household size and gender of household head  
+*************************************************************************
 
 * load roster data
 	use				"$root/wave_0`w'/200`f'_WB_LSMS_HFPM_HH_Survey_Roster-Round`w'_Clean-Public", clear
+		*** obs == 14411
 
 * rename other variables 
 	rename 			individual_id ind_id 
@@ -70,6 +71,8 @@
 * collapse data
 	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem ///
 					(max) sexhh, by(household_id)
+		*** obs == 3249
+					
 	replace 		new_mem = 1 if new_mem > 0 & new_mem < .
 	lab var			hhsize "Household size"
 	lab var 		hhsize_adult "Household size - only adults"
@@ -81,12 +84,13 @@
 	save 			`temp_hhsize'
 						
 	
-* ***********************************************************************
-* 2 - format microdata
-* ***********************************************************************
+*************************************************************************
+**# - format microdata 
+*************************************************************************
 
 * load microdata
 	use				"$root/wave_0`w'/200`f'_WB_LSMS_HFPM_HH_Survey-Round`w'_Clean-Public_Microdata", clear
+		*** obs == 3249
 
 * generate round variable
 	gen				wave = `w'
@@ -97,24 +101,24 @@
 	save 			`temp_micro'
 
 
-* ***********************************************************************
-* 3 - FIES score
-* ***********************************************************************
+*************************************************************************
+**# - FIES score
+*************************************************************************
 
 * not available for round 1 
 
 
-* ***********************************************************************
-* 4 - merge to build complete dataset for the round 
-* ***********************************************************************
+*************************************************************************
+**# - merge to build complete dataset for the round
+*************************************************************************
 
 * merge household size and microdata
 	use 			`temp_hhsize', clear
 	merge 			1:1 household_id using `temp_micro', assert(3) nogen
-
+		*** obs == 3249
 * make variable types match for master append	
 	tostring 		as4_food_source_other, replace
-	
+		*** obs == 3249
 * rename vars inconsistent with other rounds
 	* behavior 	
 		rename			bh1_handwash bh_1

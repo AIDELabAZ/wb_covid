@@ -90,7 +90,7 @@
 *************************************************************************
 	
 * load microdata
-	use "$root/wave_`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear
+	use "$root/wave_`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear                      
 	*** obs == 2178
 	
 * generate round variable
@@ -110,12 +110,15 @@
 * merge to build complete dataset for the round
 	use 			`temp_hhsize', clear
 	merge			1:1 household_id using `temp_micro', assert(3) nogen
-	/* note households 041013088801410025 & 130108010100203100 appear in 
+	/* note: households 041013088801410025 & 130108010100203100 appear in 
 	   the microdata but not the roster data for round 10, they appear in both
 	   roster and microdata for round 9 */
 	   
-
+* destring vars to match other rounds
+	destring		cs5_eaid cs3b_kebeleid, replace
 	
+* save round file
+	save			"$export/wave_`w'/r`w'"
 	
 	
 	
