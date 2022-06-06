@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: Oct 2020
 * Created by: jdm
-* Edited by: amf
-* Last edit: Nov 2020 
-* Stata v.16.1
+* Edited by: lirr
+* Last edit: 06 June 2022 
+* Stata v.17.0
 
 * does
 	* reads in sixth round of Ethiopia data
@@ -18,9 +18,9 @@
 	* complete
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define 
 	global	root	=	"$data/ethiopia/raw"
@@ -40,12 +40,13 @@
 	capture mkdir "$export/wave_0`w'" 
 	
 
-* ***********************************************************************
-*  1 - roster data - get household size and gender of household head  
-* ***********************************************************************
+*************************************************************************
+**# - roster data - get household size and gender of household head  
+*************************************************************************
 
 * load roster data
 	use				"$root/wave_0`w'/20`f'_WB_LSMS_HFPM_HH_Survey_Roster-Round`w'_Clean-Public", clear
+		*** obs == 12152
 	
 * rename other variables 
 	rename 			individual_id ind_id 
@@ -69,7 +70,8 @@
 	
 * collapse data
 	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem ///
-						(max) sexhh, by(household_id)	
+						(max) sexhh, by(household_id)
+						*** obs == 2752
 	replace 		new_mem = 1 if new_mem > 0 & new_mem < .
 	lab var			hhsize "Household size"
 	lab var 		hhsize_adult "Household size - only adults"
@@ -81,48 +83,56 @@
 	save 			`temp_hhsize'	
 	
 	
-* ***********************************************************************
-* 2 - format microdata
-* ***********************************************************************
+*************************************************************************
+**# - format microdata 
+*************************************************************************
 
 * load microdata
 	use				"$root/wave_0`w'/20`f'_WB_LSMS_HFPM_HH_Survey-Round`w'_Clean-Public_Microdata", clear
+		*** obs == 2704
 
 * generate round variable
 	gen				wave = `w'
 	lab var			wave "Wave number"
-
+		*** obs == 2704
+		
 * save temp file
 	tempfile 		temp_micro
 	save 			`temp_micro'	
 	
 	
-* ***********************************************************************
-* 3 - FIES score
-* ***********************************************************************	
+*************************************************************************
+**# - FIES score
+*************************************************************************	
 	
 * load FIES score data
 	use				"$fies/ET_FIES_round`w'.dta", clear
+		*** obs == 2701
 	
 * format variables
 	drop 			country round 
 	rename 			HHID household_id
-	
+		*** obs == 2701
 * save temp file	
 	tempfile 		temp_fies
 	save 			`temp_fies'
 	
 	
-* ***********************************************************************
-* 4 - merge to build complete dataset for the round 
-* ***********************************************************************	
+*************************************************************************
+**# - merge to build complete dataset for the round
+*************************************************************************	
 	
 * merge household size, microdata, and FIES
 	use 			`temp_hhsize', clear
+		*** obs == 2752
 	merge 			1:1 household_id using `temp_micro'
+		
 	keep 			if _m > 1 // more observations in roster than microdata
+		*** obs == 2753
 	drop 			_m
+		*** obs == 2704
 	merge 			1:1 household_id using `temp_fies', nogen
+		*** obs == 2701
 	
 * drop vars
 	drop 			ac2_atb_med_why_other ac2_atb_teff_why_other ///
@@ -133,7 +143,8 @@
 						as4_forwork_source_other as4_cash_source_other ///
 						as4_other_source_other ag4_crops_reas_fert_other ///
 						ag5_crops_reas_seeds_other ir1_whyendearly_other
-
+						*** obs == 2704
+						
 * rename vars inconsistent with other rounds
 	* behavior 	
 		rename			bh1_handwash bh_1

@@ -6,16 +6,16 @@
 * Stata v.17.0
 
 * does
-	* reads in tenth round of Ethiopia data
-	* builds round 10
-	* outputs round 10
+	* reads in eleventh round of Ethiopia data
+	* builds round 11
+	* outputs round 11
 
 * assumes
 	* raw Ethiopia data
 	* xfill.ado
 
 * TO DO:
-	* complete
+	* everything
 
 
 ************************************************************************
@@ -33,7 +33,7 @@
 	log using		"$logout/eth_build", append
 
 * set local wave number & file number
-	local			w = 10	
+	local			w = 11	
 	
 * make wave folder within refined folder if it does not already exist 
 	capture mkdir "$export/wave_`w'" 
@@ -44,8 +44,8 @@
 *************************************************************************
 
 * load roster data
-	use 			"$root/wave_`w'/R`w'_WB_LSMS_HFPM_HH_Survey_Public_Roster", clear
-	*** obs == 9728
+	use				"$root/wave_`w'/WB_LSMS_HFPM_HH_Survey_Roster-Round`w'_Clean-Public", clear
+		*** obs == 8813
 	
 * rename house roster variables
 	rename			individual_id ind_id
@@ -70,7 +70,7 @@
 * collapse data
 	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem ///
 						(max) sexhh, by(household_id)
-	***	obs == 2176
+						*** obs == 1982
 	replace			new_mem = 1 if new_mem > 0 & new_mem < .
 	lab var			hhsize "Household size"
 	lab var 		hhsize_adult "Household size - only adults"
@@ -78,44 +78,58 @@
 	lab var 		hhsize_schchild "Household size - school-age children 5 - 18"
 
 * save temp file
-	tempfile 		temp_hhsize
-	save 			`temp_hhsize'
-	
-	
+	tempfile		temp_hhsize
+	save			`temp_hhsize'
+
+
 *************************************************************************
 **# - format microdata 
 *************************************************************************
-	
+
 * load microdata
-	use 			"$root/wave_`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear
-	*** obs == 2178
-	
+	use				"$root/wave_`w'/WB_LSMS_HFPM_HH_Survey-Round`w'_Clean-microdata", clear
+		*** obs == 1982
+
 * generate round variable
 	gen				wave = `w'
 	lab var			wave "Wave number"
-	
+
 * save temp file
 	tempfile		temp_micro
 	save			`temp_micro'
-	*** obs == 2178
+	*** obs == 1982
+
+/*	
+*************************************************************************
+**# - education data
+*************************************************************************
+
+* load education data
+	use				"$root/wave_`w'/WB_LSMS_HFPM_HH_Survey-Round`w'_Education_Clean-microdata", clear
+		*** obs == 3831
+
+* format variables
+	rename			individual_id ind_id
+
+* save temp file
+	tempfile		temp_ed
+	save			`temp_ed'
 	
 	
+*/
 *************************************************************************
 **# - merge to build complete dataset for the round
 *************************************************************************
 
-* merge to build complete dataset for the round
-	use 			`temp_hhsize', clear
-	merge			1:1 household_id using `temp_micro', nogen
-	***	obs == 2178, 2 unmatched from using see below note
-	/* note: households 041013088801410025 & 130108010100203100 appear in 
-	   the microdata but not the roster data for round 10, they appear in both
-	   roster and microdata for round 9 */
-	   
+* merge to build complete dataset for the round	
+	use				`temp_hhsize', clear
+	merge			1:1 household_id using `temp_micro', assert(3) nogen
+	*** obs == 1982
+
 * destring vars to match other rounds
-	destring		cs5_eaid cs3b_kebeleid, replace
-	
+	destring 		cs3c_* cs3b_kebeleid cs5_eaid cs6_hhid cs7_hhh_id ///
+						cs7a_hhh_age, replace
+						
 * save round file
 	save			"$export/wave_`w'/r`w'", replace
-
-/* END */
+	
