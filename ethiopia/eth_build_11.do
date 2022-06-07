@@ -2,7 +2,7 @@
 * Created on: June 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edit: 06 June 2022
+* Last edit: 07 June 2022
 * Stata v.17.0
 
 * does
@@ -99,7 +99,7 @@
 	save			`temp_micro'
 	*** obs == 1982
 
-/*	
+
 *************************************************************************
 **# - education data
 *************************************************************************
@@ -108,15 +108,47 @@
 	use				"$root/wave_`w'/WB_LSMS_HFPM_HH_Survey-Round`w'_Education_Clean-microdata", clear
 		*** obs == 3831
 
-* format variables
+* format variables to match master
 	rename			individual_id ind_id
-
+	
+	rename			inded1_attend_school sch_child
+	rename			inded4_attend_edclose edu_act
+	rename			inded5_register sch_child_reg
+	rename			inded7_reopen sch_reopen
+	rename			inded8_attend_fourwks sch_att
+	
+	gen				sch_child_reg_1 = 0 if inded10_register_reason != 1
+	gen				sch_child_reg_2 = 0 if inded10_register_reason != 2
+	gen				sch_child_reg_3 = 0 if inded10_register_reason != 3
+	gen				sch_child_reg_4 = 0 if inded10_register_reason != 4
+	gen				sch_child_reg_5 = 0 if inded10_register_reason != 5
+	gen				sch_child_reg_6 = 0 if inded10_register_reason != 6
+	gen				sch_child_reg_7 = 0 if inded10_register_reason != 7
+	gen				sch_child_reg_8 = 0 if inded10_register_reason != 8
+	gen				sch_child_reg_9 = 0 if inded10_register_reason != 9
+	gen				sch_child_reg_11 = 0 if inded10_register_reason != 11
+	gen				sch_child_reg_12 = 0 if inded10_register_reason != 12
+	gen				sch_child_reg_other = 0 if inded10_register_reason != -96
+	
+	replace			sch_child_reg_1 = 1 if inded10_register_reason == 1
+	replace			sch_child_reg_2 = 1 if inded10_register_reason == 2
+	replace			sch_child_reg_3 = 1 if inded10_register_reason == 3
+	replace			sch_child_reg_4 = 1 if inded10_register_reason == 4
+	replace			sch_child_reg_5 = 1 if inded10_register_reason == 5
+	replace			sch_child_reg_6 = 1 if inded10_register_reason == 6
+	replace			sch_child_reg_7 = 1 if inded10_register_reason == 7
+	replace			sch_child_reg_8 = 1 if inded10_register_reason == 8
+	replace			sch_child_reg_9 = 1 if inded10_register_reason == 9
+	replace			sch_child_reg_11 = 1 if inded10_register_reason == 11
+	replace			sch_child_reg_12 = 1 if inded10_register_reason == 12
+	replace			sch_child_reg_other = 1 if inded10_register_reason == -96
+	
+	
 * save temp file
 	tempfile		temp_ed
 	save			`temp_ed'
 	
-	
-*/
+
 *************************************************************************
 **# - merge to build complete dataset for the round
 *************************************************************************
@@ -125,7 +157,8 @@
 	use				`temp_hhsize', clear
 	merge			1:1 household_id using `temp_micro', assert(3) nogen
 	*** obs == 1982
-
+	merge			1:1 household_id using `temp_ed', assert(3) nogen
+	
 * destring vars to match other rounds
 	destring 		cs3c_* cs3b_kebeleid cs5_eaid cs6_hhid cs7_hhh_id ///
 						cs7a_hhh_age, replace
