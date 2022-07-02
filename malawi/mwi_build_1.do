@@ -44,7 +44,7 @@
 
 * load income_loss data
 	use				"$root/wave_0`w'/sect7_Income_Loss_r`w'", clear
-
+		***obs == 20748
 * drop other source
 	drop 			income_source_os
 	
