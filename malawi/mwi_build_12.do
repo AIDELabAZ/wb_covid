@@ -39,7 +39,7 @@
 	
 
 *************************************************************************
-** - reshape section on income loss wide data
+**# - reshape section on income loss wide data
 *************************************************************************	
 
 * no data
@@ -52,7 +52,7 @@
 * no data
 	
 *************************************************************************
-** - get respondent gender
+**# - get respondent gender
 *************************************************************************	
 	
 * load data
@@ -81,5 +81,112 @@
 	
 
 	
-		
-		
+	* ***********************************************************************
+* 1d - get household size and gender of HOH
+* ***********************************************************************
+
+* load data
+	use				"$root/wave_`w'/sect2_Household_Roster_r`w'", clear
+	*** obs == 7792
+
+* rename other variables
+	rename			PID ind_id
+	rename			s2q3 curr_mem
+	replace			curr_mem = 1 if s2q2 == 1
+	rename			s2q5 sex_mem
+	rename			s2q6 age_mem
+	rename			s2q7 relat_mem
+	replace			relat_mem = s2q9 if relat_mem == .
+
+* generate counting variables
+	gen				hhsize = 1 if curr_mem == 1
+	gen				hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
+	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != .
+	gen				hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19
+
+* create hh head gender
+	gen				sexhh = .
+	replace			sexhh = sex_mem if relat_mem == 1
+	lab var			sexhh "Sex of household head"
+
+* generate migration vars
+	rename			s2q2 new_mem
+	replace			new_mem = 0 if s2q8 == 10
+	replace			s2q8 = . if s2q8 == 10
+	gen				mem_left = 1 if curr_mem == 2
+	replace			new_mem = 0 if new_mem == 2
+	replace			mem_left = 0 if mem_left == 2
+	
+	* why member left
+		preserve
+			keep		y4 s2q4 ind_id
+			keep		if s2q4 != .
+			duplicates drop	y4 s2q4, force
+			*** obs == 7792
+			reshape		wide ind_id, i(y4) j(s2q4)
+			*** obs == 7792
+			ds			ind_id*
+			foreach		var in `r(varlist)' {
+				replace		`var' = 1 if `var' != .
+			}
+			rename		ind_id* mem_left_why_*
+			tempfile	mem_left
+			save		`mem_left'
+		restore
+
+	* why new member
+		preserve
+			keep		y4 s2q8 ind_id
+			keep		if s2q8 < .
+			duplicates drop y4 s2q8, force
+			*** obs == 7792
+			reshape		wide ind_id, i(y4) j(s2q8)
+			*** obs == 7792
+			ds			ind_id*
+			foreach		var in `r(varlist)' {
+				replace		`var' = 1 if `var' != .
+			}
+			rename		ind_id* new_mem_why_*
+			tempfile	new_mem
+			save		`new_mem'
+		restore
+
+* collapse data to hh level and merge in why vars
+	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild ///
+		new_mem mem_left (max) sexhh, by(HHID y4)
+			*** obs == 1533
+
+	replace			new_mem = 1 if new_mem > 0 & new_mem < .
+	replace			mem_left = 1 if mem_left >0 & new_mem < .
+	merge			1:1 y4 using `new_mem', nogen
+		*** obs == 1533
+	merge			1:1 y4 using `mem_left', nogen
+		*** obs == 1533
+	ds				new_mem_why_*
+	foreach			var in `r(varlist)' {
+		replace			`var' = 0 if `var' >= . & mem_left == 1
+	}
+	lab var		hhsize "Household size"
+	lab var 	hhsize_adult "Household size - only adults"
+	lab var 	hhsize_child "Household size - children 0 - 18"
+	lab var 	hhsize_schchild "Household size - school-age children 5 - 18"
+	lab var 	mem_left "Member of household left since last call"
+	lab var 	new_mem "Member of household joined since last call"
+	drop 		y4
+	
+* save temp file
+	tempfile	tempd
+	save		`tempd'
+
+			
+* ***********************************************************************
+* 2 - merge to build complete dataset for the round 
+* ***********************************************************************	
+	
+	
+* save round file
+	save			"$export/wave_`w'/r`w'", replace
+	
+/* END */
+	
+	

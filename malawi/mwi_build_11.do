@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: Aug 2021
 * Created by: amf
-* Edited by: amf
-* Last edited: Aug 2021
-* Stata v.16.1
+* Edited by: lirr
+* Last edited: 05 July 2022
+* Stata v.17.0
 
 * does
 	* merges together each section of malawi data
@@ -69,6 +69,7 @@
 
 * load data
 	use			"$root/wave_`w'/sect2_Household_Roster_r`w'.dta", clear
+	*** obs == 7936
 
 * rename other variables 
 	rename 			PID ind_id 
@@ -131,6 +132,8 @@
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(HHID y4)
+		*** obs == 1541
+		
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
 	merge 		1:1 y4 using `new_mem', nogen
