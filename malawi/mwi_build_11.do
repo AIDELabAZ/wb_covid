@@ -2,7 +2,7 @@
 * Created on: Aug 2021
 * Created by: amf
 * Edited by: lirr
-* Last edited: 05 July 2022
+* Last edited: 08 July 2022
 * Stata v.17.0
 
 * does
@@ -44,7 +44,7 @@
 
 * load data
 	use				"$root/wave_`w'/sect12_Interview_Result_r`w'", clear
-
+		*** obs == 1541
 * drop all but household respondant
 	keep			HHID s12q9
 	rename			s12q9 PID
@@ -52,6 +52,7 @@
 
 * merge in household roster
 	merge 1:1		HHID PID using "$root/wave_`w'/sect2_Household_Roster_r`w'.dta"
+	*** obs == 7937
 	keep if			_merge == 3
 	drop			_merge
 
