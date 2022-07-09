@@ -2,7 +2,7 @@
 * Created on: Oct 2020
 * Created by: jdm
 * Edited by: lirr
-* Last edit: Jun 2022
+* Last edit: 08 Jul 2022
 * Stata v.17.0
 
 * does
@@ -28,7 +28,7 @@
 * **********************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9"
+	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12"
 
 * define
 	global			root	=	"$data/ethiopia/raw"

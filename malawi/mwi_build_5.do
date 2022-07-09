@@ -316,7 +316,7 @@
 	
 * load data
 	use				"$root/wave_0`w'/sect6_Employment_Other_r`w'", clear
-
+		*** obs == 4530
 * generate secondary income variables for index
 	gen 			wage_inc_ind = 1 if s6q6_1 == 4 | s6q6_1 == 5
 	replace 		wage_inc_ind = 0 if s6q6_1 < 4	

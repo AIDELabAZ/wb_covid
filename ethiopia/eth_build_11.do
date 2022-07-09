@@ -2,7 +2,7 @@
 * Created on: June 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edit: 09 June 2022
+* Last edit: 08 Jul 2022
 * Stata v.17.0
 
 * does
@@ -156,7 +156,7 @@
 	replace			sch_child_reg_other = 1 if inded10_register_reason == -96
 		
 	gen				sch_att_why_1 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reaon != 1
+						& inded11_attend_reason != 1
 	gen				sch_att_why_6 = 0 if inded11_attend_reason != . ///
 						& inded11_attend_reason != 2
 	gen				sch_att_why_16 = 0 if inded11_attend_reason != . ///

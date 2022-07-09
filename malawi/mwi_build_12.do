@@ -2,7 +2,7 @@
 * Created on: July 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edited: 07 July 2022
+* Last edited: 08 July 2022
 * Stata v.17.0
 
 * does
@@ -79,11 +79,10 @@
 	tempfile		tempc
 	save			`tempc'
 	
-
 	
-	* ***********************************************************************
-* 1d - get household size and gender of HOH
-* ***********************************************************************
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************
 
 * load data
 	use				"$root/wave_`w'/sect2_Household_Roster_r`w'", clear
@@ -179,11 +178,60 @@
 	save		`tempd'
 	
 
+*************************************************************************
+**# - FIES score
+*************************************************************************
 
-			
-* ***********************************************************************
-* 2 - merge to build complete dataset for the round 
-* ***********************************************************************	
+/*
+* load data
+	use				"$fies/MW_FIES_round`w'.dta", clear
+	drop 			country round 
+
+* merge in other data to get HHID to match 
+	rename 			HHID y4_hhid 
+	merge 			1:1 y4_hhid using "$root/wave_`w'/secta_Cover_Page_r`w'"
+	keep 			HHID hhsize wt_hh p_mod urban weight Above_18 wt_18 p_sev
+
+* save temp file
+	tempfile		tempe
+	save			`tempe'
+*/
+
+*************************************************************************
+**# - reshape section on coping wide data
+*************************************************************************
+
+* not available for round
+	
+
+*************************************************************************
+**# - reshape section on livestock
+*************************************************************************
+
+* load data
+	use				"$root/wave_`w'/sect6e_Livestock_Products_r`w'", clear
+		*** obs == 6132
+
+* reshape wide
+	gen 			product = cond(LivestockPr == 555, "other", cond(LivestockPr == 1, ///
+					"milk",cond(LivestockPr == 2, "eggs",cond(LivestockPr == 3, "meat","manure"))))
+		*** obs == 6132
+		
+	drop 			Livestock
+	
+	reshape 		wide s6qe*, i(HHID y4_hhid) j(product) string
+		*** obs == 1533
+
+* save temp file
+	tempfile		tempg
+	save			`tempg'
+	
+
+	
+	
+*************************************************************************
+**# - merge to build complete dataset for the round 
+*************************************************************************	
 	
 	
 * save round file
