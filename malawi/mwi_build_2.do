@@ -2,7 +2,7 @@
 * Created on: July 2020
 * Created by: alj
 * Edited by: jdm, amf, lirr (style edits)
-* Last edited: 08 July 2022
+* Last edited: 11 July 2022
 * Stata v.17.0
 
 * does
@@ -234,65 +234,82 @@
 	
 	
 *************************************************************************
-* 1e - FIES score
+**# - FIES score
 *************************************************************************
 
 * load data
 	use				"$fies/MW_FIES_round`w'.dta", clear
+		*** obs == 1646
 	rename 			HHID y4_hhid
 	drop 			country round 
-	
+		*** obs == 1646
+		
 * save temp file
 	tempfile		tempe
 	save			`tempe'
 	
 	
-* ***********************************************************************
-* 1f - reshape section on coping wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section on coping wide data
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/sect10_Coping_r`w'", clear
+		*** obs == 14814
 
 * drop other shock
 	drop			shock_id_os s10q3_os
+		*** obs == 14814
 
 * generate shock variables
 	foreach 		i in 5 6 7 8 10 11 12 13 96 {
 		gen				shock_`i' = 0 if s10q1 == 2
 		replace 		shock_`i' = 1 if s10q1 == 1 & shock_id == `i'
 	}
-
+		*** obs == 14814
+		
 * collapse to household level	
 	collapse 		(max) s10q2__1- shock_96, by(HHID y4_hhid)
+		*** obs == 1646
 	
 * save temp file
 	tempfile		tempf
 	save			`tempf'
 	
 	
-* ***********************************************************************
-* 2 - merge to build complete dataset for the round 
-* ***********************************************************************
+*************************************************************************
+**# - merge to build complete dataset for the round 
+*************************************************************************
 
 * load cover data
 	use				"$root/wave_0`w'/secta_Cover_Page_r`w'", clear
+		*** obs == 1729
 
 * merge formatted sections
 	foreach 		x in a b c d f {
 	    merge 		1:1 HHID using `temp`x'', nogen
 	}
+		*** obs == 1729: 1646 matched, 83 unmatched
 	merge 			1:1 y4_hhid using `tempe', nogen
+		*** obs == 1729: 1646 matched, 83 unmatched
 	
 * merge in other sections
 	merge 1:1 		HHID using "$root/wave_0`w'/sect3_Knowledge_r`w'.dta", nogen
+		*** obs == 1729: 1646 matched, 83 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect4_Behavior_r`w'.dta", nogen
+		*** obs == 1729: 1646 matched, 83 unmatched 
 	merge 1:1 		HHID using "$root/wave_0`w'/sect5_Access_r`w'.dta", nogen
+		*** obs == 1729: 1646 matched, 83 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect6_Employment_r`w'.dta", nogen
+		*** obs == 1729: 1646 matched, 83 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect6b_NFE_r`w'.dta", nogen
+		*** obs == 1729: 1646 matched, 83 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect6c_OtherIncome_r`w'.dta", nogen
+		*** obs == 1729: 1646 matched, 83 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect8_food_security_r`w'.dta", nogen
+		*** obs == 1729: 1646 matched, 83 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect9_Concerns_r`w'.dta", nogen
+		*** obs == 1729: 1646 matched, 83 unmatched
 
 * rename variables inconsistent with other waves
 	* education
@@ -361,7 +378,8 @@
 	rename			s6q17_1__6 farm_why_6
 	rename			s6q17_1__7 farm_why_8
 	drop 			s6q17_1__96
-
+		*** obs == 1729
+		
 	rename 			s5q1a1 ac_soap
  
 * behavior
