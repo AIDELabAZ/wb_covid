@@ -2,7 +2,7 @@
 * Created on: July 2020
 * Created by: alj
 * Edited by: jdm, amf, lirr (style edits)
-* Last edited: 11 July 2022
+* Last edited: 12 July 2022
 * Stata v.17.0
 
 * does
@@ -276,6 +276,7 @@
 	rename			s6q8c_1 contrct
 	replace 		contrct = s6q8e if contrct == .
 	drop 			s6q8e
+		*** obs == 1709
 	replace 		contrct = 0 if contrct == 2
 	
 	rename			s6bq11 bus_emp
@@ -349,13 +350,15 @@
 	    gen 		ac_cr_lend_`x' = 1 if ac_cr_lend == `x' // cleaned for consistency in master
 	}
 	drop 			ac_cr_lend
+		*** obs == 1709
 	rename 			s6dq3 ac_cr_lend_att
 	forval 			x = 1/12 {
 		rename 		s6dq4__`x' ac_cr_why_`x'
 		replace 	ac_cr_why_`x' = 0 if ac_cr_why_`x' == . & s6dq5 == 0 
 		replace 	ac_cr_why_`x' = 1 if s6dq5 == `x' 
 	}
-	drop 			s6dq5 
+	drop 			s6dq5
+		*** obs == 1709
 	rename 			s6dq6__0 ac_cr_who_1
 	rename 			s6dq6__1 ac_cr_who_2
 	rename 			s6dq6__2 ac_cr_who_3
@@ -371,6 +374,7 @@
 		replace 		ac_cr_bef_why_`x' = 1 if s6dq11 == `x'
 	}
 	drop 			s6dq11
+		*** obs == 1709
 	rename 			s6dq12__0 ac_cr_bef_who_1
 	rename 			s6dq12__1 ac_cr_bef_who_2
 	rename 			s6dq13 ac_cr_bef_worry
