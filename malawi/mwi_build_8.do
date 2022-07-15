@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: alj
-* Edited by: jdm, amf
-* Last edited: Nov 2020
-* Stata v.16.1
+* Edited by: jdm, amf, lirr (style edits)
+* Last edited: 13 July 2022
+* Stata v.17.0
 
 * does
 	* merges together each section of malawi data
@@ -17,9 +17,9 @@
 	* ADD FIES DATA
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# - setup
+************************************************************************
 
 * define
 	global	root	=	"$data/malawi/raw"
@@ -38,31 +38,36 @@
 	capture mkdir "$export/wave_0`w'" 	
 	
 	
-* ***********************************************************************
-* 1a - reshape section on income loss wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section on income loss wide data
+*************************************************************************
 
 * no data 
 
 	
-* ***********************************************************************
-* 1b - reshape section on safety nets wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section on safety nets wide data
+*************************************************************************
 
 * load safety_net data - updated via convo with Talip 9/1
 	use				"$root/wave_0`w'/sect11_Safety_Nets_r`w'", clear
+		*** obs == 7755
 
 * drop other
-	drop 			s11q2 s11q3 s11q3_os s11q4a s11q4b 
+	drop 			s11q2 s11q3 s11q3_os s11q4a s11q4b
+		*** obs == 7755
 
 * reshape
 	reshape 		wide s11q1, i(y4_hhid HHID) j(social_safety)
+		*** obs == 1551
  
 * collapse cash options into 1 to match round 1 
 	rename 			s11q12 temp
 	gen 			s11q12 = 1 if temp == 1 | s11q13 == 1 | s11q14 == 1
+		*** obs == 1551
 	replace 		s11q12 = 2 if s11q12 == .
 	drop 			s11q13 s11q14  temp
+		*** obs == 1551
 	rename 			s11q15 s11q13
 
 * save temp file
@@ -70,37 +75,44 @@
 	save			`tempb'
 
 
-* ***********************************************************************
-* 1c - get respondant gender
-* ***********************************************************************
+*************************************************************************
+**# - get respondant gender
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/sect12_Interview_Result_r`w'", clear
+		*** obs == 1551
 
 * drop all but household respondant
 	keep			HHID s12q9
+		*** obs == 1551
 	rename			s12q9 PID
 	isid			HHID
 
 * merge in household roster
 	merge 1:1		HHID PID using "$root/wave_0`w'/sect2_Household_Roster_r`w'.dta"
+		*** obs == 8039: 1549 matched, 6490 unmatched
 	keep if			_merge == 3
+		*** obs == 1549
 	drop			_merge
+		*** obs == 1549
 
 * drop all but gender and relation to HoH
 	keep			HHID PID s2q5 s2q6 s2q7 s2q9
+		*** obs == 1549
 
 * save temp file
 	tempfile		tempc
 	save			`tempc'
 	
 	
-* ***********************************************************************
-* 1d - get household size and gender of HOH
-* ***********************************************************************
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************
 
 * load data
 	use			"$root/wave_0`w'/sect2_Household_Roster_r`w'.dta", clear
+		*** obs == 8037
 
 * rename other variables 
 	rename 			PID ind_id 
@@ -116,7 +128,8 @@
 	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
 	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
 	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19 
-	
+		*** obs == 8037
+		
 * create hh head gender
 	gen 			sexhh = . 
 	replace			sexhh = sex_mem if relat_mem == 1
@@ -129,13 +142,18 @@
 	gen 			mem_left = 1 if curr_mem == 2
 	replace 		new_mem = 0 if new_mem == 2
 	replace 		mem_left = 0 if mem_left == 2
+		*** obs == 8037
 	
 	* why member left
 		preserve
 			keep 		y4 s2q4 ind_id
+				*** obs == 8037
 			keep 		if s2q4 != .
+				*** obs == 125
 			duplicates 	drop y4 s2q4, force
+				*** obs == 115
 			reshape 	wide ind_id, i(y4) j(s2q4)
+				*** obs == 101
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -148,9 +166,13 @@
 	* why new member 
 		preserve
 			keep 		y4 s2q8 ind_id
+				*** obs == 8037
 			keep 		if s2q8 < .
+				*** obs == 70
 			duplicates 	drop y4 s2q8, force
+				*** obs == 67
 			reshape 	wide ind_id, i(y4) j(s2q8)
+				*** obs == 65
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -163,10 +185,13 @@
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(HHID y4)
+		*** obs == 1551
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
 	merge 		1:1 y4 using `new_mem', nogen
+		*** obs == 1551: 65 matched, 1486 unmatched
 	merge 		1:1 y4 using `mem_left', nogen
+		*** obs == 1551: 101 matched, 1450 unmatched
 	ds 			new_mem_why_* 
 	foreach		var in `r(varlist)' {
 		replace 	`var' = 0 if `var' >= . & new_mem == 1
@@ -182,15 +207,16 @@
 	lab var 	mem_left "Member of household left since last call"
 	lab var 	new_mem "Member of household joined since last call"
 	drop 		y4
+		*** obs == 1551
 
 * save temp file
 	tempfile		tempd
 	save			`tempd'
 	
 	
-* ***********************************************************************
-* 1e - FIES score
-* ***********************************************************************
+*************************************************************************
+**# - FIES score
+*************************************************************************
 /*
 * load data
 	use				"$fies/MW_FIES_round`w'.dta", clear
@@ -206,33 +232,43 @@
 	save			`tempe'
 
 */
-* ***********************************************************************
-* 1f - reshape section on coping wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section on coping wide data
+*************************************************************************
 
 * not available for round
 
 	
-* ***********************************************************************
-* 2 - merge to build complete dataset for the round 
-* ***********************************************************************
+*************************************************************************
+**# - merge to build complete dataset for the round 
+*************************************************************************
 
 * load cover data
 	use				"$root/wave_0`w'/secta_Cover_Page_r`w'", clear
+		*** obs == 1701
 	
 * merge formatted sections
 	foreach 		x in b c d {
 	    merge 		1:1 HHID using `temp`x'', nogen
 	}
-
+		*** obs == 1701: 1551 matched, 150 unmatched temps b, d
+		*** obs == 1701: 1549 matched, 152 unmatched temp c
+		
 * merge in other sections
 	merge 1:1 		HHID using "$root/wave_0`w'/sect4_Behavior_r`w'.dta", nogen
+		*** obs == 1701: 1551 matched, 150 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect5_Access_r`w'.dta", nogen
+		*** obs == 1701: 1551 matched, 150 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect6b_NFE_r`w'.dta", nogen
+		*** obs == 1701: 1551 matched, 150 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect6a_Employment2_r`w'.dta", nogen
+		*** obs == 1701: 1551 matched, 150 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect6d_Credit_r`w'.dta", nogen
+		*** obs == 1701: 1551 matched, 150 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect8_food_security_r`w'.dta", nogen
+		*** obs == 1701: 1551 matched, 150 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect9_Concerns_r`w'.dta", nogen
+		*** obs == 1701: 1551 matched, 150 unmatched
 
 * rename variables inconsistent with other waves
 	
@@ -270,6 +306,7 @@
 	* rename access credit variables inconsistent with wave 3 
 		rename 			s6dq1 ac_cr_loan
 		gen 			ac_cr_need = 1 if ac_cr_loan == 1 | ac_cr_loan == 2
+			*** obs == 1701
 		replace 		ac_cr_need = 0 if ac_cr_loan == 3
 		replace 		ac_cr_loan = 0 if ac_cr_loan == 3
 		lab def 		ac_cr_loan 1 "Yes" 2 "Unable or did not try" 
@@ -279,6 +316,7 @@
 			gen 		ac_cr_lend_`x' = 1 if ac_cr_lend == `x' // cleaned for consistency in master
 		}
 		drop 			ac_cr_lend
+			*** obs == 1701
 		rename 			s6dq3 ac_cr_lend_att
 		forval 			x = 1/12 {
 			rename 		s6dq4__`x' ac_cr_why_`x'
@@ -286,6 +324,7 @@
 			replace 	ac_cr_why_`x' = 1 if s6dq5 == `x' 
 		}
 		drop 			s6dq5
+			*** obs == 1701
 		rename 			s6dq6__0 ac_cr_who_1
 		rename 			s6dq6__1 ac_cr_who_2
 		rename 			s6dq7__0 ac_cr_att_who_1
@@ -302,6 +341,7 @@
 			replace 		ac_cr_bef_why_`x' = 1 if s6dq11 == `x'
 		}
 		drop 			s6dq11
+			*** obs == 1701
 		rename 			s6dq12__0 ac_cr_bef_who_1
 		rename 			s6dq12__1 ac_cr_bef_who_2
 		rename 			s6dq13 ac_cr_bef_worry
@@ -310,6 +350,7 @@
 		
 * generate round variables
 	gen				wave = `w'
+		*** obs == 1701
 	lab var			wave "Wave number"
 	rename 			wt_round`w' phw_cs
 	label var		phw "sampling weights - cross section"

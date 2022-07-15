@@ -2,7 +2,7 @@
 * Created on: July 2020
 * Created by: alj
 * Edited by: jdm, amf, lirr (style edits)
-* Last edited: Nov 2020
+* Last edited: 13 July 2022
 * Stata v.17.0
 
 * does

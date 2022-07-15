@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: Aug 2021
 * Created by: amf
-* Edited by: amf
-* Last edited: Aug 2021
-* Stata v.16.1
+* Edited by: amf, lirr (style edits)
+* Last edited: 13 July 2022
+* Stata v.17.0
 
 * does
 	* merges together each section of malawi data
@@ -17,9 +17,9 @@
 	* ADD FIES DATA
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define
 	global	root	=	"$data/malawi/raw"
@@ -38,25 +38,31 @@
 	capture mkdir "$export/wave_`w'" 	
 
 	
-* ***********************************************************************
-* 1c - get respondant gender
-* ***********************************************************************
+*************************************************************************
+**# - get respondant gender
+*************************************************************************
 
 * load data
 	use				"$root/wave_`w'/sect12_Interview_Result_r`w'", clear
+		*** obs == 919
 
 * drop all but household respondant
 	keep			HHID s12q9
+		*** obs == 919
 	rename			s12q9 PID
 	isid			HHID
 
 * merge in household roster
 	merge 1:1		HHID PID using "$root/wave_`w'/sect2_Household_Roster_r`w'.dta"
+		*** obs == 5553: 918 matched, 4635 unmatched
 	keep if			_merge == 3
+		*** obs == 918
 	drop			_merge
+		*** obs == 918
 
 * drop all but gender and relation to HoH, rename to match other rounds 
 	keep			HHID PID preload_sex preload_relation current_age
+		*** obs == 918
 	rename 			preload_sex s2q5
 	rename 			preload_relation s2q7
 	rename 			current_age s2q6
@@ -66,12 +72,13 @@
 	save			`tempc'
 		
 	
-* ***********************************************************************
-* 1d - get household size and gender of HOH
-* ***********************************************************************
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************
 
 * load data
 	use			"$root/wave_`w'/sect2_Household_Roster_r`w'.dta", clear
+		*** obs == 5552
 
 * rename other variables 
 	rename 			PID ind_id 
@@ -85,29 +92,36 @@
 	gen 			sexhh = . 
 	replace			sexhh = sex_mem if relat_mem == 1
 	label var 		sexhh "Sex of household head"
+		*** obs == 5552
 	
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize (max) sexhh, by(HHID y4)
+		*** obs == 919
 	
 * save temp file
 	tempfile		tempa
 	save			`tempa'
 
 	
-* ***********************************************************************
-* 2 - merge to build complete dataset for the round 
-* ***********************************************************************
+*************************************************************************
+**# - merge to build complete dataset for the round 
+*************************************************************************
 
 * load cover data
 	use				"$root/wave_`w'/secta_Cover_Page_r`w'", clear
+		*** obs == 1136
 	
 * merge formatted sections
 	merge 			1:1 HHID using `tempa', nogen
+		*** obs == 1136: 919 matched, 217 unmatched
 	merge 			1:1 HHID using `tempc', nogen
+		*** obs == 1136: 918 matched, 218 unmatched
 	
 * merge in other sections
 	merge 1:1 		HHID using "$root/wave_`w'/sect4_behavior_r`w'.dta", nogen	
+		*** obs == 1136: 919 matched, 217 unmatched
 	merge 1:1 		HHID using "$root/wave_`w'/sect5e_youth_r`w'.dta", nogen
+		*** obs == 1136: 919 matched, 217 unmatched
 
 * rename variables inconsistent with other waves	
 	
@@ -158,9 +172,11 @@
 		
 		drop 			*_os s5eq5 s5eq8_oth s5eq14 s5eq16 s5eq24a yae_dream_fac_96 ///
 							yae_mig_where_96 preload_sex preload_relation
+			*** obs == 1136
 							
 * generate round variables
 	gen				wave = `w'
+		*** obs == 1136
 	lab var			wave "Wave number"
 	rename			wt_round`w' phw_cs
 	label var		phw "sampling weights - cross section"

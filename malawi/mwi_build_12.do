@@ -2,7 +2,7 @@
 * Created on: July 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edited: 08 July 2022
+* Last edited: 13 July 2022
 * Stata v.17.0
 
 * does
@@ -86,7 +86,7 @@
 
 * load data
 	use				"$root/wave_`w'/sect2_Household_Roster_r`w'", clear
-	*** obs == 7792
+		*** obs == 7792
 
 * rename other variables
 	rename			PID ind_id
@@ -102,6 +102,7 @@
 	gen				hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
 	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != .
 	gen				hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19
+		*** obs == 7792
 
 * create hh head gender
 	gen				sexhh = .
@@ -119,11 +120,13 @@
 	* why member left
 		preserve
 			keep		y4 s2q4 ind_id
+				*** obs == 7792
 			keep		if s2q4 != .
+				*** obs == 64
 			duplicates drop	y4 s2q4, force
-			*** obs == 7792
+				*** obs == 57
 			reshape		wide ind_id, i(y4) j(s2q4)
-			*** obs == 7792
+				*** obs == 54
 			ds			ind_id*
 			foreach		var in `r(varlist)' {
 				replace		`var' = 1 if `var' != .
@@ -136,11 +139,13 @@
 	* why new member
 		preserve
 			keep		y4 s2q8 ind_id
+				*** obs == 7792
 			keep		if s2q8 < .
+				*** obs == 29
 			duplicates drop y4 s2q8, force
-			*** obs == 7792
+				*** obs == 28
 			reshape		wide ind_id, i(y4) j(s2q8)
-			*** obs == 7792
+				*** obs == 28
 			ds			ind_id*
 			foreach		var in `r(varlist)' {
 				replace		`var' = 1 if `var' != .
@@ -158,9 +163,9 @@
 	replace			new_mem = 1 if new_mem > 0 & new_mem < .
 	replace			mem_left = 1 if mem_left >0 & new_mem < .
 	merge			1:1 y4 using `new_mem', nogen
-		*** obs == 1533
+		*** obs == 1533: 28 matched, 1505 unmatched
 	merge			1:1 y4 using `mem_left', nogen
-		*** obs == 1533
+		*** obs == 1533: 54 matched, 1479 unmatched
 	ds				new_mem_why_*
 	foreach			var in `r(varlist)' {
 		replace			`var' = 0 if `var' >= . & mem_left == 1
@@ -172,6 +177,7 @@
 	lab var 	mem_left "Member of household left since last call"
 	lab var 	new_mem "Member of household joined since last call"
 	drop 		y4
+		*** obs == 1533
 	
 * save temp file
 	tempfile	tempd
@@ -181,7 +187,6 @@
 *************************************************************************
 **# - FIES score
 *************************************************************************
-
 /*
 * load data
 	use				"$fies/MW_FIES_round`w'.dta", clear
