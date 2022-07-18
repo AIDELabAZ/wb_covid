@@ -2,7 +2,7 @@
 * Created on: July 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edited: 13 July 2022
+* Last edited: 18 July 2022
 * Stata v.17.0
 
 * does
@@ -232,12 +232,132 @@
 	save			`tempg'
 	
 
-	
-	
 *************************************************************************
 **# - merge to build complete dataset for the round 
-*************************************************************************	
+*************************************************************************
+
+* load cover data
+	use				"$root/wave_`w'/secta_Cover_Page_r`w'", clear
+		*** obs == 1698
+
+* merge formated sections
+	foreach		x in c d g {
+		merge		1:1 HHID using `temp`x'', nogen
+	}
+		*** obs == 1698: 1532 matched, 166 unmatched temp c
+		*** obs == 1698: 1533 matched, 165 unmatched temps d, g
+
+* merge in other sections
+	merge 1:1		HHID using "$root/wave_`w'/sect4_Behavior_r`w'", nogen
+		*** obs == 1698: 1533 matched, 165 unmatched
+	merge 1:1		HHID using "$root/wave_`w'/sect5_Access_r`w'", nogen
+		*** obs == 1698: 1533 matched, 165 unmatched
+	merge 1:1		HHID using "$root/wave_`w'/sect5d_ChildDevt_r`w'", nogen
+		*** obs == 16898: 1533 matched, 165 unmatched
+	merge 1:1		HHID using "$root/wave_`w'/sect6a_Employment2_r`w'", nogen
+		*** obs == 1698: 1533 matched, 165 unmatched
+	merge 1:1		HHID using "$root/wave_`w'/sect6b_NFE_r`w'", nogen
+		*** obs == 1698: 1533 matched, 165 unmatched
+	merge 1:1		HHID using "$root/wave_`w'/sect6e_Agriculture_r`w'", nogen
+		*** obs == 1698: 1533 matched, 165 unmatched
+	merge 1:1		HHID using "$root/wave_`w'/sect8_food_security_r`w'", nogen
+		*** obs == 1698: 1533 matched, 165 unmatched
+	merge 1:1		HHID using "$root/wave_`w'/sect9_Concerns_r`w'", nogen
+		*** obs == 16898: 1533 matched, 165 unmatched
+
+* rename variables inconsistent with other waves
+	* behavior
+		rename			s4q7 bh_freq_wash
+		rename			s4q8 bh_freq_mask
+		
+	* child development
+		rename			s5dq7 ecd_play
+		rename			s5dq8 ecd_read
+		rename			s5dq9 ecd_story
+		rename			s5dq10 ecd_song
+		rename			s5dq11 ecd_out
+		rename			s5dq12 ecd_ncd
+		rename			s5dq13 ecd_num_bks
+		
+		rename			s5dq14 ac_elec
+		rename			s5dq15 ac_radio
+		rename			s5dq16 ac_tv
+		rename			s5dq17 ac_mobile
+		rename			s5dq18 ac_phone
+		rename			s5dq19 ac_comp
+
+		rename			s5dq21 ecd_ed_1
+		rename			s5dq22 ecd_ed_2
+		rename			s5dq23 ecd_ed_3
+		rename			s5dq24 ecd_ed_4
+		rename			s5dq25 ecd_ed_5
+		rename			s5dq26 ecd_ed_6
+		rename			s5dq27 ecd_ed_7
+		rename			s5dq28 ecd_ed_8
+		
+		rename			s5dq29 ecd_bh_1
+		rename			s5dq30 ecd_bh_2
+		rename			s5dq31 ecd_bh_3
+		rename			s5dq32 ecd_bh_4
+		rename			s5dq33 ecd_bh_5
+		rename			s5dq34 ecd_bh_6
+		
+		rename			s5dq35 ecd_disc_1
+		rename			s5dq36 ecd_disc_2
+		rename			s5dq37 ecd_disc_3
+		rename			s5dq38 ecd_disc_4
+		rename			s5dq39 ecd_disc_5
+		rename			s5dq40 ecd_disc_6
+		rename			s5dq41 ecd_disc
 	
+	* employment
+		rename			s6q3a emp_search
+		rename			s6q3b emp_search_how
+		rename			s6q5 emp_act
+		replace 		emp_act = -96 if emp_act == 96
+		replace 		emp_act = 16 if emp_act == 15
+		replace 		emp_act = 14 if emp_act == 9
+		replace 		emp_act = 9 if emp_act == 11 | emp_act == 12
+		replace 		emp_act = 11 if emp_act == 4
+		replace 		emp_act = 4 if emp_act == 7
+		replace 		emp_act = 7 if emp_act == 10
+		replace 		emp_act = 13 if emp_act == 8
+		replace 		emp_act = 8 if emp_act == 6
+		replace 		emp_act = 13 if emp_act == 8
+	
+		lab val 		emp_act emp_act
+		
+	* agriculture
+		rename			preload_agric ag_crop
+		replace			ag_crop = s6aq2 if ag_crop >= .
+		replace			ag_crop = . if ag_crop == 4
+		rename			s6aq3__1 ag_crop_who
+		rename			s6aq5 ag_main
+		rename			s6aq6 ag_main_harv_comp
+		rename			s6aq7 ag_main_sell // note there might be sme issues for total ag revenue not sure how to proceed
+		rename			s6aq9 harv_sell_need
+		rename			s6aq10 harv_sell
+		
+		gen				ag_sell_where_5 = . // note this is home/farm sale
+		replace			ag_sell_where_5 = 1 if s6aq11 == 1
+		replace			ag_sell_where_5 = 0 if ag_sell_where_5 == .
+		
+		gen				ag_sell_where_2 = . // note this is daily market
+		replace			ag_sell_where_2 = 1 if s6aq11 == 2
+		replace			ag_sell_where_2 = 0 if ag_sell_where_2 == .
+		
+		gen				ag_sell_where_3 = . // note this is weekly market
+		replace			ag_sell_where_3 = 1 if s6aq11 == 3
+		replace			ag_sell_where_3 = 0 if ag_sell_where_3 == .
+		
+		drop			s6aq3a s6aq4 s6aq5_* s6aq3__2 /// note unsure of what to do with q8/8b in 6e-12
+	
+* generate round variables
+	gen				wave = `w'
+		*** obs == 1698
+	lab var			wave "Wave number"
+	rename			wt_round`w' phw_cs
+	label var		phw "sampling weights - cross section"
 	
 * save round file
 	save			"$export/wave_`w'/r`w'", replace

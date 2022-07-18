@@ -371,7 +371,7 @@
 	replace 		emp_act = 7 if emp_act == 10
 	replace 		emp_act = 10 if emp_act == 2
 	replace 		emp_act = 2 if emp_act == 3
-	replace 		emp_act = 0 if emp_act == 8
+	replace 		emp_act = 0 if emp_act == 8 //
 	replace 		emp_act = 8 if emp_act == 6
 	replace 		emp_act = 6 if emp_act == 13
 	replace 		emp_act = 13 if emp_act == 0
