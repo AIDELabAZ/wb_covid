@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: August 2020
 * Created by: jdm
-* Edited by: amf
-* Last edited: Nov 2020 
-* Stata v.16.1
+* Edited by: amf, lirr (style edits)
+* Last edited: 19 July 2022
+* Stata v.17.0
 
 * does
 	* reads in first round of Nigeria data
@@ -17,9 +17,9 @@
 	* complete
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define 
 	global	root	=	"$data/nigeria/raw"
@@ -38,17 +38,18 @@
 	capture mkdir "$export/wave_0`w'" 
 		
 		
-* ***********************************************************************
-* 1 - format secitons and save tempfiles
-* ***********************************************************************
+*************************************************************************
+**# - format sections and save tempfiles
+*************************************************************************
 
 
-* ***********************************************************************
-* 1a - section 2: household size and gender of HOH
-* ***********************************************************************
+*************************************************************************
+**# - section 2: household size and gender of HOH
+*************************************************************************
 	
 * load data
 	use				"$root/wave_0`w'/r`w'_sect_2.dta", clear
+		*** obs == 12395
 
 * rename other variables 
 	rename 			indiv ind_id 
@@ -63,7 +64,8 @@
 	gen				hhsize = 1 if curr_mem == 1
 	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
 	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
-	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19 
+	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19
+		*** obs == 12395
 	
 * create hh head gender
 	gen 			sexhh = . 
@@ -81,9 +83,13 @@
 	* why member left
 		preserve
 			keep 		hhid s2q4 ind_id
+				*** obs == 12395
 			keep 		if s2q4 != .
+				*** obs == 249
 			duplicates 	drop hhid s2q4, force
+				*** obs == 199
 			reshape 	wide ind_id, i(hhid) j(s2q4)
+				*** obs == 173
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -96,9 +102,13 @@
 	* why new member 
 		preserve
 			keep 		hhid s2q8 ind_id
+				*** obs == 12395
 			keep 		if s2q8 != .
+				*** obs == 896
 			duplicates 	drop hhid s2q8, force
+				*** obs == 667
 			reshape 	wide ind_id, i(hhid) j(s2q8)
+				*** obs == 568
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -111,10 +121,13 @@
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(hhid)
+		*** obs == 2010
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
 	merge 		1:1 hhid using `new_mem', nogen
+		*** obs == 2010: 568 matched, 1442 unmatched
 	merge 		1:1 hhid using `mem_left', nogen
+		*** obs == 2010: 173 matched, 1837 unmatched
 	ds 			new_mem_why_* 
 	foreach		var in `r(varlist)' {
 		replace 	`var' = 0 if `var' >= . & new_mem == 1
@@ -135,21 +148,25 @@
 	save			`tempa'
 
 	
-* ***********************************************************************
-* 1b - sections 3-6, 8-9, 12: respondant gender
-* ***********************************************************************
+*************************************************************************
+**# - sections 3-6, 8-9, 12: respondant gender
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/r`w'_sect_a_3_4_5_6_8_9_12", clear
+		*** obs == 3000
 	
 * drop all but household respondant
 	keep			hhid s12q9
+		*** obs == 3000
 	rename			s12q9 indiv
 	isid			hhid
 	
 * merge in household roster
 	merge 			1:1	hhid indiv using "$root/wave_0`w'/r`w'_sect_2.dta"
+		*** obs == 13393: 2002 matched, 11391 unmatched
 	keep 			if _merge == 3
+		*** obs == 2002
 	drop 			_merge
 	
 * rename variables and fill in missing values
@@ -161,67 +178,76 @@
 	
 * drop all but gender and relation to HoH
 	keep			hhid PID sex age relate_hoh
+		*** obs == 2002
 
 * save temp file
 	tempfile		tempb
 	save			`tempb'
 
 	
-* ***********************************************************************
-* 1c - section 7: income
-* ***********************************************************************
+*************************************************************************
+**# - section 7: income
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/r`w'_sect_7", clear
+		*** obs == 23556
 
 * reformat HHID
 	format 			%5.0f hhid
 	
 * drop other source
 	drop			source_cd_os zone state lga sector ea
+		*** obs == 23556
 	
 * reshape data	
 	reshape 		wide s7q1 s7q2, i(hhid) j(source_cd)
-
+		*** obs == 1963
+		
 * save temp file
 	tempfile		tempc
 	save			`tempc'
 
 
-* ***********************************************************************
-* 1d - section 11: assistance
-* ***********************************************************************
+*************************************************************************
+**# - section 11: assistance
+*************************************************************************
 
 * load data - updated via convo with Talip 9/1
 	use				"$root/wave_0`w'/r`w'_sect_11", clear
+		*** obs == 5865
 
 * reformat HHID
 	format 			%5.0f hhid
 	
 * drop other 
 	drop 			zone state lga sector ea s11q2 s11q3 s11q3_os
-
+		*** obs == 5865
+		
 * reshape 
 	reshape 		wide s11q1, i(hhid) j(assistance_cd)
+		*** obs == 1955
 	
 * save temp file
 	tempfile		tempd
 	save			`tempd'
 
 	
-* ***********************************************************************
-* 1e - section 10: shocks
-* ***********************************************************************
+*************************************************************************
+**# - section 10: shocks
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/r`w'_sect_10", clear
-
+		*** obs == 1955
+		
 * reformat HHID
 	format 			%5.0f hhid
 
 * drop other shock
 	drop			shock_cd_os s10q3_os
-
+		*** obs == 1955
+		
 * generate shock variables
 	levelsof(shock_cd), local(id)
 	foreach 			i in `id' {
@@ -231,29 +257,35 @@
 
 * collapse to household level
 	collapse 		(max) s10q3__1- shock_96, by(hhid)		
-	
+		*** obs == 1958
+		
 * save temp file
 	tempfile		tempe
 	save			`tempe'
 
 	
-* ***********************************************************************
-* 2 - FIES score
-* ***********************************************************************
+*************************************************************************
+**# - FIES score
+*************************************************************************
 
 * not available for round
 
 	
-* ***********************************************************************
-* 3 - merge sections into panel and save
-* ***********************************************************************
+*************************************************************************
+**# - merge sections into panel and save
+*************************************************************************
 
 * merge sections based on hhid
 	use				"$root/wave_0`w'/r`w'_sect_a_3_4_5_6_8_9_12", clear
 	foreach 		s in a b c d e {
 	    merge		1:1 hhid using `temp`s'', nogen
 	}
-	
+		*** obs == 3000: 2010 matched, 990 unmatched temp a
+		*** obs == 3000: 2002 matched, 998 unmatched temp b
+		*** obs == 3000: 1963 matched, 1037 unmatched temp c
+		*** obs == 3000: 1955 matched, 1045 unmatched temp d
+		*** obs == 3000: 1958 matched, 1042 unmatched temp e
+		
 * generate round variable
 	gen				wave = `w'
 	lab var			wave "Wave number"	
@@ -274,6 +306,7 @@
 	replace 		ac_med_why = 5 if s5q1c1__5 == 1 
 	replace 		ac_med_why = 6 if s5q1c1__6 == 1
 	label var 		ac_med_why "reason unable to purchase medicine"
+	
 	* soap
 	rename 			s5q1a2 ac_soap_need
 	rename 			s5q1b2 ac_soap
@@ -286,6 +319,7 @@
 	replace 		ac_soap_why = 5 if s5q1c2__5 == 1
 	replace 		ac_soap_why = 6 if s5q1c2__6 == 1
 	label var 		ac_soap_why "reason unable to purchase soap"
+	
 	* cleaning supplies								
 	rename 			s5q1a3 ac_clean_need 
 	rename 			s5q1b3 ac_clean
@@ -297,6 +331,7 @@
 	replace 		ac_clean_why = 5 if s5q1c3__5 == 1
 	replace 		ac_clean_why = 6 if s5q1c3__6 == 1
 	label var 		ac_clean_why "reason unable to purchase cleaning supplies"
+	
 	* rice
 	rename 			s5q1a4 ac_rice_need
 	rename 			s5q1b4 ac_rice
@@ -308,6 +343,7 @@
 	replace 		ac_rice_why = 5 if s5q1c4__5 == 1 
 	replace 		ac_rice_why = 6 if s5q1c4__6 == 1 
 	label var 		ac_rice_why "reason unable to purchase rice"
+	
 	* beans 	
 	rename 			s5q1a5 ac_beans_need
 	rename 			s5q1b5 ac_beans
@@ -319,6 +355,7 @@
 	replace 		ac_beans_why = 5 if s5q1c5__5 == 1 
 	replace 		ac_beans_why = 6 if s5q1c5__6 == 1 
 	label var 		ac_beans_why "reason unable to purchase beans"
+	
 	* cassava 		
 	rename 			s5q1a6 ac_cass_need
 	rename 			s5q1b6 ac_cass
@@ -330,6 +367,7 @@
 	replace 		ac_cass_why = 5 if s5q1c6__5 == 1 
 	replace 		ac_cass_why = 6 if s5q1c6__6 == 1 
 	label var 		ac_cass_why "reason unable to purchase cassava"
+	
 	* yam	
 	rename 			s5q1a7 ac_yam_need
 	rename 			s5q1b7 ac_yam
@@ -341,6 +379,7 @@
 	replace 		ac_yam_why = 5 if s5q1c7__5 == 1 
 	replace 		ac_yam_why = 6 if s5q1c7__6 == 1 
 	label var 		ac_yam_why "reason unable to purchase yam"
+	
 	* sorghum 	
 	rename 			s5q1a8 ac_sorg_need
 	rename 			s5q1b8 ac_sorg
@@ -352,6 +391,7 @@
 	replace 		ac_sorg_why = 5 if s5q1c8__5 == 1 
 	replace 		ac_sorg_why = 6 if s5q1c8__6 == 1 
 	label var 		ac_sorg_why "reason unable to purchase sorghum"
+	
 	* medical service	
 	rename 			s5q2 ac_medserv_need
 	rename 			s5q3 ac_medserv
@@ -365,6 +405,7 @@
 						10 "refused treatment by facility"
 	lab val 		ac_medserv_why ac_medserv_why
 	lab var 		ac_med_why "reason for unable to access medical services"
+	
 	* education 
 	rename 			s5q4a sch_child
 	rename 			s5q4b edu_act
@@ -384,6 +425,7 @@
 	rename 			s5q7__5 edu_cont_6 
 	rename 			s5q7__6 edu_cont_7 
 	rename 			s5q7__7	edu_cont_8 
+	
 	* credit 
 	rename 			s5q8 ac_bank_need
 	rename 			s5q9 ac_bank 

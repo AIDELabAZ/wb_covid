@@ -2,7 +2,7 @@
 * Created on: July 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edit: 01 July 2022
+* Last edit: 19 July 2022
 * Stata v.17.0
 
 * does
@@ -15,7 +15,7 @@
 	* xfill.ado
 
 * TO DO:
-	* everything
+	* Educational Aspirations
 
 	
 ************************************************************************

@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: August 2021
 * Created by: amf
-* Edited by: amf
-* Last edited: August 2021
-* Stata v.16.1
+* Edited by: amf, lirr (style edits)
+* Last edited: 19 July 2022
+* Stata v.17.0
 
 * does
 	* reads in eleventh round of Nigeria data
@@ -17,9 +17,9 @@
 	* complete
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define 
 	global	root	=	"$data/nigeria/raw"
@@ -38,17 +38,18 @@
 	capture mkdir "$export/wave_`w'" 
 		
 				
-* ***********************************************************************
-* 1 - format secitons and save tempfiles
-* ***********************************************************************
+*************************************************************************
+**# - format secitons and save tempfiles
+*************************************************************************
 
 
-* ***********************************************************************
-* 1a - section 2: household size and gender of HOH
-* ***********************************************************************
+*************************************************************************
+**# - section 2: household size and gender of HOH
+*************************************************************************
 	
 * load data
 	use				"$root/wave_`w'/r`w'_sect_2.dta", clear
+		*** obs == 11725
 
 * rename other variables 
 	rename 			indiv ind_id 
@@ -63,7 +64,8 @@
 	gen				hhsize = 1 if curr_mem == 1
 	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
 	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
-	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19 
+	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19
+		*** obs == 11725
 	
 * create hh head gender
 	gen 			sexhh = . 
@@ -81,9 +83,13 @@
 	* why member left
 		preserve
 			keep 		hhid s2q4 ind_id
+				*** obs == 11725
 			keep 		if s2q4 != .
+				*** obs == 326
 			duplicates 	drop hhid s2q4, force
+				*** obs == 260
 			reshape 	wide ind_id, i(hhid) j(s2q4)
+				*** obs == 219
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -96,9 +102,13 @@
 	* why new member 
 		preserve
 			keep 		hhid s2q8 ind_id
+				*** obs == 11725
 			keep 		if s2q8 != .
+				*** obs == 84
 			duplicates 	drop hhid s2q8, force
+				*** obs == 74
 			reshape 	wide ind_id, i(hhid) j(s2q8)
+				*** obs == 72
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -111,6 +121,7 @@
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(hhid)
+		*** obs == 1688
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
 	merge 		1:1 hhid using `new_mem', nogen
