@@ -153,7 +153,7 @@
 	rename 			s3q3__98 gov_dnk
 	label var 		gov_dnk "do not know steps government has taken"	
  
-* govt perseption
+* govt perception
  * note: r1 has 5 step scale, r2 only 3 options, adjust here
 	forval x = 8/12 {
 		replace 		s3q`x' = . if s3q`x' == .a
