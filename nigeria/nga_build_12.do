@@ -2,7 +2,7 @@
 * Created on: July 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edited: 19 July 2022
+* Last edited: 22 July 2022
 * Stata v.17.0
 
 * does
@@ -83,16 +83,114 @@
 
 	
 *************************************************************************
-**# - sections 3-6, 8-9, 12: respondant gender
-*************************************************************************
-
-* load data
-	
-	
-	
-*************************************************************************
 **# - merge sections into panel and save
 *************************************************************************
+
+* merge sections based on hhid
+	use				"$root/wave_`w'/r`w'_sect_5e_9a", clear
+		*** obs == 974
+* merge in other section
+	merge			1:1 hhid using `tempa', nogen
+		*** obs == 986: 974 matched, 12 unmatched
+		
+* generate round variable
+	gen				wave = `w'
+	lab var			wave "Wave number"
+
+* clean variables inconsistent with other rounds
+	
+	* youth aspirations
+		rename 			s5eq2a yae_age
+		rename 			s5eq2 yae_sch
+		rename 			s5eq3 yae_sch_why
+		rename 			s5eq4 yae_curr_act
+		replace 		yae_curr_act = s5eq14 if yae_curr_act >= .
+		rename 			s5eq6 yae_age_wrk
+		replace 		yae_age_wrk = s5eq16 if yae_age_wrk >=.
+		rename 			s5eq7 yae_age_sch
+		rename 			s5eq8 yae_ed
+		rename 			s5eq9 yae_ed_yr
+		rename 			s5eq10 yae_ed_curr
+		rename 			s5eq11 yae_ed_lvl
+		rename 			s5eq12 yae_ed_fin_yr
+		rename 			s5eq13 yae_sch_curr_why
+		rename 			s5eq15 yae_wrk
+		replace 		yae_wrk = 1 if yae_age_wrk < .
+		rename 			s5eq17 yae_ed_plan
+		rename 			s5eq18 yae_ed_plan_why
+		rename 			s5eq19 yae_bus
+		rename 			s5eq20 yae_job
+		rename 			s5eq21 yae_job_how
+		rename 			s5eq22 yae_ed_asp
+		
+		* create loops to extract yae_ed_cons values
+			gen				yae_ed_cons_1 = .
+			forval 			i = 1/20 {	
+				replace 		yae_ed_cons_1 = `i' if  s5eq23__`i' == 1 ///
+					& yae_ed_cons_1 == .
+			}
+			
+			gen				yae_ed_cons_2 = .
+			forval			j = 1/20 {
+				replace			yae_ed_cons_2 = `j' if s5eq23__`j' == 1 ///
+					& `j' > yae_ed_cons_1
+			}
+			
+			replace			yae_ed_cons_1 = 96 if yae_ed_cons_1 == .
+			replace			yae_ed_cons_2 = 96 if yae_ed_cons_2 == . & ///
+								yae_ed_cons_1 != 96
+								
+		rename 			s5eq24b yae_dream_job
+		
+		* create loops to extract yae_dream_char values
+			gen				yae_dream_char_1 = .
+			forval 			k = 1/13 {	
+				replace 		yae_dream_char_1 = `k' if  s5eq25__`k' == 1 ///
+					& yae_dream_char_1 == .
+			}
+			
+			gen				yae_dream_char_2 = .
+			forval			l = 1/13 {
+				replace			yae_dream_char_2 = `l' if s5eq25__`l' == 1 ///
+					& `l' > yae_dream_char_1
+			}
+			
+			replace			yae_dream_char_1 = 96 if yae_dream_char_1 == .
+			replace			yae_dream_char_2 = 96 if yae_dream_char_2 == . & ///
+								yae_dream_char_1 != 96
+								
+		rename 			s5eq26__* yae_dream_fac_*
+		rename 			s5eq27 yae_dream_curr
+		rename 			s5eq28 yae_dream_lik
+		
+		* create loops to extract yae dream constraint vaules
+			gen				yae_dream_cons_1 = .
+			forval 			x = 1/18 {	
+				replace 		yae_dream_cons_1 = `x' if  s5eq29__`x' == 1 ///
+					& yae_dream_cons_1 == .
+			}
+			
+			gen				yae_dream_cons_2 = .
+			forval			y = 1/18 {
+				replace			yae_dream_cons_2 = `y' if s5eq29__`y' == 1 ///
+					& `y' > yae_dream_cons_1
+			}
+			
+			replace			yae_dream_cons_1 = 96 if yae_dream_cons_1 == .
+			replace			yae_dream_cons_2 = 96 if yae_dream_cons_2 == . & ///
+								yae_dream_cons_1 != 96
+		
+		rename 			s5eq30 yae_dream_knw
+		rename 			s5eq31 yae_dream_knw_wom
+		rename 			s5eq32 yae_dream_knw_wom_mar
+		rename 			s5eq33 yae_wrk_wom
+		rename 			s5eq34 yae_wrk_wom_comm
+		rename 			s5eq35 yae_mon
+		rename 			s5eq36 yae_mig
+		rename 			s5eq37__* yae_mig_where_*
+	
+	* covid vaccine likelihood to receive when advised
+		rename			s9aq4__* cov_vac_more_lik_*
 	
 * save round file
 	save			"$export/wave_`w'/r`w'", replace
