@@ -2,11 +2,11 @@
 * Created on: July 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edit: 25 July 2022
+* Last edit: 8 Aug 2022
 * Stata v.17.0
 
 * does
-	* reads in third round of BF data
+	* reads in eleventh round of BF data
 	* builds round 11
 	* outputs round 11
 
@@ -75,6 +75,14 @@
 	tempfile		tempa
 	save			`tempa'
 	
+
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************	
+
+
+
+
 		
 *************************************************************************
 **# - merge
