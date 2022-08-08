@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: April 2021
 * Created by: amf
-* Edited by: amf
-* Last edit: April 2021 
-* Stata v.16.1
+* Edited by: amf, lirr (style edits)
+* Last edit: 08 Aug 2022 
+* Stata v.17.0
 
 * does
 	* reads in fourth round of BF data
@@ -17,9 +17,9 @@
 	* GET FIES DATA
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define 
 	global	root	=	"$data/burkina_faso/raw"
@@ -38,21 +38,26 @@
 	capture mkdir 	"$export/wave_0`w'" 
 
 	
-* ***********************************************************************
-* 1a - get respondent data
-* ***********************************************************************	
+*************************************************************************
+**# - get respondent data
+*************************************************************************	
 
 * load respondant id data	
 	use 			"$root/wave_0`w'/r`w'_sec1a_info_entretien_tentative", clear
+		*** obs == 3539
 	keep 			if s01aq08 == 1
+		*** obs == 2036
 	rename 			s01aq09 membres__id
 	duplicates 		drop hhid membres__id, force
+		*** obs == 2012
 	duplicates		tag hhid, gen(dups)
 	replace 		membres__id = -96 if dups > 0
 	duplicates 		drop hhid membres__id, force
+		*** obs == 2011
 	lab def 		mem -96 "multiple respondents"
 	lab val 		membres__id mem
 	keep 			hhid membres__id
+		*** obs == 2011
 
 * load roster data with gender
 	merge 1:1		hhid membres__id using "$root/wave_0`w'/r`w'_sec2_liste_membre_menage"
@@ -68,12 +73,13 @@
 	save			`tempa'
 	
 
-* ***********************************************************************
-* 1b - get household size and gender of HOH
-* ***********************************************************************	
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************	
 
 * load roster data	
 	use 			"$root/wave_0`w'/r`w'_sec2_liste_membre_menage", clear
+		*** obs == 13561
 	
 * rename other variables 
 	rename 			membres__id ind_id 
@@ -89,11 +95,13 @@
 	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
 	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
 	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19  
+		*** obs == 13561
 	
 * generate hh head gender variable
 	gen 			sexhh = .
 	replace 		sexhh = sex_mem if relat_mem== 1
 	lab var 		sexhh "Sex of household head"
+		*** obs == 13561
 	
 * generate migration vars
 	rename 			s02q02 new_mem
@@ -110,9 +118,13 @@
 	* why member left
 		preserve
 			keep 		hhid s02q04 ind_id
+				*** obs == 13561
 			keep 		if s02q04 != .
+				*** obs == 61
 			duplicates 	drop hhid s02q04, force
+				*** obs == 59
 			reshape 	wide ind_id, i(hhid) j(s02q04)
+				*** obs == 57
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -125,9 +137,13 @@
 	* why new member 
 		preserve
 			keep 		hhid s02q08 ind_id
+				*** obs == 13561
 			keep 		if s02q08 != .
+				*** obs == 117
 			duplicates 	drop hhid s02q08, force
+				*** obs == 99
 			reshape 	wide ind_id, i(hhid) j(s02q08)
+				*** obs == 90
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -140,10 +156,13 @@
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(hhid)
+		*** obs == 2011
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
 	merge 		1:1 hhid using `new_mem', nogen
+		*** obs == 2011: 90 matched, 1921 unmached
 	merge 		1:1 hhid using `mem_left', nogen
+		*** obs == 2011: 57 matched, 1954 unmatched
 	ds 			new_mem_why_* 
 	foreach		var in `r(varlist)' {
 		replace 	`var' = 0 if `var' >= . & new_mem == 1
@@ -164,19 +183,21 @@
 	save			`tempb'
 	
 	
-* ***********************************************************************
-* 2 - other revenues
-* ***********************************************************************		
+*************************************************************************
+**# - other revenues
+*************************************************************************		
 	
 * load data	
-	use 		"$root/wave_0`w'/r`w'_sec8_autres_revenu",clear
+	use 		"$root/wave_0`w'/r`w'_sec8_autres_revenu", clear
+		*** obs == 10055
 	
 * drop other vars
 	keep 		hhid revenu__id s08q0*
-	
+		*** obs == 10055
 * reshape 
 	reshape 	wide s08q0*, i(hhid) j(revenu__id)
-	
+		*** obs == 2011
+		
 * format vars
 	rename 		s08q011 oth_inc_1
 	rename 		s08q012 oth_inc_2
@@ -195,15 +216,17 @@
 	save			`tempc'
 	
 	
-* ***********************************************************************
-*  3 - shocks
-* ***********************************************************************		
+*************************************************************************
+**# - shocks
+*************************************************************************		
 
 * load data
 	use 			"$root/wave_0`w'/r`w'_sec9_Chocs", clear
+		*** obs == 26143
 
 * drop other shock
 	drop			s09q03_autre
+		*** obs == 26143
 	
 * generate shock variables
 	forval 			x = 1/13 {
@@ -212,15 +235,16 @@
 
 * collapse to household level	
 	collapse 		(max) s09q03__1-shock_13, by(hhid)
+		*** obs == 2011
 	
 * save temp file
 	tempfile		tempd
 	save			`tempd'	
 	
 
-* ***********************************************************************
-*  4 - FIES
-* ***********************************************************************	
+*************************************************************************
+**# - FIES
+*************************************************************************	
 /*
 * load data
 	use 			"$fies/BFA_FIES_round`w'", clear
@@ -236,29 +260,41 @@
 */	
 	
 
-* ***********************************************************************
-*  5 - merge
-* ***********************************************************************
+*************************************************************************
+**# - merge
+*************************************************************************
 
 * load cover data
 	use 		"$root/wave_0`w'/r`w'_sec0_cover", clear
+		*** obs == 2104
 	
 * merge formatted sections
 	foreach 		x in a b c d {
 	    merge 		1:1 hhid using `temp`x'', nogen
 	}
-
+		*** obs == 2104: 2011 matched, 93 unmatched for all temps
+		
 * merge in other sections
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec5_acces_service_base", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec5b_credit", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6a_emplrev_general", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6b_emplrev_travailsalarie", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6c_emplrev_nonagr", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6d_emplrev_agr", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6db_emplrev_elevage", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6d_b_elevage", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec7_securite_alimentaire", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec11_frag_confl_violence", nogen
+		*** obs == 2104: 2011 matched, 93 unmatched
 
 * clean variables inconsistent with other rounds
 	* ac_med
@@ -274,6 +310,7 @@
 	* employment 
 	rename 			s06q04_0 emp_chg_why
 	drop 			s06q04_0_autre
+		*** obs == 2104
 	replace 		emp_chg_why = 96 if emp_chg_why == 13
 	
 	* farming 
@@ -293,6 +330,7 @@
 	rename 			s06dbq04__3 ag_live_affect_4
 	rename 			s06dbq04__4 ag_live_affect_7
 	drop 			s06dbq04__96 s06dbq04_autre
+		*** obs == 2104
 	rename 			s06dbq06 ag_live_sell
 	rename 			s06dbq07 ag_live_sell_chg
 	rename 			s06dbq08 ag_live_sell_want

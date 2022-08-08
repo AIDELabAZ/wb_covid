@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: April 2021
 * Created by: amf
-* Edited by: amf
-* Last edit: April 2021 
-* Stata v.16.1
+* Edited by: amf, lirr (style edits)
+* Last edit: 08 Aug 2022 
+* Stata v.17.0
 
 * does
 	* reads in fifth round of BF data
@@ -17,9 +17,9 @@
 	* GET FIES DATA
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define 
 	global	root	=	"$data/burkina_faso/raw"
@@ -38,26 +38,34 @@
 	capture mkdir 	"$export/wave_0`w'" 
 
 	
-* ***********************************************************************
-* 1a - get respondent data
-* ***********************************************************************	
+*************************************************************************
+**# - get respondent data
+*************************************************************************	
 
 * load respondant id data	
 	use 			"$root/wave_0`w'/r`w'_sec1a_info_entretien_tentative", clear
+		*** obs == 2991
 	keep 			if s01aq08 == 1
+		*** obs == 1976
 	rename 			s01aq09 membres__id
 	duplicates 		drop hhid membres__id, force
+		*** obs == 1946
 	duplicates		tag hhid, gen(dups)
 	replace 		membres__id = -96 if dups > 0
 	duplicates 		drop hhid membres__id, force
+		*** obs == 1944
 	lab def 		mem -96 "multiple respondents"
 	lab val 		membres__id mem
 	keep 			hhid membres__id
+		*** obs == 1944
 
 * load roster data with gender
 	merge 1:1		hhid membres__id using "$root/wave_0`w'/r`w'_sec2_liste_membre_menage"
+		*** obs == 13074: 1942 matched, 11132 unmatched
 	keep 			if _m == 1 | _m == 3
+		*** obs == 1944
 	keep 			hhid s02q05 membres__id s02q07 s02q06
+		*** obs == 1944
 	rename 			membres__id resp_id
 	rename 			s02q05 sex
 	rename 			s02q06 age
@@ -68,12 +76,13 @@
 	save			`tempa'
 	
 
-* ***********************************************************************
-* 1b - get household size and gender of HOH
-* ***********************************************************************	
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************	
 
 * load roster data	
 	use 			"$root/wave_0`w'/r`w'_sec2_liste_membre_menage", clear
+		*** obs == 13072
 	
 * rename other variables 
 	rename 			membres__id ind_id 
@@ -89,11 +98,13 @@
 	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
 	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
 	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19 
-	
+		*** obs == 13072
+		
 * generate hh head gender variable
 	gen 			sexhh = .
 	replace 		sexhh = sex_mem if relat_mem== 1
 	lab var 		sexhh "Sex of household head"
+		*** obs == 13072
 	
 * generate migration vars
 	rename 			s02q02 new_mem
@@ -110,6 +121,7 @@
 	* why member left
 		preserve
 			keep 		hhid s02q04 ind_id
+				*** obs == 
 			keep 		if s02q04 != .
 			duplicates 	drop hhid s02q04, force
 			reshape 	wide ind_id, i(hhid) j(s02q04)
