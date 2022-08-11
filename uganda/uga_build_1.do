@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
-* Edited by : amf
-* Last edited: December 2020
-* Stata v.16.1
+* Edited by : amf, lirr (style edits)
+* Last edited: 11 aug 2022
+* Stata v.17.0
 
 * does
 	* reads in first round of Uganda data
@@ -17,9 +17,9 @@
 	* complete
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define
 	global	root	=	"$data/uganda/raw"
@@ -38,42 +38,47 @@
 	capture mkdir "$export/wave_0`w'" 	
 	
 	
-* ***********************************************************************
-* 1 - reshape section 6 wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section 6 (income loss) wide data
+*************************************************************************
 
 * load income data
 	use				"$root/wave_0`w'/SEC6", clear
+		*** obs == 26724
 
 * reformat HHID
 	format 			%12.0f HHID
 
 * drop other source
 	drop			s6q01_Other
+		*** obs == 26724
 
 * replace value for "other"
 	replace			income_loss__id = 96 if income_loss__id == -96
 
 * reshape data
 	reshape 		wide s6q01 s6q02, i(HHID) j(income_loss__id)
+		*** obs == 2227
 
 * save temp file
 	tempfile		temp1
 	save			`temp1'
 
 
-* ***********************************************************************
-* 2 - reshape section 9 wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section 9 (shocks/coping) wide data
+*************************************************************************
 
-* load income data
+* load data
 	use				"$root/wave_0`w'/SEC9", clear
+		*** obs == 31178
 
 * reformat HHID
 	format 			%12.0f HHID
 
 * drop other shock
 	drop			s9q01_Other
+		*** obs == 31178
 
 * replace value for "other"
 	replace			shocks__id = 96 if shocks__id == -96
@@ -124,9 +129,11 @@
 
 * drop unnecessary variables
 	drop	shocks__id s9q01 s9q02 s9q03_Other
+		*** obs == 31178
 
 * collapse to household level
 	collapse (max) cope_1- shock_14, by(HHID)
+		*** obs == 2227
 	
 * generate any shock variable
 	gen				shock_any = 1 if shock_1 == 1 | shock_2 == 1 | ///
@@ -136,6 +143,7 @@
 						shock_12 == 1 | shock_13 == 1 | shock_14== 1
 	replace			shock_any = 0 if shock_any == .
 	lab var			shock_any "Experience some shock"
+
 * save temp file
 	tempfile		temp2
 	save			`temp2'

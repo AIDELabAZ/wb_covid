@@ -1,8 +1,8 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
-* Edited by : amf
-* Last edited: December 2020
+* Edited by : amf, lirr (style edits)
+* Last edited: 11 Aug 2022
 * Stata v.16.1
 
 * does
@@ -17,9 +17,9 @@
 	* complete	
 
 	
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define
 	global	root	=	"$data/uganda/raw"
@@ -38,12 +38,13 @@
 	capture mkdir "$export/wave_0`w'" 	
 	
 
-* ***********************************************************************
-* 1 - reshape section 6 wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section 6 (income loss) wide data
+*************************************************************************
 
 * load income data
 	use				"$root/wave_0`w'/sec6", clear
+		*** obs == 27586
 	
 * reformat HHID
 	format 			%12.0f hhid
@@ -53,18 +54,20 @@
 
 * reshape data
 	reshape 		wide s6q01 s6q02 s6q03, i(hhid) j(income_loss__id)
+		*** obs == 2122
 
 * save temp file
 	tempfile		temp1
 	save			`temp1'
 
 
-* ***********************************************************************
-* 2 - reshape section 10 wide data 
-* ***********************************************************************
+*************************************************************************
+**# - reshape section 10 (safety nets) wide data 
+*************************************************************************
 
 * load safety net data - updated via convo with Talip 9/1
 	use				"$root/wave_0`w'/sec10", clear
+		*** obs == 8484
 
 * reformat HHID
 	format 			%12.0f hhid
@@ -72,10 +75,12 @@
 * drop other safety nets and missing values
 	drop			s10q02 s10q03__1 s10q03__2 s10q03__3 s10q03__4 ///
 						s10q03__5 s10q03__6 s10q03__n96 
-
+		*** obs == 8484
+		
 * reshape data
 	reshape 		wide s10q01, i(hhid) j(safety_net__id)
-	*** note that cash = 102, food = 101, in-kind = 103 (unlike wave 1)
+	*** obs == 2121 | note that cash = 102, food = 101, in-kind = 103 (unlike wave 1)
+
 
 * rename variables
 	gen				asst_food = 1 if s10q01101 == 1
@@ -106,6 +111,7 @@
 
 * drop variables
 	drop			s10q01101 s10q01102 s10q01103 s10q01104
+		*** obs == 2121
 
 * save temp file
 	tempfile		temp2
@@ -357,9 +363,9 @@
 	save			`temp6'
 	
 	
-* ***********************************************************************
-* 8 - build uganda cross section
-* ***********************************************************************
+*************************************************************************
+**# - build uganda cross section
+*************************************************************************
 
 * load cover data
 	use				"$root/wave_0`w'/Cover", clear
