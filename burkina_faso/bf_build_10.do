@@ -2,7 +2,7 @@
 * Created on: Aug 2021
 * Created by: amf
 * Edited by: amf, lirr (style edits)
-* Last edit: 6 Aug 2021 
+* Last edit: 9 Aug 2021 
 * Stata v.17.0
 
 * does
@@ -102,7 +102,7 @@
 	
 * generate hh head gender variable
 	gen 			sexhh = .
-	replace 		sexhh = sex_mem if relat_mem== 1
+	replace 		sexhh = sex_mem if relat_mem == 1
 	lab var 		sexhh "Sex of household head"
 	
 * generate migration vars
@@ -119,16 +119,16 @@
 		
 	* why member left
 		preserve
-			keep 		hhid s02q04 ind_id
+			keep 			hhid s02q04 ind_id
 				*** obs == 13087
-			keep 		if s02q04 != .
+			keep 			if s02q04 != .
 				*** obs == 17
-			duplicates 	drop hhid s02q04, force
+			duplicates drop hhid s02q04, force
 				*** obs == 16
-			reshape 	wide ind_id, i(hhid) j(s02q04)
+			reshape 		wide ind_id, i(hhid) j(s02q04)
 				*** obs == 15
-			ds 			ind_id*
-			foreach 	var in `r(varlist)' {
+			ds 				ind_id*
+			foreach 		var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
 			}
 			rename 		ind_id* mem_left_why_*
@@ -138,21 +138,21 @@
 	
 	* why new member 
 		preserve
-			keep 		hhid s02q08 ind_id
+			keep 			hhid s02q08 ind_id
 				*** obs == 13087
-			keep 		if s02q08 != .
+			keep 			if s02q08 != .
 				*** obs == 35
-			duplicates 	drop hhid s02q08, force
+			duplicates drop hhid s02q08, force
 				*** obs == 35
-			reshape 	wide ind_id, i(hhid) j(s02q08)
+			reshape 		wide ind_id, i(hhid) j(s02q08)
 				*** obs == 33
-			ds 			ind_id*
-			foreach 	var in `r(varlist)' {
-				replace 	`var' = 1 if `var' != .
+			ds 				ind_id*
+			foreach 		var in `r(varlist)' {
+				replace 		`var' = 1 if `var' != .
 			}
-			rename 		ind_id* new_mem_why_*
-			tempfile 	new_mem
-			save 		`new_mem'
+			rename 			ind_id* new_mem_why_*
+			tempfile 		new_mem
+			save 			`new_mem'
 		restore
 	
 * collapse data to hh level and merge in why vars
@@ -301,14 +301,21 @@
 	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec4_comportaments", nogen	
 		*** obs == 1986: 1946 matched, 40 unmatched
 	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec4b_vaccination_covid19", nogen
-		
+		*** obs == 1986: 1946 matched, 40 unmatched
 	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec5_acces_service_base", nogen
-	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec5b_credit", nogen	
+		*** obs == 1986: 1946 matched, 40 unmatched
+	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec5b_credit", nogen
+		*** obs == 1986: 1946 matched, 40 unmatched
 	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec6a_emplrev_general", nogen
+		*** obs == 1986: 1946 matched, 40 unmatched
 	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec6db_emplrev_elevage", nogen
+		*** obs == 1986: 1946 matched, 40 unmatched
 	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec7_securite_alimentaire", nogen
+		*** obs == 1986: 1946 matched, 40 unmatched
 	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec9b_inquietudes", nogen
+		*** obs == 1986: 1946 matched, 40 unmatched
 	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec11_frag_confl_violence", nogen
+		*** obs == 1986: 1946 matched, 40 unmatched
 	
 * clean variables inconsistent with other rounds
 
@@ -340,10 +347,12 @@
 	rename 			s05q08b sch_reopen_girl
 	rename 			s05q09__* sch_att_why_*
 	drop 			s05q09_autre sch_att_why_96
+		*** obs == 1986
 	
 	* employment 
 	rename 			s06q04_0 emp_chg_why
 	drop 			s06q04_0_autre
+		*** obs == 1986
 	replace 		emp_chg_why = 96 if emp_chg_why == 13
 	
 	* livestock 
@@ -364,6 +373,7 @@
 	drop 			ag_live_sell_nowhy_7
 	
 	drop 			s06dbq03__96 s06dbq03_autre
+		*** obs == 1986
 	
 * generate round variables
 	gen				wave = `w'
