@@ -2,8 +2,8 @@
 * Created on: July 2020
 * Created by: jdm
 * Edited by : amf, lirr (style edits)
-* Last edited: 11 Aug 2022
-* Stata v.16.1
+* Last edited: 15 Aug 2022
+* Stata v.17.0
 
 * does
 	* reads in fifth round of Uganda data
@@ -118,15 +118,17 @@
 	save			`temp2'
 
 
-* ***********************************************************************
-* 3 - get respondant gender
-* ***********************************************************************
+*************************************************************************
+**# - get respondant gender
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/interview_result", clear
+		*** obs == 2122
 
 * drop all but household respondant
 	keep			hhid Rq09
+		*** obs == 2122
 
 	rename			Rq09 hh_roster__id
 
@@ -134,8 +136,10 @@
 
 * merge in household roster
 	merge 1:1		hhid hh_roster__id using "$root/wave_0`w'/sec1.dta"
+		*** obs == 11733: 2121 matched, 9611 unmatched
 
 	keep if			_merge == 3
+		*** obs == 2121
 
 * rename variables and fill in missing values
 	rename			hh_roster__id PID
@@ -143,21 +147,24 @@
 	rename			s1q06 age
 	rename			s1q07 relate_hoh
 	drop if			PID == .
+		*** obs == 2121
 
 * drop all but gender and relation to HoH
 	keep			hhid PID sex age relate_hoh
+		*** obs == 2121
 
 * save temp file
 	tempfile		temp3
 	save			`temp3'
 
 	
-* ***********************************************************************
-* 4 - get household size and gender of HOH
-* ***********************************************************************
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/sec1.dta", clear
+		*** obs == 11732
 
 * rename other variables 
 	rename 			hh_roster__id ind_id 
@@ -171,12 +178,14 @@
 	gen				hhsize = 1 if curr_mem == 1
 	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
 	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
-	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19 
+	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19
+		*** obs == 11732
 	
 * create hh head gender
-	gen 			sexhh = . 
+	gen 			sexhh = .
 	replace			sexhh = sex_mem if relat_mem == 1
 	label var 		sexhh "Sex of household head"
+		*** obs == 11732
 	
 * generate migration vars
 	rename 			s1q02 new_mem
@@ -185,6 +194,7 @@
 	replace 		s1q08 = . if s1q08 == 10
 	replace 		curr_mem = 2 if curr_mem >= .
 	gen 			mem_left = 1 if curr_mem == 2
+		*** obs == 11732
 	replace 		new_mem = 0 if new_mem == 2
 	replace 		mem_left = 0 if mem_left == 2
 	
@@ -194,10 +204,14 @@
 	* why new member 
 		preserve
 			keep 		hhid s1q08 ind_id
+				*** obs == 11732
 			keep 		if s1q08 < .
+				*** obs == 92
 			duplicates 	drop hhid s1q08, force
+				*** obs == 72
 			replace 	s1q08 = 96 if s1q08 == -96
 			reshape 	wide ind_id, i(hhid) j(s1q08)
+				*** obs == 70
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -210,9 +224,11 @@
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(hhid)
+		*** obs == 2121
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
 	merge 		1:1 hhid using `new_mem', nogen
+		*** obs == 2121: 70 matched, 2051 unmatched
 	ds 			new_mem_why_* 
 	foreach		var in `r(varlist)' {
 		replace 	`var' = 0 if `var' >= . & new_mem == 1
@@ -229,14 +245,16 @@
 	save			`temp4'
 
 	
-* ***********************************************************************
-* 5 - FIES
-* ***********************************************************************
+*************************************************************************
+**# - FIES
+*************************************************************************
 
 * load data
 	use				"$fies/UG_FIES_round`w'.dta", clear
+		*** obs == 2121
 
 	drop 			country round
+		*** obs  == 2121
 	destring 		HHID, replace
 
 * save temp file
