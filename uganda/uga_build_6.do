@@ -105,6 +105,12 @@
 	lab var			shock_13 "Floods"
 	lab var			shock_14 "Other shock"
 
+* generate cope variables
+	forval			j = 1/17 {
+		gen				cope_`j' = 0 if s9aq01 == 2 & s9aq03 == `j'
+		replace			cope_`j' = 1 if s9aq01 == 1 & s9aq03 == `j'
+	}
+	
 * rename cope variables
 	rename			s9aq03__1 cope_1
 	rename			s9aq03__2 cope_2
@@ -201,6 +207,15 @@
 * save temp file
 	tempfile		temp3
 	save			`temp3'
+	
+
+*************************************************************************
+**# - get respondant gender
+*************************************************************************
+
+* load data
+	use				"$root/wave_0`w'/interview_result", clear
+		*** obs == 
 	
 
 

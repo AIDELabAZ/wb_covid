@@ -149,22 +149,24 @@
 	save			`temp2'
 
 
-* ***********************************************************************
-* 3 - reshape section 10 wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section 10 wide data
+*************************************************************************
 
 * load safety net data - updated via convo with Talip 9/1
 	use				"$root/wave_0`w'/SEC10", clear
+		*** obs == 6675
 
 * reformat HHID
 	format 			%12.0f HHID
 
 * drop other safety nets and missing values
 	drop			s10q02 s10q04 other_nets
+		*** obs == 6675
 
 * reshape data
 	reshape 		wide s10q01 s10q03, i(HHID) j(safety_net__id)
-	*** note that cash = 101, food = 102, in-kind = 103 (unlike wave 2)
+		*** obs == 2225 | note that cash = 101, food = 102, in-kind = 103 (unlike wave 2)
 
 * rename variables
 	gen				asst_food = 1 if s10q01102 == 1 | s10q03102 == 1
@@ -191,8 +193,8 @@
 
 * drop variables
 	drop			s10q01101 s10q03101 s10q01102 s10q03102 s10q01103 s10q03103
+		*** obs == 2225
 	
-* save temp file
 * save temp file
 	tempfile		temp3
 	save			`temp3'
