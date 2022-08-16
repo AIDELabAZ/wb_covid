@@ -333,14 +333,16 @@
 	save			`temp5'
 
 	
-* ***********************************************************************
-* 7 - livestock
-* ***********************************************************************
+*************************************************************************
+**# - livestock
+*************************************************************************
 
 * load  data
 	use				"$root/wave_0`w'/sec5d.dta", clear
+		*** obs == 6363
 	drop 			if s5dq12 == 2
 	drop 			s5dq12 	
+		*** obs == 853
 
 * rename vars 
 	forval 			x = 1/5 {
@@ -353,8 +355,11 @@
 * reshape wide
 	gen 			product = cond(livestock == -96, "other", cond(livestock == 1, ///
 					"milk",cond(livestock == 2, "eggs","meat")))
+		*** obs == 853
 	drop 			livestock
+		*** obs == 853
 	reshape 		wide s5cq*, i(hhid) j(product) string
+		*** obs == 581
 
 * save temp file part 1
 	tempfile		templs1
@@ -362,21 +367,28 @@
 	
 * load data		
 	use 			"$root/wave_0`w'/sec5d.dta", clear
+		*** obs == 6363
 	drop 			if s5dq12 == 2
 	drop 			s5dq12 	
+		*** obs == 853
 
 * reshape wide
 	keep 			livestock hhid
+		*** obs == 853
 	gen 			product = cond(livestock == -96, "other", cond(livestock == 1, ///
 					"milk",cond(livestock == 2, "eggs","meat")))
+		*** obs == 853
 	reshape 		wide livestock, i(hhid) j(product) string
+		*** obs == 581
 	collapse 		(sum) livestock*, by (hhid)
+		*** obs == 581
 	replace 		livestock_products__ideggs = 1 if livestock_products__ideggs != 0
 	replace 		livestock_products__idmeat = 1 if livestock_products__idmeat != 0
 	replace 		livestock_products__idmilk = 1 if livestock_products__idmilk != 0	
 
 * save temp file
 	merge			1:1 hhid using `templs1', nogen
+		*** obs == 581: 581 matched, 0 unmatched
 	tempfile		temp6
 	save			`temp6'
 	

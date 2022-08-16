@@ -140,7 +140,7 @@
 						shock_3 == 1 | shock_4 == 1 | shock_5 == 1 | ///
 						shock_6 == 1 | shock_7 == 1 | shock_8 == 1 | ///
 						shock_9 == 1 | shock_10 == 1 | shock_11 == 1 | ///
-						shock_12 == 1 | shock_13 == 1 | shock_14== 1
+						shock_12 == 1 | shock_13 == 1 | shock_14 == 1
 	replace			shock_any = 0 if shock_any == .
 	lab var			shock_any "Experience some shock"
 
@@ -200,25 +200,27 @@
 	save			`temp3'
 
 
-* ***********************************************************************
-* 4 - get respondant gender
-* ***********************************************************************
+*************************************************************************
+**# - get respondant gender
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/interview_result", clear
+		*** obs == 2227
 
 * drop all but household respondant
 	keep			HHID Rq09
-
+		*** obs == 2227
 	rename			Rq09 hh_roster__id
 
 	isid			HHID
 
 * merge in household roster
 	merge 1:1		HHID hh_roster__id using "$root/wave_0`w'/SEC1.dta"
-
+		*** obs == 12564: 2224 matched, 10340 unmatched
 	keep if			_merge == 3
-
+		*** obs == 2224
+		
 * rename variables and fill in missing values
 	rename			hh_roster__id PID
 	rename			s1q05 sex
@@ -228,15 +230,16 @@
 
 * drop all but gender and relation to HoH
 	keep			HHID PID sex age relate_hoh
+		*** obs == 2224
 
 * save temp file
 	tempfile		temp4
 	save			`temp4'
 
 	
-* ***********************************************************************
-* 5 - get household size and gender of HOH
-* ***********************************************************************
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************
 
 * load data 
 	use				"$root/wave_0`w'/SEC1.dta", clear
@@ -411,6 +414,7 @@
 		lab var			fies_2 "Hungry but did not eat"
 		rename			s7q08 fies_3
 		lab var			fies_3 "Went without eating for a whole day"
+	
 	* rename concerns
 		rename			s8q01 concern_1
 		rename			a8q02 concern_2
