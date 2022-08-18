@@ -14,7 +14,7 @@
 	* raw Uganda data
 
 * TO DO:
-	* everything
+	* labels
 	
 
 *************************************************************************
@@ -543,23 +543,195 @@
 	
 * merge data together 
 	use				"$root/wave_0`w'/SEC1C", clear
+		*** obs == 11596
 	keep 			HHID 
 	duplicates 		drop
+		*** obs == 2100
 	merge 			1:1 HHID using `tempany', nogen
-		*** obs == 
+		*** obs == 2100: 1570 matched, 530 unmatched
 	merge 			1:1 HHID using `tempactwhy', nogen
+		*** obs == 2100: 1165 matched, 935 unmatched
 	merge 			1:1 HHID using `tempedu', nogen
 
+		*** obs == 2100: 1438 matched, 662 unmatched
+
 * save temp file
-	tempfile		temp5
-	save			`temp5'
+	tempfile		temp8
+	save			`temp8'
 	
 			
 *************************************************************************
 **# - build uganda cross section
 *************************************************************************	
 
+* load cover data
+	use				"$root/wave_0`w'/Cover", clear
+		*** obs == 2100
+		
+* merge in other sections
+	forval			x = 1/8{
+		merge			1:1 HHID using `temp`x'', nogen
+	}
+		*** obs == 2100: 2100 matched, 0 unmatched temps 1, 2, 5, 7 ,8
+		*** obs == 2100: 2099 matched, 1 unmatched temp 3
+		*** obs == 2100: 2096 matched, 4 unmatched temp 4
+		*** obs == 2100: 1543 matched, 557 unmatched temp 6
+		
+	merge 1:1			HHID using "$root/wave_0`w'/SEC1E", nogen
+		*** obs == 2100: 1457 matched, 643 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC1G", nogen
+		*** obs == 2100: 1457 matched, 643 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC3", nogen
+		*** obs == 2100: 2100 matched, 0 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC4_1", nogen 
+		*** obs == 2100: 2100 matched, 0 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC4_2", nogen
+		*** obs == 2100: 1457 matched, 643 unmatched		
+	merge 1:1			HHID using "$root/wave_0`w'/SEC4A", nogen
+		*** obs == 2100: 2100 matched 0 unmatched
+	* merge 1:1			HHID using "$root/wave_0`w'/SEC5_Other", nogen repeated questions of employment from other family member
+		*** obs == 2100: 2020 matched, 80 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC5_Resp", nogen
+		*** obs == 2100: 2100 matched, 0 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC5A", nogen
+		*** obs == 2100: 2100 matched, 0 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC5B", nogen
+		*** obs == 2100: 2100 matched, 0 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC8", nogen
+		*** obs == 2100: 2100 matched, 0 unmatched
+	merge 1:1			HHID using "$root/wave_0`w'/SEC9", nogen
+		*** obs == 2100: 2100 matched, 0 unmatched
 
+* reformat HHID
+	format 			%12.0f HHID
+
+* rename variables inconsistent with other waves
+	* rename behavioral changes
+		rename			s3q01 bh_1
+		rename			s3q02 bh_2
+		rename			s3q03 bh_3
+		rename			s3q04 bh_4
+		rename			s3q05 bh_5
+		rename			s3q06 bh_freq_wash
+		rename			s3q07_1 bh_freq_mask_oth
+		rename			s3q07_2 mask
+		rename 			s3q08 bh_freq_gath	
+	
+	* access	
+		rename 			s4q04_1__1 ac_maize
+		rename 			s4q04_1__2 ac_rice
+		rename 			s4q04_1__3 ac_beans
+		rename 			s4q04_2 ag_pr_maize_flr // note: these ask household prices and code is for "farm gate prices" s4q04_2 - 5
+		rename 			s4q04_3 ag_pr_rice
+		rename 			s4q04_4 ag_pr_bean_fr
+		rename 			s4q04_5 ag_pr_bean_dry
+		rename 			s4q19 s4q09
+		
+		gen				s4q10 = 0
+		replace			s4q10 = 1 if s4q21_1 == 1 | s4q21_2 == 1 | s4q21_3 == 1
+		drop			s4q21_*
+			*** obs == 2100
+		
+		forval			k = 1/7 {
+			gen				ac_medserv_need_type_`k' = 0 if s4q09 == 1
+			replace			ac_medserv_need_type_`k' = 1 if s4q20__`k' == 1 ///
+								& s4q09 == 1
+		}
+		
+		forval			k = 1/7 {
+			gen				ac_medserv_need_type_`k'_why = 1 if ac_medserv_need_type_`k' == 1 ///
+								
+		}
+		
+
+	* rename employment
+		rename			s5q01 emp
+		rename			s5q01a rtrn_emp
+		rename			s5q01b rtrn_emp_when
+		rename			s5q01c emp_why
+		rename 			s5q03 emp_pre_why
+		rename			s5q03a emp_search
+		rename			s5q03b emp_search_how
+		rename			s5q04a emp_same
+		rename			s5q04b emp_chg_why
+		rename			s5q05 emp_act
+		rename			s5q06 emp_stat
+		replace 		emp_stat = 6 if emp_stat == 5
+		rename 			s5q06a emp_purp
+	* non-farm income
+		rename			s5aq11 bus_emp
+		rename			s5aq11a bus_stat
+		rename 			s5aq11b_1 bus_other
+		rename			s5aq12 bus_sect
+		rename			s5aq12_1 bus_sect_oth
+		rename			s5aq13 bus_emp_inc
+		rename			s5aq14_1 bus_why
+	* rename agriculture
+		rename			s5bq16 ag_crop
+		rename 			s5bq18_1 ag_crop_1
+		rename 			s5bq18_2 ag_crop_2
+		rename 			s5bq18_3 ag_crop_3
+		rename 			s5bq19 ag_chg
+		rename			s5bq20__1 ag_chg_1
+		rename			s5bq20__2 ag_chg_2
+		rename			s5bq20__3 ag_chg_3
+		rename			s5bq20__4 ag_chg_4
+		rename			s5bq20__5 ag_chg_5
+		rename			s5bq20__6 ag_chg_6
+		rename			s5bq20__7 ag_chg_7
+		rename			s5bq21__1 ag_covid_1
+		rename			s5bq21__3 ag_covid_3
+		rename			s5bq21__4 ag_covid_4
+		rename			s5bq21__5 ag_covid_5
+		rename			s5bq21__6 ag_covid_6
+		rename			s5bq21__7 ag_covid_7
+		rename			s5bq21__8 ag_covid_8
+		rename			s5bq21__9 ag_covid_9
+		rename 			s5bq21a ag_main
+		rename 			s5bq21b ag_main_plant_comp
+		rename 			s5bq21c ag_main_area
+		rename 			s5bq21d ag_expect
+		rename 			s5bq23 ag_sell_norm
+		rename 			s5bq24 ag_sell_rev_exp 
+	* rename food security
+		rename			s8q01 fies_4
+		lab var			fies_4 "Worried about not having enough food to eat"
+		rename			s8q02 fies_5
+		lab var			fies_5 "Unable to eat healthy and nutritious/preferred foods"
+		rename			s8q03 fies_6
+		lab var			fies_6 "Ate only a few kinds of food"
+		rename			s8q04 fies_7
+		lab var			fies_7 "Skipped a meal"
+		rename			s8q05 fies_8
+		lab var			fies_8 "Ate less than you thought you should"
+		rename			s8q06 fies_1
+		lab var			fies_1 "Ran out of food"
+		rename			s8q07 fies_2
+		lab var			fies_2 "Hungry but did not eat"
+		rename			s8q08 fies_3
+		lab var			fies_3 "Went without eating for a whole day"	
+	* rename concerns
+		rename			s9q01 concern_1
+		rename			s9q02 concern_2
+		rename 			s9q03a have_cov_oth
+		rename 			s9q03b have_cov_self
+		gen				have_symp = 1 if s9q03__1 == 1 | s9q03__2 == 1 | s9q03__3 == 1 | ///
+							s9q03__4 == 1 | s9q03__5 == 1 | s9q03__6 == 1 | ///
+							s9q03__7 == 1 | s9q03__8 == 1
+		replace			have_symp = 2 if have_symp == .
+		order			have_symp, after(concern_2)	
+		rename 			s9q04 have_test
+		rename 			s9q05 concern_3
+		rename			s9q06 concern_4
+		rename			s9q07 concern_5
+		rename			s9q08 concern_6
+		rename			s9q09 concern_7
+	* rename mental health
+		forval 			x = 1/8 {
+			rename 			s9q10_`x' mh_`x'
+		}	
+				
+		
 * save panel		
 	* gen wave data
 		rename			wfinal phw_cs

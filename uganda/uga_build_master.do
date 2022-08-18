@@ -14,6 +14,8 @@
 	* raw Uganda data
 
 * TO DO:
+	* ECD variables
+	* revalue ac_medserv_why
 	* when new waves available:
 		* create build for new wave based on previous ones
 		* update global list of waves below
@@ -294,6 +296,7 @@
 	rename			s4q12__3 ac_elec
 	rename			s4q12__4 ac_solar
 	rename			s4q12__5 ac_solar_kit
+	
 * rename education & bank
 	rename 			s4q16 edu_cont
 	rename			s4q17__1 edu_cont_1

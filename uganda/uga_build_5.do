@@ -404,9 +404,9 @@
 	forval 			x = 1/6 {
 	    merge 		1:1 hhid using `temp`x'', nogen
 	}
-	merge 1:1 		hhid using"$root/wave_0`w'/sec1d.dta", nogen
-	merge 1:1 		hhid using"$root/wave_0`w'/sec1e.dta", nogen
-	merge 1:1 		hhid using"$root/wave_0`w'/sec1f.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/sec1d.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/sec1e.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/sec1f.dta", nogen
 	merge 1:1 		hhid using "$root/wave_0`w'/SEC3.dta", nogen
 	merge 1:1 		hhid using "$root/wave_0`w'/SEC4.dta", nogen
 	merge 1:1 		hhid using "$root/wave_0`w'/SEC4A.dta", nogen
