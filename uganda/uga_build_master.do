@@ -2,8 +2,8 @@
 * Created on: July 2020
 * Created by: jdm
 * Edited by : jdm
-* Last edited: 29 September 2020
-* Stata v.16.1
+* Last edited: 18 August 2022
+* Stata v.17.0
 
 * does
 	* merges together each section of Uganda data
@@ -28,7 +28,7 @@
 * **********************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5"
+	global 			waves "1" "2" "3" "4" "5" "6"
 	
 * define
 	global	root	=	"$data/uganda/raw"

@@ -2,7 +2,7 @@
 * Created on: July 2020
 * Created by: jdm
 * Edited by: lirr
-* Edited on: 20 May 2022
+* Edited on: 18 August 2022
 * Stata v.17.0
 
 * does
@@ -58,8 +58,8 @@
 
 	if `"`c(username)'"' == "lirro" {
 		global 		code  	"C:/Users/lirro/Documents/GitHub/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-		global 		output_f "G:/My Drive/wb_covid/output"
+		global 		data	"G:/.shortcut-targets-by-id/1wmQb8xn5Qop-2J14D7Z2rdKxJhcwfP_q/wb_covid/data"
+		global 		output_f "G:/.shortcut-targets-by-id/1wmQb8xn5Qop-2J14D7Z2rdKxJhcwfP_q/wb_covid/output"
 	}
 
 

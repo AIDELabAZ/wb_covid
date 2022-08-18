@@ -621,29 +621,40 @@
 		rename 			s4q04_1__1 ac_maize
 		rename 			s4q04_1__2 ac_rice
 		rename 			s4q04_1__3 ac_beans
-		rename 			s4q04_2 ag_pr_maize_flr // note: these ask household prices and code is for "farm gate prices" s4q04_2 - 5
-		rename 			s4q04_3 ag_pr_rice
-		rename 			s4q04_4 ag_pr_bean_fr
-		rename 			s4q04_5 ag_pr_bean_dry
+		rename 			s4q04_2 hh_pr_maize_flr // note: similar to ag_pr but for households
+		rename 			s4q04_3 hh_pr_rice
+		rename 			s4q04_4 hh_pr_bean_fr
+		rename 			s4q04_5 hh_pr_bean_dry
 		rename 			s4q19 s4q09
 		
 		gen				s4q10 = 0
 		replace			s4q10 = 1 if s4q21_1 == 1 | s4q21_2 == 1 | s4q21_3 == 1
 		drop			s4q21_*
 			*** obs == 2100
-		
+			
+		* create medical service access type variables	
 		forval			k = 1/7 {
 			gen				ac_medserv_need_type_`k' = 0 if s4q09 == 1
-			replace			ac_medserv_need_type_`k' = 1 if s4q20__`k' == 1 ///
+			replace			ac_medserv_need_type_`k' = 1 if s4q20__`k' == 1  ///
 								& s4q09 == 1
 		}
+		drop			s4q20_*
 		
+		* create reason unable to access med services
 		forval			k = 1/7 {
-			gen				ac_medserv_need_type_`k'_why = 1 if ac_medserv_need_type_`k' == 1 ///
-								
+			gen				ac_medserv_need_type_`k'_why = 0 if s4q09 == 1
+			
+				forvalues		j = 1/3 {
+					replace 			ac_medserv_need_type_`k'_why = s4q22_`j' ///
+								if medical_access__id_`j' == `k' & s4q22_`j' != .
+				
+			}
 		}
-		
 
+	* SWIFT coding
+		rename			s4aq02 s4q12__2
+		rename			s4aq08 ac_internet
+		
 	* rename employment
 		rename			s5q01 emp
 		rename			s5q01a rtrn_emp
@@ -667,32 +678,21 @@
 		rename			s5aq13 bus_emp_inc
 		rename			s5aq14_1 bus_why
 	* rename agriculture
-		rename			s5bq16 ag_crop
-		rename 			s5bq18_1 ag_crop_1
-		rename 			s5bq18_2 ag_crop_2
-		rename 			s5bq18_3 ag_crop_3
-		rename 			s5bq19 ag_chg
-		rename			s5bq20__1 ag_chg_1
-		rename			s5bq20__2 ag_chg_2
-		rename			s5bq20__3 ag_chg_3
-		rename			s5bq20__4 ag_chg_4
-		rename			s5bq20__5 ag_chg_5
-		rename			s5bq20__6 ag_chg_6
-		rename			s5bq20__7 ag_chg_7
-		rename			s5bq21__1 ag_covid_1
-		rename			s5bq21__3 ag_covid_3
-		rename			s5bq21__4 ag_covid_4
-		rename			s5bq21__5 ag_covid_5
-		rename			s5bq21__6 ag_covid_6
-		rename			s5bq21__7 ag_covid_7
-		rename			s5bq21__8 ag_covid_8
-		rename			s5bq21__9 ag_covid_9
-		rename 			s5bq21a ag_main
-		rename 			s5bq21b ag_main_plant_comp
-		rename 			s5bq21c ag_main_area
-		rename 			s5bq21d ag_expect
+		rename			t0_s5bq16_R4 ag_crop	
+		rename 			t0_s5bq18_1 ag_crop_1
+		rename 			t0_s5bq18_2 ag_crop_2
+		rename 			t0_s5bq18_3 ag_crop_3
+		rename			s5bq21_1 ag_pr_ban_s
+		rename			s5bq21_2 ag_pr_ban_m
+		rename			s5bq21_3 ag_pr_ban_l
+		rename			s5bq21_7 ag_pr_bean_dry
+		rename			s5bq21_9 ag_pr_bean_fr
+		rename			s5bq21_8 ag_pr_maize
 		rename 			s5bq23 ag_sell_norm
-		rename 			s5bq24 ag_sell_rev_exp 
+		rename 			s5bq24 ag_sell_rev_exp
+		rename			s5bq25 harv_sell_need
+		rename 			s5bq26 s5aq31
+		
 	* rename food security
 		rename			s8q01 fies_4
 		lab var			fies_4 "Worried about not having enough food to eat"
@@ -721,19 +721,12 @@
 		replace			have_symp = 2 if have_symp == .
 		order			have_symp, after(concern_2)	
 		rename 			s9q04 have_test
-		rename 			s9q05 concern_3
 		rename			s9q06 concern_4
-		rename			s9q07 concern_5
-		rename			s9q08 concern_6
 		rename			s9q09 concern_7
-	* rename mental health
-		forval 			x = 1/8 {
-			rename 			s9q10_`x' mh_`x'
-		}	
-				
 		
 * save panel		
 	* gen wave data
+		rename			baseline_hhid baseline_HHID
 		rename			wfinal phw_cs
 		lab var			phw "sampling weights - cross section"	
 		gen				wave = `w'
