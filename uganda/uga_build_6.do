@@ -2,7 +2,7 @@
 * Created on: August 2020
 * Created by: lirr
 * Edited by : lirr
-* Last edited: 15 Aug 2022
+* Last edited: 18 Aug 2022
 * Stata v.17.0
 
 * does
@@ -14,7 +14,7 @@
 	* raw Uganda data
 
 * TO DO:
-	* labels
+	* 
 	
 
 *************************************************************************
@@ -283,7 +283,7 @@
 
 * drop all but gender and relation to HoH
 	keep			HHID PID sex age relate_hoh
-		*** obs == 
+		*** obs == 2096
 
 * save temp file
 	tempfile		temp4

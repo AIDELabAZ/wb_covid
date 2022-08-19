@@ -37,7 +37,7 @@
 	global	logout	=	"$data/uganda/logs"
 
 * open log
-	cap log 		close
+	cap log 		close 
 	log using		"$logout/uga_build", append
 
 	

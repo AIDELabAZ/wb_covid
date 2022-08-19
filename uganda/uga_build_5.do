@@ -2,7 +2,7 @@
 * Created on: July 2020
 * Created by: jdm
 * Edited by : amf, lirr (style edits)
-* Last edited: 15 Aug 2022
+* Last edited: 19 Aug 2022
 * Stata v.17.0
 
 * does
@@ -262,9 +262,9 @@
 	save			`temp5'
 
 	
-* ***********************************************************************
-* 6 - education 
-* ***********************************************************************
+*************************************************************************
+**# - education 
+*************************************************************************
 	
 * generate edu_act = 1 if any child engaged in learning activities
 	use				"$root/wave_0`w'/sec1c.dta", clear

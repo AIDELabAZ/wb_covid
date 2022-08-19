@@ -350,7 +350,8 @@
 
 * load cover data
 	use				"$root/wave_0`w'/Cover", clear
-	
+	 *** obs == 2227
+	 
 * merge in other sections
 	forval x = 1/6 {
 	    merge 1:1 HHID using `temp`x'', nogen
