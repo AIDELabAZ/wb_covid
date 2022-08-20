@@ -55,7 +55,7 @@
 		if 			`r' > 1 & `r' < 10 {
 					append using "$export/wave_0`r'/r`r'"
 		}		
-		if 			`r' == 10  {
+		if 			`r'  > 9  {
 					append using "$export/wave_`r'/r`r'"
 		}
 	}
@@ -609,8 +609,8 @@
 	isid 			hhid_bf wave
 	
 * save file
-	customsave, 	idvar(hhid_bf) filename("bf_panel.dta") ///
-					path("$export") dofile(bf_build_master) user($user)
+	save			"$export/bf_panel", replace
+		
 
 * close the log
 	log	close

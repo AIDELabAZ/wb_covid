@@ -57,11 +57,14 @@
 
 * append round datasets to build master panel
 	foreach 		r in "$waves" {
-	    if 			`r' == 1 {
-			use		"$export/wave_01/r1", clear
+	    if 				`r' == 1 {
+					use	"$export/wave_01/r1", clear
 		}
-		else {
-			append 	using "$export/wave_0`r'/r`r'"
+		if 				`r' > 1 & `r' < 10 {
+					append using "$export/wave_0`r'/r`r'"
+		}		
+		if 				`r' > 9  {
+					append using "$export/wave_`r'/r`r'"
 		}
 	}
 	compress
@@ -240,7 +243,7 @@
 		drop 			ac5_edu_type__98 ac5_edu_type__99 ac5_edu_type_other ///
 							 ac5a_pri_edu_type__96 ac5b_sec_edu_type__96
 
-		rename 			ac3_sch_open sch_reopen
+		*rename 			ac3_sch_open sch_reopen
 		rename 			ac3_* *
 		rename 			ac4_sch_reg_boys sch_reopen_boy
 		rename 			ac4_sch_reg_girls sch_reopen_girl
@@ -852,7 +855,7 @@
 						"Addis Ababa" 1011 "Dire Dawa"
 	lab val			region region
 
-/*
+
 * **********************************************************************
 * 4 - QC check
 * **********************************************************************
@@ -910,7 +913,7 @@
 	restore
 	destring 		wave, replace
 
-*/
+
 * **********************************************************************
 * 5 - end matter, clean up to save
 * **********************************************************************

@@ -108,6 +108,8 @@
 	use 			`temp_hhsize', clear
 	merge			1:1 household_id using `temp_micro', nogen
 	***	obs == 2178, 2 unmatched from using see below note
+	
+	
 	/* note: households 041013088801410025 & 130108010100203100 appear in 
 	   the microdata but not the roster data for round 10, they appear in both
 	   roster and microdata for round 9 */

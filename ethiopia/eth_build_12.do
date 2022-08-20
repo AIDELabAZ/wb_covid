@@ -122,6 +122,9 @@
 		*** obs == 888
 	merge			1:1 household_id using `temp_weights', nogen
 		*** obs == 881 NOTE: there are 8 households w/o r12 weights
+	merge			1:1 household_id using "$root/wave_`w'/HFPS-HH_weights_cross-section_R12", nogen
+	
+	rename			wfinal phw12
 
 * label variables for youth aspirations & employment
 	rename			ii4_resp_age yae_age
@@ -181,9 +184,14 @@
 		gen				yae_mig_where_96 = 1 if ya37_leave_where == -96
 		replace			yae_mig_where_96 = 0 if yae_mig_where_96 == .
 	
-	drop			*_other ya5_work_cur ya14_
+	drop			*_other ya5_work_cur ya14_*
+	
 * destring vars to match other rounds
-	destring 		cs3c_* cs3b_kebeleid cs5_eaid, replace
+
+	split			ii4_resp_id, p("-")
+	replace			ii4_resp_id = ii4_resp_id2
+	drop			ii4_resp_id1 ii4_resp_id2 
+	destring 		cs3c_* cs3b_kebeleid cs5_eaid  ii*, replace
 						
 * save round file
 	save			"$export/wave_`w'/r`w'", replace
