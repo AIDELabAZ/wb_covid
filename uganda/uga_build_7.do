@@ -346,7 +346,7 @@
 *************************************************************************
 **# - reshape planting section
 *************************************************************************	
-
+/* NOTE: I am UNSURE what this adds that is not in other data, also very oddly organized will 
 * load data
 	use				"$root/wave_0`w'/SEC6E_2", clear
 		*** obs == 4312
@@ -363,7 +363,8 @@
 	
 * reshape data to extract ag crops	
 	reshape			wide crop__id s6eq21*, i(HHID) j(ag_crop)
-	
+
+*/	
 	
 *************************************************************************
 **# - build uganda cross section
@@ -391,11 +392,149 @@
 	merge 1:1 		HHID using "$root/wave_0`w'/SEC5.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/SEC5A.dta", nogen
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC7.dta", nogen
+		*** obs == 1950: 1950 matched, 0 unmatched
+	merge 1:1		HHID using "$root/wave_0`w'/SEC6E_1", nogen
+		*** obs == 1950: 1950 matched, 0 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/SEC8.dta", nogen
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC9A.dta", nogen	
+		*** obs == 1950: 1950 matched, 0 unmatched
+	merge 1:1 		HHID using "$root/wave_0`w'/SEC9.dta", nogen	
+		*** obs == 1950: 1950 matched, 0 unmatched
+	merge 1:1		HHID using "$root/wave_0`w'/SEC10.dta", nogen
+		*** obs == 1950: 1950 matched, 0 unmatched
+		
+* reformat HHID
+	format			%12.0f HHID
 	
+* rename variables to match other rounds or countries
+	* rename govt actions 
+		rename 			s2q01 cvd_lockdwn // note: asks if 2nd lockdown easement was good idea
+		rename 			s2q02 cvd_sch
+		rename 			s2q03 cvd_church
+		rename			s2q04 vac_prev_sent
 	
+	* rename myths
+		rename			s2bq2a_1 s2q02a_1
+		rename			s2bq2a_3 s2q02a_2
+		rename			s2bq2a_4 s2q02a_3
+		rename			s2bq2a_5 s2q02a_4
+		rename			s2bq2a_6 s2q02a_5
+		rename			s2bq2a_7 s2q02a_6
+		rename			s2bq2a_8 s2q02a_7
+		rename			s2bq2a_2 myth_8
+		
+	* rename behavioral changes
+		rename			s3q01 bh_1
+		rename			s3q02 bh_2
+		rename			s3q03 bh_3
+		rename			s3q06 bh_freq_wash
+		rename			s3q07_1 bh_freq_mask_oth
+		rename			s3q07_2 mask
+		rename 			s3q08 bh_freq_gath
+		
+	* rename access to medicine
+		rename			s4q15 s4q08
+		
+	* rename employment
+		rename			s5q01 emp
+		rename			s5q01a rtrn_emp
+		rename			s5q01b rtrn_emp_when
+		rename			s5q01c emp_why
+		rename 			s5q03 emp_pre_why
+		rename			s5q03a emp_search
+		rename			s5q03b emp_search_how
+		rename			s5q04a emp_same
+		rename			s5q04b emp_chg_why
+		rename			s5q05 emp_act
+		rename			s5q06 emp_stat
+		replace 		emp_stat = 100 if emp_stat == 5
+		replace 		emp_stat = 5 if emp_stat == 6
+		replace 		emp_stat = 6 if emp_stat == 100
+		rename 			s5q06a emp_purp
+		rename			s5q8b1 emp_hrs
+		rename			s5q8c1 emp_hrs_chg
+		rename			s5q08f_* emp_saf*
+		rename 			s5q08g emp_saf_fol
+		rename 			s5q08g_1 emp_saf_fol_per
+		
+	* non-farm income
+		rename			s5aq11 bus_emp	
+		rename			s5aq11a bus_stat
+		rename 			s5aq11b_1 bus_other
+		rename			s5aq12 bus_sect
+		rename			s5aq12_1 bus_sect_oth
+		rename			s5aq13 bus_emp_inc
+		rename			s5aq14_1 bus_why
+		
+	* rename agriculture
+
+		rename			s6eq21a__1 ag_nocrop_1
+		rename			s6eq21a__2 ag_nocrop_2
+		rename			s6eq21a__3 ag_nocrop_3
+		rename			s6eq21a__4 ag_nocrop_4
+		rename			s6eq21a__5 ag_nocrop_5
+		rename			s6eq21a__6 ag_nocrop_6
+		rename			s6eq21a__7 ag_nocrop_7
+		rename			s6eq21a__8 ag_nocrop_8
+		rename			s6eq21a__9 ag_nocrop_12
+		rename			s6eq21a__n96 ag_nocrop_9
+		rename 			s5bq18__0 ag_crop_1
+		rename 			s5bq18__1 ag_crop_2
+		rename 			s5bq18__2 ag_crop_3
+		rename 			s6eq19 ag_chg
+		rename			s6eq20__1 ag_chg_1
+		rename			s6eq20__2 ag_chg_2
+		rename			s6eq20__3 ag_chg_3
+		rename			s6eq20__4 ag_chg_4
+		rename			s6eq20__5 ag_chg_5
+		rename			s6eq20__6 ag_chg_6
+		rename			s6eq20__7 ag_chg_7
+		rename			s6eq21__1 ag_covid_1
+		rename			s6eq21__2 ag_covid_2
+		rename			s6eq21__3 ag_covid_3
+		rename			s6eq21__4 ag_covid_4
+		rename			s6eq21__5 ag_covid_5
+		rename			s6eq21__6 ag_covid_6
+		rename			s6eq21__7 ag_covid_7
+		rename			s6eq21__8 ag_covid_8
+		rename			s6eq21__9 ag_covid_9
+		rename			s6eq21c ag_main_plots
+		rename 			s6eq23 ag_sell_norm
+		rename 			s6eq24 ag_sell_rev_exp 
+		rename			s6eq25 harv_sell_need
+		rename			s6eq26 s5q31
+		rename			s6eq27__* s5bq27_*
+		
+	* rename food security
+		rename			s8q01 fies_4
+		lab var			fies_4 "Worried about not having enough food to eat"
+		rename			s8q02 fies_5
+		lab var			fies_5 "Unable to eat healthy and nutritious/preferred foods"
+		rename			s8q03 fies_6
+		lab var			fies_6 "Ate only a few kinds of food"
+		rename			s8q04 fies_7
+		lab var			fies_7 "Skipped a meal"
+		rename			s8q05 fies_8
+		lab var			fies_8 "Ate less than you thought you should"
+		rename			s8q06 fies_1
+		lab var			fies_1 "Ran out of food"
+		rename			s8q07 fies_2
+		lab var			fies_2 "Hungry but did not eat"
+		rename			s8q08 fies_3
+		lab var			fies_3 "Went without eating for a whole day"	
+		
+	* rename concerns
+		rename 			s9q03a have_cov_oth
+		rename 			s9q03b have_cov_self
+		rename 			s9q04 have_test
+		rename			s9q10 cov_vac_know
+		
+		forval			p = 1/13 {
+			gen				know_vac_`p' = . if cov_vac_know == 2
+			replace			know_vac_`p' = 0 if cov_vac_know == 1 & s9q10b__`p' != 1
+			replace			know_vac_`p' = 1 if cov_vac_know == 1 & s9q10b__`p' == 1
+		}
+		gen				know_vac_96 = 1 if cov_vac_know == 1 & s9q10b__n96 == 1
+		
 * save file
 	save			"$export/wave_0`w'/r`w'", replace
 
