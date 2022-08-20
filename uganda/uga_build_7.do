@@ -2,7 +2,7 @@
 * Created on: August 2020
 * Created by: lirr
 * Edited by : lirr
-* Last edited: 19 Aug 2022
+* Last edited: 20 Aug 2022
 * Stata v.17.0
 
 * does
@@ -322,22 +322,18 @@
 	
 * rename variables to match
 	forval			k = 1/7 {
-		gen				ac_medserv_need_type_`k' = 0 if s4q20`k' != .
-		replace			ac_medserv_need_type_`k' = 1 if s4q20`k' == 1
+		gen				ac_medserv_type_`k' = 0 if s4q20`k' != .
+		replace			ac_medserv_type_`k' = 1 if s4q20`k' == 1
 	}
 
 	forval			k = 1/7 {
-		gen 			ac_medserv_need_type_`k'_why = 0 if s4q21`k' != .
-		replace			ac_medserv_need_type_`k'_why = s4q22`k' if s4q21`k' == 0
+		gen 			ac_medserv_type_`k'_why = 0 if s4q21`k' != .
+		replace			ac_medserv_type_`k'_why = s4q22`k' if s4q21`k' == 0
 	}
 	
 	drop s4q2*
 		*** obs == 1950
-	
-	
-	collapse		(max) ac_medserv_need*, by(HHID)
-		*** obs == 1950
-	
+
 * save temp file
 	tempfile		temp5
 	save			`temp5'
@@ -422,6 +418,9 @@
 		rename			s2bq2a_8 s2q02a_7
 		rename			s2bq2a_2 myth_8
 		
+	* rename symptoms
+		rename			s2bq1b__* s2q01b__*
+		
 	* rename behavioral changes
 		rename			s3q01 bh_1
 		rename			s3q02 bh_2
@@ -501,7 +500,7 @@
 		rename 			s6eq23 ag_sell_norm
 		rename 			s6eq24 ag_sell_rev_exp 
 		rename			s6eq25 harv_sell_need
-		rename			s6eq26 s5q31
+		rename			s6eq26 s5aq31
 		rename			s6eq27__* s5bq27_*
 		
 	* rename food security
@@ -527,15 +526,43 @@
 		rename 			s9q03b have_cov_self
 		rename 			s9q04 have_test
 		rename			s9q10 cov_vac_know
+		rename			s9q10b__* know_vac_*
+		rename			s9q11 have_vac
+		rename			s9q12 vac_type
+		rename			s9q13 cov_vac
 		
-		forval			p = 1/13 {
-			gen				know_vac_`p' = . if cov_vac_know == 2
-			replace			know_vac_`p' = 0 if cov_vac_know == 1 & s9q10b__`p' != 1
-			replace			know_vac_`p' = 1 if cov_vac_know == 1 & s9q10b__`p' == 1
-		}
-		gen				know_vac_96 = 1 if cov_vac_know == 1 & s9q10b__n96 == 1
+		gen				cov_vac_dk_why_1 = 1 if s9q14 == 1 & cov_vac == 3
+		gen				cov_vac_dk_why_3 = 1 if s9q14 == 2 & cov_vac == 3
+		gen				cov_vac_dk_why_6 = 1 if s9q14 == 4 & cov_vac == 3
+		gen				cov_vac_dk_why_4 = 1 if s9q14 == 5 & cov_vac == 3
+		gen				cov_vac_dk_why_5 = 1 if s9q14 == 6 & cov_vac == 3
+		gen				cov_vac_dk_why_10= 1 if s9q14 == 7 & cov_vac == 3
+		gen				cov_vac_dk_why_11 = 1 if s9q14 == 8 & cov_vac == 3
+		gen				cov_vac_dk_why_12 = 1 if s9q14 == 9 & cov_vac == 3
 		
-* save file
-	save			"$export/wave_0`w'/r`w'", replace
+		gen				cov_vac_no_why_1 = 1 if s9q14 == 1 & cov_vac == 3
+		gen				cov_vac_no_why_3 = 1 if s9q14 == 2 & cov_vac == 3
+		gen				cov_vac_no_why_6 = 1 if s9q14 == 4 & cov_vac == 3
+		gen				cov_vac_no_why_4 = 1 if s9q14 == 5 & cov_vac == 3
+		gen				cov_vac_no_why_5 = 1 if s9q14 == 6 & cov_vac == 3
+		gen				cov_vac_no_why_10= 1 if s9q14 == 7 & cov_vac == 3
+		gen				cov_vac_no_why_11 = 1 if s9q14 == 8 & cov_vac == 3
+		gen				cov_vac_no_why_12 = 1 if s9q14 == 9 & cov_vac == 3
+		
+	* drop variables
+			*** note: these variables relate to covid and should be inspected in documentation r7s9 if determined needed
+		drop			 s9q10c s9q10d s9q11b s9q11c s9q11d s9q14 
+
+* save panel		
+	* gen wave data
+		rename			baseline_hhid baseline_HHID
+		rename			wfinal phw_cs
+		lab var			phw "sampling weights - cross section"	
+		gen				wave = `w'
+		lab var			wave "Wave number"
+		order			baseline_HHID wave phw, after(HHID)
+		
+	* save file
+		save			"$export/wave_0`w'/r`w'", replace
 
 /* END */		

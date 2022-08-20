@@ -2,7 +2,7 @@
 * Created on: August 2020
 * Created by: lirr
 * Edited by : lirr
-* Last edited: 18 Aug 2022
+* Last edited: 20 Aug 2022
 * Stata v.17.0
 
 * does
@@ -589,7 +589,8 @@
 		*** obs == 2100: 1457 matched, 643 unmatched		
 	merge 1:1			HHID using "$root/wave_0`w'/SEC4A", nogen
 		*** obs == 2100: 2100 matched 0 unmatched
-	* merge 1:1			HHID using "$root/wave_0`w'/SEC5_Other", nogen repeated questions of employment from other family member
+	* merge 1:1			HHID using "$root/wave_0`w'/SEC5_Other", nogen 
+		* Note: repeated questions of employment from other family member
 		*** obs == 2100: 2020 matched, 80 unmatched
 	merge 1:1			HHID using "$root/wave_0`w'/SEC5_Resp", nogen
 		*** obs == 2100: 2100 matched, 0 unmatched
@@ -605,7 +606,7 @@
 * reformat HHID
 	format 			%12.0f HHID
 
-* rename variables inconsistent with other waves
+* rename variables inconsistent with other waves	
 	* rename behavioral changes
 		rename			s3q01 bh_1
 		rename			s3q02 bh_2
@@ -634,18 +635,18 @@
 			
 		* create medical service access type variables	
 		forval			k = 1/7 {
-			gen				ac_medserv_need_type_`k' = 0 if s4q09 == 1
-			replace			ac_medserv_need_type_`k' = 1 if s4q20__`k' == 1  ///
+			gen				ac_medserv_type_`k' = 0 if s4q09 == 1
+			replace			ac_medserv_type_`k' = 1 if s4q20__`k' == 1  ///
 								& s4q09 == 1
 		}
 		drop			s4q20_*
 		
 		* create reason unable to access med services
 		forval			k = 1/7 {
-			gen				ac_medserv_need_type_`k'_why = 0 if s4q09 == 1
+			gen				ac_medserv_type_`k'_why = 0 if s4q09 == 1
 			
 				forvalues		j = 1/3 {
-					replace 			ac_medserv_need_type_`k'_why = s4q22_`j' ///
+					replace 			ac_medserv_type_`k'_why = s4q22_`j' ///
 								if medical_access__id_`j' == `k' & s4q22_`j' != .
 				
 			}
