@@ -109,7 +109,7 @@
 * load education data
 	use				"$root/wave_`w'/WB_LSMS_HFPM_HH_Survey-Round`w'_Education_Clean-microdata", clear
 		*** obs == 3831
-/*
+
 * format variables to match master
 	rename			individual_id ind_id
 	
@@ -117,7 +117,9 @@
 	rename			inded4_attend_edclose edu_act
 	rename			inded5_register ac3_sch_child_reg
 	rename			inded7_reopen ac3_sch_reopen
+
 	
+/*
 	gen				ac3_sch_child_reg_1 = 0 if inded10_register_reason != . ///
 						& inded10_register_reason != 1
 	gen				ac3_sch_child_reg_2 = 0 if inded10_register_reason != . ///
