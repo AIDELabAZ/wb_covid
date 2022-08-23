@@ -2,7 +2,7 @@
 * Created on: July 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edited: 22 July 2022
+* Last edited: 23 August 2022
 * Stata v.17.0
 
 * does
@@ -89,9 +89,12 @@
 * merge sections based on hhid
 	use				"$root/wave_`w'/r`w'_sect_5e_9a", clear
 		*** obs == 974
+	merge			1:1 hhid using "$root/wave_`w'/r`w'_sect_a_12", nogen
+		*** obs == 1238: 974 matched, 264 unmatched
+
 * merge in other section
 	merge			1:1 hhid using `tempa', nogen
-		*** obs == 986: 974 matched, 12 unmatched
+		*** obs == 1238: 986 matched, 252 unmatched
 		
 * generate round variable
 	gen				wave = `w'
@@ -191,6 +194,10 @@
 	
 	* covid vaccine likelihood to receive when advised
 		rename			s9aq4__* cov_vac_more_lik_*
+	
+	* rename weight variables NOTE: these are only for youth panel
+		rename			wt_youth_r12 wt_round12
+		rename			wt_youth_r12_panel wt_r12panel
 	
 * save round file
 	save			"$export/wave_`w'/r`w'", replace

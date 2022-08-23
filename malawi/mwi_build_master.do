@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: alj
-* Edited by: jdm, amf
-* Last edited: November 2020
-* Stata v.16.1
+* Edited by: jdm, amf, lirr
+* Last edited: 23 Aug 2022
+* Stata v.17.0
 
 * does
 	* merges together each round
@@ -27,7 +27,7 @@
 * **********************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11"
+	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12"
 	
 * define
 	global	root	=	"$data/malawi/raw"
@@ -961,11 +961,11 @@
 	order			region, after(sector)
 	lab var			region "Region"
 
-/*
+
 * **********************************************************************
 * 4 - QC check 
 * **********************************************************************
-
+/*
 * compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)
@@ -984,7 +984,7 @@
 		keep 		per*
 		foreach 	x in "$waves"  {
 			foreach q in "$waves"  {
-				gen flag_`var'_`q'`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
+				gen flag_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
 			}
 		}	
 		keep 		*flag*
@@ -1020,6 +1020,7 @@
 	destring 		wave, replace
 */
 
+
 * **********************************************************************
 * 5 - end matter, clean up to save
 * **********************************************************************
@@ -1032,8 +1033,7 @@
 	isid 			hhid_mwi wave
 	
 * save file
-		customsave , idvar(hhid_mwi) filename("mwi_panel.dta") ///
-			path("$export") dofile(mwi_build) user($user)
+	save			"$export/mwi_panel", replace
 
 * close the log
 	log	close

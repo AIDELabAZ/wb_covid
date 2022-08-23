@@ -26,7 +26,7 @@
 * **********************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11"
+	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12"
 	
 * define 
 	global	root	=	"$data/nigeria/raw"
@@ -103,7 +103,7 @@
 	lab var			phw_cs "sampling weights - cross section"
 	drop			wt_round* weight	
 	gen 			phw_pnl = .
-	foreach 		r in 3 4 5 {
+	foreach 		r in 3 4 5 12 {
 		replace 	phw_pnl = wt_r`r'panel 
 	}
 	drop 			wt_r*panel
@@ -706,8 +706,8 @@
 	isid 			hhid_nga wave
 
 * save file
-		customsave , idvar(hhid_nga) filename("nga_panel.dta") ///
-			path("$export") dofile(nga_build) user($user)
+		save			"$export/nga_panel", replace
+
 
 * close the log
 	//log	close

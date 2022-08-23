@@ -243,7 +243,7 @@
 		drop 			ac5_edu_type__98 ac5_edu_type__99 ac5_edu_type_other ///
 							 ac5a_pri_edu_type__96 ac5b_sec_edu_type__96
 
-		*rename 			ac3_sch_open sch_reopen
+		rename 			ac3_sch_open sch_reopen
 		rename 			ac3_* *
 		rename 			ac4_sch_reg_boys sch_reopen_boy
 		rename 			ac4_sch_reg_girls sch_reopen_girl
@@ -833,8 +833,8 @@
 						sw7_purchase sw7_purchase_0 sw_duration roster_key lo5_protect ///
 						mig_name* mig5_reason_other* ph3_crops_area_u_other ///
 						ag4_crops_reas_fert_other lo7_support_other ph5_crops_harvest_u_other ///
-						ph8_crops_harvest_covid_how ag_live_affect_other em20a_farm other_access ///
-						submissiondate
+						ph8_crops_harvest_covid_how ag_live_affect_other em20a_farm ///
+						ac4_other_access_reason submissiondate
 
 * rename regions
 	replace 		region = 1001 if region == 1
@@ -859,7 +859,7 @@
 * **********************************************************************
 * 4 - QC check
 * **********************************************************************
-
+/*
 * compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)
@@ -877,8 +877,8 @@
 		}
 		keep 		per*
 		foreach 	x in "$waves"  {
-			foreach q in "$waves"  {
-				gen flag_`var'_`q'`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
+			foreach 	q in "$waves"  {
+				gen flag_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != . 
 			}
 		}
 		keep 		*flag*
@@ -912,7 +912,7 @@
 	export 			excel using "$export/eth_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-
+*/
 
 * **********************************************************************
 * 5 - end matter, clean up to save
@@ -925,8 +925,8 @@
 	isid 			hhid_eth wave
 
 * save file
-	customsave, 	idvar(hhid_eth) filename("eth_panel.dta") ///
-					path("$export") dofile(eth_build_master) user($user)
+	* save file
+		save			"$export/eth_panel", replace
 
 * close the log
 	log	close

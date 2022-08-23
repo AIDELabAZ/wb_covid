@@ -271,44 +271,46 @@
 		rename			s4q8 bh_freq_mask
 		
 	* child development
-		rename			s5dq7 ecd_play
-		rename			s5dq8 ecd_read
-		rename			s5dq9 ecd_story
-		rename			s5dq10 ecd_song
-		rename			s5dq11 ecd_out
-		rename			s5dq12 ecd_ncd
-		rename			s5dq13 ecd_num_bks
+		rename			s5dq7 s5eq1
+		rename			s5dq8 s5eq2
+		rename			s5dq9 s5eq3
+		rename			s5dq10 s5eq4
+		rename			s5dq11 s5eq5
+		rename			s5dq12 s5eq6
+		rename			s5dq13 s5eq7
 		
-		rename			s5dq14 ac_elec
-		rename			s5dq15 ac_radio
-		rename			s5dq16 ac_tv
-		rename			s5dq17 ac_mobile
-		rename			s5dq18 ac_phone
-		rename			s5dq19 ac_comp
+		rename			s5dq14 s5fq1
+		rename			s5dq15 s5fq2
+		rename			s5dq16 s5fq3
+		rename			s5dq17 s5fq4
+		rename			s5dq18 s5fq5
+		rename			s5dq19 s5fq6
 
-		rename			s5dq21 ecd_ed_1
-		rename			s5dq22 ecd_ed_2
-		rename			s5dq23 ecd_ed_3
-		rename			s5dq24 ecd_ed_4
-		rename			s5dq25 ecd_ed_5
-		rename			s5dq26 ecd_ed_6
-		rename			s5dq27 ecd_ed_7
-		rename			s5dq28 ecd_ed_8
+		rename			s5dq20 ac_internet
 		
-		rename			s5dq29 ecd_bh_1
-		rename			s5dq30 ecd_bh_2
-		rename			s5dq31 ecd_bh_3
-		rename			s5dq32 ecd_bh_4
-		rename			s5dq33 ecd_bh_5
-		rename			s5dq34 ecd_bh_6
+		rename			s5dq21 s5gq21
+		rename			s5dq22 s5gq22
+		rename			s5dq23 s5gq23
+		rename			s5dq24 s5gq24
+		rename			s5dq25 s5gq25
+		rename			s5dq26 s5gq26
+		rename			s5dq27 s5gq27
+		rename			s5dq28 s5gq28
 		
-		rename			s5dq35 ecd_disc_1
-		rename			s5dq36 ecd_disc_2
-		rename			s5dq37 ecd_disc_3
-		rename			s5dq38 ecd_disc_4
-		rename			s5dq39 ecd_disc_5
-		rename			s5dq40 ecd_disc_6
-		rename			s5dq41 ecd_disc
+		rename			s5dq29 s5iq1
+		rename			s5dq30 s5iq2
+		rename			s5dq31 s5iq3
+		rename			s5dq32 s5iq4
+		rename			s5dq33 s5iq5
+		rename			s5dq34 s5iq6
+		
+		rename			s5dq35 s5jq1
+		rename			s5dq36 s5jq2
+		rename			s5dq37 s5jq3
+		rename			s5dq38 s5jq4
+		rename			s5dq39 s5jq5
+		rename			s5dq40 s5jq6
+		rename			s5dq41 s5jq7
 	
 	* employment
 		rename			s6q3a emp_search
@@ -338,17 +340,17 @@
 		rename			s6aq9 harv_sell_need
 		rename			s6aq10 harv_sell
 		
-		gen				ag_sell_where_5 = . // note this is home/farm sale
-		replace			ag_sell_where_5 = 1 if s6aq11 == 1
-		replace			ag_sell_where_5 = 0 if ag_sell_where_5 == .
+		gen				s6eq4__1 = . // note this is home/farm sale
+		replace			s6eq4__1 = 1 if s6aq11 == 1
+		replace			s6eq4__1 = 0 if s6eq4__1 == .
 		
-		gen				ag_sell_where_2 = . // note this is daily market
-		replace			ag_sell_where_2 = 1 if s6aq11 == 2
-		replace			ag_sell_where_2 = 0 if ag_sell_where_2 == .
+		gen				s6qe4__2 = . // note this is daily market
+		replace			s6qe4__2 = 1 if s6aq11 == 2
+		replace			s6qe4__2 = 0 if s6qe4__2 == .
 		
-		gen				ag_sell_where_3 = . // note this is weekly market
-		replace			ag_sell_where_3 = 1 if s6aq11 == 3
-		replace			ag_sell_where_3 = 0 if ag_sell_where_3 == .
+		gen				s6qe4__3 = . // note this is weekly market
+		replace			s6qe4__3 = 1 if s6aq11 == 3
+		replace			s6qe4__3 = 0 if s6qe4__3 == .
 		
 		drop			s6aq3a s6aq4 s6aq5_* s6aq3__2 /// note unsure of what to do with q8/8b in 6e-12
 	

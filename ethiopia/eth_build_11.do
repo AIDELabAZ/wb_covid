@@ -113,88 +113,12 @@
 * format variables to match master
 	rename			individual_id ind_id
 	
-	rename			inded1_attend_school ac3_sch_child
-	rename			inded4_attend_edclose edu_act
-	rename			inded5_register ac3_sch_child_reg
-	rename			inded7_reopen ac3_sch_reopen
-
-	
-/*
-	gen				ac3_sch_child_reg_1 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 1
-	gen				ac3_sch_child_reg_2 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 2
-	gen				ac3_sch_child_reg_3 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 3
-	gen				ac3_sch_child_reg_4 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 4
-	gen				ac3_sch_child_reg_5 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 5
-	gen				ac3_sch_child_reg_6 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 6
-	gen				ac3_sch_child_reg_7 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 7
-	gen				ac3_sch_child_reg_8 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 8
-	gen				ac3_sch_child_reg_9 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 9
-	gen				ac3_sch_child_reg_11 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 11
-	gen				ac3_sch_child_reg_12 = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != 12
-	gen				ac3_sch_child_reg_other = 0 if inded10_register_reason != . ///
-						& inded10_register_reason != -96
-	
-	replace			ac3_sch_child_reg_1 = 1 if inded10_register_reason == 1
-	replace			ac3_sch_child_reg_2 = 1 if inded10_register_reason == 2
-	replace			ac3_sch_child_reg_3 = 1 if inded10_register_reason == 3
-	replace			ac3_sch_child_reg_4 = 1 if inded10_register_reason == 4
-	replace			ac3_sch_child_reg_5 = 1 if inded10_register_reason == 5
-	replace			ac3_sch_child_reg_6 = 1 if inded10_register_reason == 6
-	replace			ac3_sch_child_reg_7 = 1 if inded10_register_reason == 7
-	replace			ac3_sch_child_reg_8 = 1 if inded10_register_reason == 8
-	replace			ac3_sch_child_reg_9 = 1 if inded10_register_reason == 9
-	replace			ac3_sch_child_reg_11 = 1 if inded10_register_reason == 11
-	replace			ac3_sch_child_reg_12 = 1 if inded10_register_reason == 12
-	replace			ac3_sch_child_reg_other = 1 if inded10_register_reason == -96
+* drop variables labelled other
+	drop			*_other
+		*** obs == 
 		
-	gen				ac3_sch_att_why_1 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 1
-	gen				ac3_sch_att_why_6 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 2
-	gen				ac3_sch_att_why_16 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 3
-	gen				ac3_sch_att_why_17 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 4
-	gen				ac3_sch_att_why_8 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 5
-	gen				ac3_sch_att_why_18 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 6
-	gen				ac3_sch_att_why_7 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 7
-	gen				ac3_sch_att_why_19 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 8						
-	gen				ac3_sch_att_why_3 = 0 if inded11_attend_reason != . ///
-						& inded11_attend_reason != 9
-	gen				ac3_sch_att_why_5 = 0 if inded11_attend_reason != . /// note: could be coded as own number 
-						& inded11_attend_reason != 11
-	gen				ac3_sch_att_why_13 = 0 if inded11_attend_reason != . /// note: 12 := due to lack of stability assuming this refers to conflict
-						& inded11_attend_reason != 12
-	
-	replace			ac3_sch_att_why_1 = 1 if inded11_attend_reason == 1
-	replace			ac3_sch_att_why_6 = 1 if inded11_attend_reason == 2
-	replace			ac3_sch_att_why_16 = 1 if inded11_attend_reason == 3
-	replace			ac3_sch_att_why_17 = 1 if inded11_attend_reason == 4
-	replace			ac3_sch_att_why_8 = 1 if inded11_attend_reason == 5
-	replace			ac3_sch_att_why_18 = 1 if inded11_attend_reason == 6
-	replace			ac3_sch_att_why_7 = 1 if inded11_attend_reason == 7
-	replace			ac3_sch_att_why_19 = 1 if inded11_attend_reason == 8
-	replace			ac3_sch_att_why_3 = 1 if inded11_attend_reason == 9
-	replace			ac3_sch_att_why_5 = 1 if inded11_attend_reason == 11	
-	replace			ac3_sch_att_why_13 = 1 if inded11_attend_reason == 12
-	*/
 * collapse by max
-	collapse		(max) `r(varlist)' , by(household_id)
+	collapse		(max) inded*  , by(household_id)
 		*** obs == 1537
 		
 * save temp file
