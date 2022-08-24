@@ -2,8 +2,8 @@
 * Created on: July 2020
 * Created by: jdm
 * Edited by: amf
-* Last edited: Nov 2020 
-* Stata v.16.1
+* Last edited: 24 August 2022
+* Stata v.17.0
 
 * does
 	* cleans Nigeria panel
@@ -637,7 +637,7 @@
 	lab var			region "Region"	
 	
 	
-/*
+
 * **********************************************************************
 * 4 - QC check (SEE NOTES IN OUTPUT EXCEL)
 * **********************************************************************
@@ -660,10 +660,10 @@
 		keep 		per*
 		foreach 	x in "$waves"  {
 			foreach q in "$waves"  {
-				gen flag_`var'_`q'`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
+				gen f_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
 			}
 		}	
-		keep 		*flag*
+		keep 		*f*
 
 	* drop if all missing	
 		foreach 	v of varlist _all {
@@ -678,7 +678,7 @@
 		restore   
 	}
 		
-* create dataset of flags
+* create dataset of flagss
 	preserve
 	ds, 			has(type numeric)
 	clear
@@ -687,14 +687,14 @@
 	foreach 		var in `r(varlist)' {
 		merge 		1:1 n using `temp`var'', nogen
 	}
-	reshape 		long flag_, i(n) j(variables) string 
-	drop 			if flag_ == .
+	reshape 		long f_, i(n) j(variables) string 
+	drop 			if f_ == .
 	drop 			n
 	sort 			variable	
 	export 			excel using "$export/nga_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-*/
+
 
 * **********************************************************************
 * 5 - end matter, clean up to save

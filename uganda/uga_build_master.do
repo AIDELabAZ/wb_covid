@@ -2,7 +2,7 @@
 * Created on: July 2020
 * Created by: jdm
 * Edited by : lirr
-* Last edited: 19 August 2022
+* Last edited: 24 August 2022
 * Stata v.17.0
 
 * does
@@ -680,7 +680,7 @@
 	* create country variables
 	gen				country = 4
 	order			country
-	lab def			country 1 "Ethiopia" 2 "Malawi" 3 "Nigeria" 4 "Uganda"
+	lab def			country 1 "Ethiopia" 2 "Malawi" 3 "Nigeria" 4 "Uganda" 5 "Burkina Faso"
 	lab val			country country
 	lab var			country "Country"
 
@@ -688,6 +688,7 @@
 * **********************************************************************
 * 4 - QC check 
 * **********************************************************************
+
 * compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)

@@ -2,7 +2,7 @@
 * Created on: Oct 2020
 * Created by: jdm
 * Edited by: lirr
-* Last edit: 08 Jul 2022
+* Last edit: 24 August 2022
 * Stata v.17.0
 
 * does
@@ -207,6 +207,19 @@
 		rename 			bh10_cov_vaccine_why_3 cov_vac_no_why_8
 		rename 			bh10_cov_vaccine_why_4 cov_vac_no_why_1
 		rename 			bh10_cov_vaccine_why_5 cov_vac_no_why_9
+		
+		rename			bh11_vaccine_no_2 cov_vac_no_why_2
+		rename			bh11_vaccine_no_3 cov_vac_no_why_3
+		rename			bh11_vaccine_no_4 cov_vac_no_why_6
+		rename			bh11_vaccine_no_5 cov_vac_no_why_4
+		rename			bh11_vaccine_no_6 cov_vac_no_why_5
+		
+		rename 			bh11_vaccine_notsure_1 cov_vac_dk_why_1
+		rename 			bh11_vaccine_notsure_2 cov_vac_dk_why_2
+		rename 			bh11_vaccine_notsure_3 cov_vac_dk_why_3
+		rename 			bh11_vaccine_notsure_4 cov_vac_dk_why_6
+		rename 			bh11_vaccine_notsure_5 cov_vac_dk_why_4
+		rename 			bh11_vaccine_notsure_6 cov_vac_dk_why_5
 
 	* education
 		rename			ac3_sch_child sch_child
@@ -834,7 +847,7 @@
 						mig_name* mig5_reason_other* ph3_crops_area_u_other ///
 						ag4_crops_reas_fert_other lo7_support_other ph5_crops_harvest_u_other ///
 						ph8_crops_harvest_covid_how ag_live_affect_other em20a_farm ///
-						ac4_other_access_reason submissiondate
+						ac4_other_access_reason submissiondate bh11_*
 
 * rename regions
 	replace 		region = 1001 if region == 1
@@ -859,7 +872,7 @@
 * **********************************************************************
 * 4 - QC check
 * **********************************************************************
-/*
+
 * compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)
@@ -878,10 +891,10 @@
 		keep 		per*
 		foreach 	x in "$waves"  {
 			foreach 	q in "$waves"  {
-				gen flag_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != . 
+				gen f_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != . 
 			}
 		}
-		keep 		*flag*
+		keep 		*f*
 
 	* drop if all missing
 		foreach 	v of varlist _all {
@@ -905,14 +918,14 @@
 	foreach 		var in `r(varlist)' {
 		merge 		1:1 n using `temp`var'', nogen
 	}
-	reshape 		long flag_, i(n) j(variables) string
-	drop 			if flag_ == .
+	reshape 		long f_, i(n) j(variables) string
+	drop 			if f_ == .
 	drop 			n
 	sort 			variable
 	export 			excel using "$export/eth_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-*/
+
 
 * **********************************************************************
 * 5 - end matter, clean up to save

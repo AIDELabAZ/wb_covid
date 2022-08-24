@@ -109,11 +109,12 @@
 	merge			1:1 household_id using `temp_micro', nogen
 	***	obs == 2178, 2 unmatched from using see below note
 	
+* rename variables to match other rounds and countries
+	rename			bh11_vaccine_no_1 bh10_cov_vaccine_why_4
 	
-	/* note: households 041013088801410025 & 130108010100203100 appear in 
-	   the microdata but not the roster data for round 10, they appear in both
-	   roster and microdata for round 9 */
-	   
+* drop unneccesary variables
+	drop			bh12_*
+	 
 * destring vars to match other rounds
 	destring		cs5_eaid cs3b_kebeleid, replace
 	

@@ -962,10 +962,11 @@
 	lab var			region "Region"
 
 
+
 * **********************************************************************
 * 4 - QC check 
 * **********************************************************************
-/*
+
 * compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)
@@ -984,10 +985,10 @@
 		keep 		per*
 		foreach 	x in "$waves"  {
 			foreach q in "$waves"  {
-				gen flag_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
+				gen f_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
 			}
 		}	
-		keep 		*flag*
+		keep 		*f*
 
 	* drop if all missing	
 		foreach 	v of varlist _all {
@@ -1011,14 +1012,14 @@
 	foreach 		var in `r(varlist)' {
 		merge 		1:1 n using `temp`var'', nogen
 	}
-	reshape 		long flag_, i(n) j(variables) string 
-	drop 			if flag_ == .
+	reshape 		long f_, i(n) j(variables) string 
+	drop 			if f_ == .
 	drop 			n
 	sort 			variable	
 	export 			excel using "$export/mwi_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-*/
+
 
 
 * **********************************************************************

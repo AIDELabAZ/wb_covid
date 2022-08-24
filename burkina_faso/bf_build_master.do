@@ -2,8 +2,8 @@
 * Created on: April 2021
 * Created by: amf
 * Edited by: lirr
-* Last edited: 10 Aug 2022 
-* Stata v.16.1
+* Last edited: 24 Aug 2022 
+* Stata v.17.0
 
 * does
 	* cleans Burkina Faso panel
@@ -596,6 +596,66 @@
 	rename 			s11q05 move_why
 	rename 			s11q06 hh_needs_met
 	drop 			s11q*_autre
+	
+	
+************************************************************************
+**# - QC check
+************************************************************************
+
+* compare numerical variables to other rounds & flag if 25+ percentage points different
+	tostring 		wave, replace
+	ds, 			has(type numeric)
+	foreach 		var in `r(varlist)' {
+		preserve
+		keep 		`var' wave
+		destring 	wave, replace
+		gen 		counter = 1
+		collapse 	(sum) counter, by(`var' wave)
+		reshape 	wide counter, i(`var') j(wave)
+		drop 		if `var' == .
+		foreach 	x in "$waves" {
+			egen 	tot_`x' = total(counter`x')
+			gen 	per_`x' = counter`x' / tot_`x'
+		}
+		keep 		per*
+		foreach 	x in "$waves"  {
+			foreach 	q in "$waves"  {
+				gen f_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != . 
+			}
+		}
+		keep 		*f*
+
+	* drop if all missing
+		foreach 	v of varlist _all {
+			capture assert mi(`v')
+			if 		!_rc {
+				drop `v'
+			}
+		}
+		gen 		n = _n
+		tempfile 	temp`var'
+		save 		`temp`var''
+		restore
+	}
+
+* create dataset of flags
+	preserve
+	ds, 			has(type numeric)
+	clear
+	set 			obs 15
+	gen 			n = _n
+	foreach 		var in `r(varlist)' {
+		merge 		1:1 n using `temp`var'', nogen
+	}
+	reshape 		long f_, i(n) j(variables) string
+	drop 			if f_ == .
+	drop 			n
+	sort 			variable
+	export 			excel using "$export/bf_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
+	restore
+	destring 		wave, replace
+
+
 	
 	
 ************************************************************************
