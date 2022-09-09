@@ -868,7 +868,7 @@
 						"Addis Ababa" 1011 "Dire Dawa"
 	lab val			region region
 
-
+/*
 * **********************************************************************
 * 4 - QC check
 * **********************************************************************
@@ -925,7 +925,8 @@
 	export 			excel using "$export/eth_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-
+*/
+	
 
 * **********************************************************************
 * 5 - end matter, clean up to save

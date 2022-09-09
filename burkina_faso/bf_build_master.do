@@ -597,7 +597,7 @@
 	rename 			s11q06 hh_needs_met
 	drop 			s11q*_autre
 	
-	
+/*
 ************************************************************************
 **# - QC check
 ************************************************************************
@@ -654,8 +654,7 @@
 	export 			excel using "$export/bf_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-
-
+*/
 	
 	
 ************************************************************************
