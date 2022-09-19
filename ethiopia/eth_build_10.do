@@ -1,14 +1,14 @@
 * Project: WB COVID
-* Created on: Oct 2020
-* Created by: jdm
+* Created on: June 2022
+* Created by: lirr
 * Edited by: lirr
-* Last edit: 03 June 2022 
+* Last edit: 06 June 2022
 * Stata v.17.0
 
 * does
-	* reads in first round of Ethiopia data
-	* builds round 1
-	* outputs round 1
+	* reads in tenth round of Ethiopia data
+	* builds round 10
+	* outputs round 10
 
 * assumes
 	* raw Ethiopia data
@@ -33,47 +33,45 @@
 	log using		"$logout/eth_build", append
 
 * set local wave number & file number
-	local			w = 1
-	local 			f = 610
+	local			w = 10	
 	
 * make wave folder within refined folder if it does not already exist 
-	capture mkdir "$export/wave_0`w'" 
+	capture mkdir "$export/wave_`w'" 
 	
-	
+
 *************************************************************************
 **# - roster data - get household size and gender of household head  
 *************************************************************************
 
 * load roster data
-	use				"$root/wave_0`w'/200`f'_WB_LSMS_HFPM_HH_Survey_Roster-Round`w'_Clean-Public", clear
-		*** obs == 14411
+	use 			"$root/wave_`w'/R`w'_WB_LSMS_HFPM_HH_Survey_Public_Roster", clear
+	*** obs == 9728
+	
+* rename house roster variables
+	rename			individual_id ind_id
+	rename			bi2_hhm_new new_mem
+	rename			bi3_hhm_stillm curr_mem
+	rename			bi4_hhm_gender sex_mem
+	rename			bi5_hhm_age age_mem
+	rename			bi5_hhm_age_months age_month_mem
+	rename			bi6_hhm_relhhh relat_mem
 
-* rename other variables 
-	rename 			individual_id ind_id 
-	rename 			bi2_hhm_new new_mem
-	rename 			bi3_hhm_stillm curr_mem
-	rename 			bi4_hhm_gender sex_mem
-	rename 			bi5_hhm_age age_mem
-	rename 			bi5_hhm_age_months age_month_mem
-	rename 			bi6_hhm_relhhh relat_mem
-						
 * generate counting variables
 	gen				hhsize = 1 if curr_mem == 1
-	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
-	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
-	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19  
+	gen				hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
+	gen				hhsize_child = 1 if curr_mem -- 1 & age_mem < 19 & age_mem != .
+	gen				hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19
 	
 * create hh head gender
-	gen 			sexhh = . 
+	gen				sexhh = .
 	replace			sexhh = sex_mem if relat_mem == 1
-	label var 		sexhh "Sex of household head"
-	
+	lab var			sexhh "Sex of household head"
+
 * collapse data
 	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem ///
-					(max) sexhh, by(household_id)
-		*** obs == 3249
-					
-	replace 		new_mem = 1 if new_mem > 0 & new_mem < .
+						(max) sexhh, by(household_id)
+	***	obs == 2176
+	replace			new_mem = 1 if new_mem > 0 & new_mem < .
 	lab var			hhsize "Household size"
 	lab var 		hhsize_adult "Household size - only adults"
 	lab var 		hhsize_child "Household size - children 0 - 18"
@@ -82,51 +80,45 @@
 * save temp file
 	tempfile 		temp_hhsize
 	save 			`temp_hhsize'
-						
+	
 	
 *************************************************************************
 **# - format microdata 
 *************************************************************************
-
+	
 * load microdata
-	use				"$root/wave_0`w'/200`f'_WB_LSMS_HFPM_HH_Survey-Round`w'_Clean-Public_Microdata", clear
-		*** obs == 3249
-
+	use 			"$root/wave_`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear
+	*** obs == 2178
+	
 * generate round variable
 	gen				wave = `w'
 	lab var			wave "Wave number"
 	
 * save temp file
-	tempfile 		temp_micro
-	save 			`temp_micro'
-
-
-*************************************************************************
-**# - FIES score
-*************************************************************************
-
-* not available for round 1 
-
-
+	tempfile		temp_micro
+	save			`temp_micro'
+	*** obs == 2178
+	
+	
 *************************************************************************
 **# - merge to build complete dataset for the round
 *************************************************************************
 
-* merge household size and microdata
+* merge to build complete dataset for the round
 	use 			`temp_hhsize', clear
-	merge 			1:1 household_id using `temp_micro', assert(3) nogen
-		*** obs == 3249
-* make variable types match for master append	
-	tostring 		as4_food_source_other, replace
-		*** obs == 3249
-* rename vars inconsistent with other rounds
-	* behavior 	
-		rename			bh1_handwash bh_1
-		rename			bh2_handshake bh_2
-		rename			bh3_gatherings bh_3
+	merge			1:1 household_id using `temp_micro', nogen
+	***	obs == 2178, 2 unmatched from using see below note
+	
+* rename variables to match other rounds and countries
+	rename			bh11_vaccine_no_1 bh10_cov_vaccine_why_4
+	
+* drop unneccesary variables
+	drop			bh12_*
+	 
+* destring vars to match other rounds
+	destring		cs5_eaid cs3b_kebeleid, replace
 	
 * save round file
-	save			"$export/wave_0`w'/r`w'", replace
+	save			"$export/wave_`w'/r`w'", replace
 
-	
 /* END */

@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
-* Edited by : amf
-* Last edited: December 2020
-* Stata v.16.1
+* Edited by : amf, lirr (style edits)
+* Last edited: 11 aug 2022
+* Stata v.17.0
 
 * does
 	* reads in first round of Uganda data
@@ -17,9 +17,9 @@
 	* complete
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define
 	global	root	=	"$data/uganda/raw"
@@ -38,42 +38,47 @@
 	capture mkdir "$export/wave_0`w'" 	
 	
 	
-* ***********************************************************************
-* 1 - reshape section 6 wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section 6 (income loss) wide data
+*************************************************************************
 
 * load income data
 	use				"$root/wave_0`w'/SEC6", clear
+		*** obs == 26724
 
 * reformat HHID
 	format 			%12.0f HHID
 
 * drop other source
 	drop			s6q01_Other
+		*** obs == 26724
 
 * replace value for "other"
 	replace			income_loss__id = 96 if income_loss__id == -96
 
 * reshape data
 	reshape 		wide s6q01 s6q02, i(HHID) j(income_loss__id)
+		*** obs == 2227
 
 * save temp file
 	tempfile		temp1
 	save			`temp1'
 
 
-* ***********************************************************************
-* 2 - reshape section 9 wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section 9 (shocks/coping) wide data
+*************************************************************************
 
-* load income data
+* load data
 	use				"$root/wave_0`w'/SEC9", clear
+		*** obs == 31178
 
 * reformat HHID
 	format 			%12.0f HHID
 
 * drop other shock
 	drop			s9q01_Other
+		*** obs == 31178
 
 * replace value for "other"
 	replace			shocks__id = 96 if shocks__id == -96
@@ -124,39 +129,44 @@
 
 * drop unnecessary variables
 	drop	shocks__id s9q01 s9q02 s9q03_Other
+		*** obs == 31178
 
 * collapse to household level
 	collapse (max) cope_1- shock_14, by(HHID)
+		*** obs == 2227
 	
 * generate any shock variable
 	gen				shock_any = 1 if shock_1 == 1 | shock_2 == 1 | ///
 						shock_3 == 1 | shock_4 == 1 | shock_5 == 1 | ///
 						shock_6 == 1 | shock_7 == 1 | shock_8 == 1 | ///
 						shock_9 == 1 | shock_10 == 1 | shock_11 == 1 | ///
-						shock_12 == 1 | shock_13 == 1 | shock_14== 1
+						shock_12 == 1 | shock_13 == 1 | shock_14 == 1
 	replace			shock_any = 0 if shock_any == .
 	lab var			shock_any "Experience some shock"
+
 * save temp file
 	tempfile		temp2
 	save			`temp2'
 
 
-* ***********************************************************************
-* 3 - reshape section 10 wide data
-* ***********************************************************************
+*************************************************************************
+**# - reshape section 10 wide data
+*************************************************************************
 
 * load safety net data - updated via convo with Talip 9/1
 	use				"$root/wave_0`w'/SEC10", clear
+		*** obs == 6675
 
 * reformat HHID
 	format 			%12.0f HHID
 
 * drop other safety nets and missing values
 	drop			s10q02 s10q04 other_nets
+		*** obs == 6675
 
 * reshape data
 	reshape 		wide s10q01 s10q03, i(HHID) j(safety_net__id)
-	*** note that cash = 101, food = 102, in-kind = 103 (unlike wave 2)
+		*** obs == 2225 | note that cash = 101, food = 102, in-kind = 103 (unlike wave 2)
 
 * rename variables
 	gen				asst_food = 1 if s10q01102 == 1 | s10q03102 == 1
@@ -183,32 +193,34 @@
 
 * drop variables
 	drop			s10q01101 s10q03101 s10q01102 s10q03102 s10q01103 s10q03103
+		*** obs == 2225
 	
-* save temp file
 * save temp file
 	tempfile		temp3
 	save			`temp3'
 
 
-* ***********************************************************************
-* 4 - get respondant gender
-* ***********************************************************************
+*************************************************************************
+**# - get respondant gender
+*************************************************************************
 
 * load data
 	use				"$root/wave_0`w'/interview_result", clear
+		*** obs == 2227
 
 * drop all but household respondant
 	keep			HHID Rq09
-
+		*** obs == 2227
 	rename			Rq09 hh_roster__id
 
 	isid			HHID
 
 * merge in household roster
 	merge 1:1		HHID hh_roster__id using "$root/wave_0`w'/SEC1.dta"
-
+		*** obs == 12564: 2224 matched, 10340 unmatched
 	keep if			_merge == 3
-
+		*** obs == 2224
+		
 * rename variables and fill in missing values
 	rename			hh_roster__id PID
 	rename			s1q05 sex
@@ -218,15 +230,16 @@
 
 * drop all but gender and relation to HoH
 	keep			HHID PID sex age relate_hoh
+		*** obs == 2224
 
 * save temp file
 	tempfile		temp4
 	save			`temp4'
 
 	
-* ***********************************************************************
-* 5 - get household size and gender of HOH
-* ***********************************************************************
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************
 
 * load data 
 	use				"$root/wave_0`w'/SEC1.dta", clear
@@ -337,7 +350,8 @@
 
 * load cover data
 	use				"$root/wave_0`w'/Cover", clear
-	
+	 *** obs == 2227
+	 
 * merge in other sections
 	forval x = 1/6 {
 	    merge 1:1 HHID using `temp`x'', nogen
@@ -401,6 +415,7 @@
 		lab var			fies_2 "Hungry but did not eat"
 		rename			s7q08 fies_3
 		lab var			fies_3 "Went without eating for a whole day"
+	
 	* rename concerns
 		rename			s8q01 concern_1
 		rename			a8q02 concern_2

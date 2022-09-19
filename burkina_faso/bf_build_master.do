@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: April 2021
 * Created by: amf
-* Edited by: amf
-* Last edited: Nov 2021 
-* Stata v.16.1
+* Edited by: lirr
+* Last edited: 24 Aug 2022 
+* Stata v.17.0
 
 * does
 	* cleans Burkina Faso panel
@@ -16,12 +16,12 @@
 	* add and check 9 when we get questionnaire
 
 		
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# - setup
+************************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10"
+	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11"
 	
 * define 
 	global	root	=	"$data/burkina_faso/raw"
@@ -33,9 +33,9 @@
 	log using 		"$logout/bf_build", append
 
 	
-* **********************************************************************
-* 1 - run do files for each round & generate variable comparison excel
-* **********************************************************************
+************************************************************************
+**# - run do files for each round & generate variable comparison excel
+************************************************************************
 
 * run do files for all rounds and create crosswalk of variables by wave
 	foreach 		r in "$waves" {
@@ -43,9 +43,9 @@
 	}
 
 
-* ***********************************************************************
-* 2 - create burkina faso panel 
-* ***********************************************************************
+*************************************************************************
+**# - create burkina faso panel 
+*************************************************************************
 
 * append round datasets to build master panel
 	foreach 		r in "$waves" {
@@ -55,7 +55,7 @@
 		if 			`r' > 1 & `r' < 10 {
 					append using "$export/wave_0`r'/r`r'"
 		}		
-		if 			`r' == 10  {
+		if 			`r'  > 9  {
 					append using "$export/wave_`r'/r`r'"
 		}
 	}
@@ -105,9 +105,9 @@
 	} 	
 
 	
-* ***********************************************************************
-* 3 - clean bukina faso panel
-* ***********************************************************************	
+*************************************************************************
+**# - clean bukina faso panel
+*************************************************************************	
 
 * mental health 
 	forval 			x = 1/8 {
@@ -597,10 +597,69 @@
 	rename 			s11q06 hh_needs_met
 	drop 			s11q*_autre
 	
+/*
+************************************************************************
+**# - QC check
+************************************************************************
+
+* compare numerical variables to other rounds & flag if 25+ percentage points different
+	tostring 		wave, replace
+	ds, 			has(type numeric)
+	foreach 		var in `r(varlist)' {
+		preserve
+		keep 		`var' wave
+		destring 	wave, replace
+		gen 		counter = 1
+		collapse 	(sum) counter, by(`var' wave)
+		reshape 	wide counter, i(`var') j(wave)
+		drop 		if `var' == .
+		foreach 	x in "$waves" {
+			egen 	tot_`x' = total(counter`x')
+			gen 	per_`x' = counter`x' / tot_`x'
+		}
+		keep 		per*
+		foreach 	x in "$waves"  {
+			foreach 	q in "$waves"  {
+				gen f_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != . 
+			}
+		}
+		keep 		*f*
+
+	* drop if all missing
+		foreach 	v of varlist _all {
+			capture assert mi(`v')
+			if 		!_rc {
+				drop `v'
+			}
+		}
+		gen 		n = _n
+		tempfile 	temp`var'
+		save 		`temp`var''
+		restore
+	}
+
+* create dataset of flags
+	preserve
+	ds, 			has(type numeric)
+	clear
+	set 			obs 15
+	gen 			n = _n
+	foreach 		var in `r(varlist)' {
+		merge 		1:1 n using `temp`var'', nogen
+	}
+	reshape 		long f_, i(n) j(variables) string
+	drop 			if f_ == .
+	drop 			n
+	sort 			variable
+	export 			excel using "$export/bf_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
+	restore
+	destring 		wave, replace
+*/
 	
-* **********************************************************************
-* 4 - end matter, clean up to save
-* **********************************************************************
+	
+************************************************************************
+**# - end matter, clean up to save
+************************************************************************
 
 * final clean 
 	compress	
@@ -609,8 +668,8 @@
 	isid 			hhid_bf wave
 	
 * save file
-	customsave, 	idvar(hhid_bf) filename("bf_panel.dta") ///
-					path("$export") dofile(bf_build_master) user($user)
+	save			"$export/bf_panel", replace
+		
 
 * close the log
 	log	close

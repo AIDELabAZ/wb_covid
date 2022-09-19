@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
-* Edited by : jdm
-* Last edited: 29 September 2020
-* Stata v.16.1
+* Edited by : lirr
+* Last edited: 24 August 2022
+* Stata v.17.0
 
 * does
 	* merges together each section of Uganda data
@@ -14,6 +14,8 @@
 	* raw Uganda data
 
 * TO DO:
+	* ECD variables
+	* revalue ac_medserv_why
 	* when new waves available:
 		* create build for new wave based on previous ones
 		* update global list of waves below
@@ -26,7 +28,7 @@
 * **********************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5"
+	global 			waves "1" "2" "3" "4" "5" "6" "7"
 	
 * define
 	global	root	=	"$data/uganda/raw"
@@ -35,7 +37,7 @@
 	global	logout	=	"$data/uganda/logs"
 
 * open log
-	cap log 		close
+	cap log 		close 
 	log using		"$logout/uga_build", append
 
 	
@@ -120,6 +122,13 @@
 	rename 			s1fq12 ecd_ncd 
 	rename 			s1fq13 ecd_num_bks 
 	
+	rename			s1hq34 ecd_disc_1
+	rename			s1hq35 ecd_disc_2
+	rename			s1hq36 ecd_disc_3
+	rename			s1hq37 ecd_disc_4
+	rename			s1hq38 ecd_disc_5
+	rename			s1hq39 ecd_disc_6
+	rename			s1hq40 ecd_disc
 	
 * rename symptoms
 	rename			s2q01 know
@@ -294,6 +303,7 @@
 	rename			s4q12__3 ac_elec
 	rename			s4q12__4 ac_solar
 	rename			s4q12__5 ac_solar_kit
+	
 * rename education & bank
 	rename 			s4q16 edu_cont
 	rename			s4q17__1 edu_cont_1
@@ -613,7 +623,7 @@
 						s5q05a s5a11c_1 s5a11c s5bq17_1__n96 ag_sell_where_3 ///
 						s5aq11b s5bq20__n96 s5bq21__n96 operatingR3 bus_status_R3 ///
 						work_status_R3 t0_Rq03 t0_Rq04 bseqno pid_ubos ///
-						agic_case_filter hh_roster__id
+						agic_case_filter hh_roster__id s5cq14a_* s5cq14_*
 						
 * rename basic information
 	gen				sector = 2 if urban == 1
@@ -670,7 +680,7 @@
 	* create country variables
 	gen				country = 4
 	order			country
-	lab def			country 1 "Ethiopia" 2 "Malawi" 3 "Nigeria" 4 "Uganda"
+	lab def			country 1 "Ethiopia" 2 "Malawi" 3 "Nigeria" 4 "Uganda" 5 "Burkina Faso"
 	lab val			country country
 	lab var			country "Country"
 
@@ -678,6 +688,7 @@
 * **********************************************************************
 * 4 - QC check 
 * **********************************************************************
+
 * compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)
@@ -695,7 +706,7 @@
 		}
 		keep 		per*
 		foreach 	x in "$waves"  {
-			foreach q in "$waves"  {
+			foreach 	q in "$waves"  {
 				gen flag_`var'_`q'`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
 			}
 		}	
@@ -730,6 +741,7 @@
 	export 			excel using "$export/uga_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
+
 */	
 	
 * **********************************************************************
@@ -743,8 +755,7 @@
 	isid 			hhid_uga wave
 	
 * save file
-	customsave , idvar(baseline_hhid) filename("uga_panel.dta") ///
-		path("$export") dofile(uga_build) user($user)
+	save			"$export/uga_panel", replace
 
 * close the log
 	log	close

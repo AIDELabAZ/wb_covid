@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: Oct 2020
 * Created by: jdm
-* Edited by: amf
-* Last edit: October 2020 
-* Stata v.16.1
+* Edited by: lirr
+* Last edit: 03 June 2022 
+* Stata v.17.0
 
 * does
 	* reads in third round of Ethiopia data
@@ -18,9 +18,9 @@
 	* complete
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+*************************************************************************
+**# - setup
+*************************************************************************
 
 * define 
 	global	root	=	"$data/ethiopia/raw"
@@ -40,13 +40,13 @@
 	capture mkdir "$export/wave_0`w'" 
 	
 	
-* ***********************************************************************
-*  1 - roster data - get household size and gender of household head  
-* ***********************************************************************
+*************************************************************************
+**# - roster data - get household size and gender of household head  
+*************************************************************************
 
 * load roster data
 	use				"$root/wave_0`w'/200`f'_WB_LSMS_HFPM_HH_Survey_Roster-Round`w'_Clean-Public", clear		
-	
+					*** obs == 13490
 * rename other variables 
 	rename 			individual_id ind_id 
 	rename 			bi2_hhm_new new_mem
@@ -70,6 +70,7 @@
 * collapse data
 	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem ///
 					(max) sexhh, by(household_id)	
+					*** obs == 3058
 	replace 		new_mem = 1 if new_mem > 0 & new_mem < .
 	lab var			hhsize "Household size"
 	lab var 		hhsize_adult "Household size - only adults"
@@ -79,14 +80,16 @@
 * save temp file
 	tempfile 		temp_hhsize
 	save 			`temp_hhsize'	
+		*** obs == 3058
+		
 	
-	
-* ***********************************************************************
-* 2 - format microdata
-* ***********************************************************************
+*************************************************************************
+**# - format microdata 
+*************************************************************************
 
 * load microdata
 	use				"$root/wave_0`w'/200`f'_WB_LSMS_HFPM_HH_Survey-Round`w'_Clean-Public_Microdata", clear
+		*** obs == 3058
 
 * generate round variable
 	gen				wave = `w'
@@ -95,32 +98,36 @@
 * save temp file
 	tempfile 		temp_micro
 	save 			`temp_micro'	
+		*** obs == 3058
+		
 	
-	
-* ***********************************************************************
-* 3 - FIES score
-* ***********************************************************************	
+*************************************************************************
+**# - FIES score
+*************************************************************************		
 	
 * load FIES score data
 	use				"$fies/ET_FIES_round`w'.dta", clear
+		*** obs == 3058
 
 * format variables
 	drop 			country round 
 	rename 			HHID household_id
-	
+		*** obs == 3058
 * save temp file	
 	tempfile 		temp_fies
 	save 			`temp_fies'
-
+		*** obs == 3058
 	
-* ***********************************************************************
-* 4 - merge to build complete dataset for the round 
-* ***********************************************************************	
+	
+*************************************************************************
+**# - merge to build complete dataset for the round
+*************************************************************************	
 	
 * merge household size, microdata, and FIES
 	use 			`temp_hhsize', clear
 	merge 			1:1 household_id using `temp_micro', assert(3) nogen
 	merge 			1:1 household_id using `temp_fies', assert(3) nogen
+		*** obs == 3058
 
 * rename vars inconsistent with other rounds
 	* behavior 	
@@ -128,6 +135,7 @@
 		rename 			bh2_mask_freq bh_freq_mask 
 		rename 			bh3_cov_fear concern_1 
 		rename 			bh4_cov_fin concern_2 
+			*** obs == 3058
 
 * save round file
 	save			"$export/wave_0`w'/r`w'", replace		

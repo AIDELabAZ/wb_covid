@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: April 2021
 * Created by: amf
-* Edited by: amf
-* Last edit: April 2021 
-* Stata v.16.1
+* Edited by: amf, lirr (style edits)
+* Last edit: 09 Aug 2022
+* Stata v.17.0
 
 * does
 	* reads in seventh round of BF data
@@ -17,9 +17,9 @@
 	* GET FIES DATA
 
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# - setup
+************************************************************************
 
 * define 
 	global	root	=	"$data/burkina_faso/raw"
@@ -38,25 +38,32 @@
 	capture mkdir 	"$export/wave_0`w'" 
 
 	
-* ***********************************************************************
-* 1a - get respondent data
-* ***********************************************************************	
+*************************************************************************
+**# - get respondent data
+*************************************************************************	
 
 * load respondant id data	
 	use 			"$root/wave_0`w'/r`w'_sec1a_info_entretien_tentative", clear
+		*** obs == 3087
 	keep 			if s01aq08 == 1
+		*** obs == 1997
 	rename 			s01aq09 membres__id
 	duplicates 		drop hhid membres__id, force
+		*** obs == 1980
 	duplicates		tag hhid, gen(dups)
 	replace 		membres__id = -96 if dups > 0
 	duplicates 		drop hhid membres__id, force
+		*** obs == 1979
 	lab def 		mem -96 "multiple respondents"
 	lab val 		membres__id mem
 	keep 			hhid membres__id
+		*** obs == 1979
 
 * load roster data with gender
 	merge 1:1		hhid membres__id using "$root/wave_0`w'/r`w'_sec2_liste_membre_menage"
+		*** obs == 13335: 1978 matched, 11357 unmatched
 	keep 			if _m == 1 | _m == 3
+		*** obs == 1979
 	keep 			hhid s02q05 membres__id s02q07 s02q06
 	rename 			membres__id resp_id
 	rename 			s02q05 sex
@@ -68,12 +75,13 @@
 	save			`tempa'
 	
 
-* ***********************************************************************
-* 1b - get household size and gender of HOH
-* ***********************************************************************	
+*************************************************************************
+**# - get household size and gender of HOH
+*************************************************************************	
 
 * load roster data	
 	use 			"$root/wave_0`w'/r`w'_sec2_liste_membre_menage", clear
+		*** obs == 13334
 	
 * rename other variables 
 	rename 			membres__id ind_id 
@@ -89,6 +97,7 @@
 	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
 	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
 	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19 
+		*** obs == 13334
 	
 * generate hh head gender variable
 	gen 			sexhh = .
@@ -110,9 +119,13 @@
 	* why member left
 		preserve
 			keep 		hhid s02q04 ind_id
+				*** obs == 13334
 			keep 		if s02q04 != .
+				*** obs == 151
 			duplicates 	drop hhid s02q04, force
+				*** obs == 126
 			reshape 	wide ind_id, i(hhid) j(s02q04)
+				*** obs == 116
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -125,9 +138,13 @@
 	* why new member 
 		preserve
 			keep 		hhid s02q08 ind_id
+				*** obs == 13334
 			keep 		if s02q08 != .
+				*** obs == 48
 			duplicates 	drop hhid s02q08, force
+				*** obs == 41
 			reshape 	wide ind_id, i(hhid) j(s02q08)
+				*** obs == 35
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
 				replace 	`var' = 1 if `var' != .
@@ -140,10 +157,13 @@
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(hhid)
+		*** obs == 1979
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
 	merge 		1:1 hhid using `new_mem', nogen
+		*** obs == 1979: 35 matched, 1944 unmatched
 	merge 		1:1 hhid using `mem_left', nogen
+		*** obs == 1979: 116 matched, 1863 unmatched
 	ds 			new_mem_why_* 
 	foreach		var in `r(varlist)' {
 		replace 	`var' = 0 if `var' >= . & new_mem == 1
@@ -164,18 +184,21 @@
 	save			`tempb'
 	
 
-* ***********************************************************************
-* 3 - assistance
-* ***********************************************************************	
+*************************************************************************
+**# - assistance
+*************************************************************************	
 
 * load data	
 	use 		"$root/wave_0`w'/r`w'_sec10_protection_sociale", clear
+		*** obs == 5937
 	
 * drop other vars
 	keep 		hhid assistance__id s10q01
+		*** obs == 5937
 	
 * reshape 
 	reshape 	wide s10q01, i(hhid) j(assistance__id)
+		*** obs == 1979
 
 * format vars
 	rename 		s10q01101 asst_food
@@ -196,9 +219,9 @@
 	save		`tempc'
 	
 
-* ***********************************************************************
-*  4 - FIES
-* ***********************************************************************	
+*************************************************************************
+**# - FIES
+*************************************************************************	
 /*
 * load data
 	use 			"$fies/BFA_FIES_round`w'", clear
@@ -213,12 +236,13 @@
 
 */	
 	
-* ***********************************************************************
-*  5 - Individual employment
-* ***********************************************************************
+*************************************************************************
+**# - Individual employment
+*************************************************************************
 
 * load data	
 	use 		"$root/wave_0`w'/r`w'_sec6a_b_emplrev_general_individuel", clear
+		*** obs == 6779
 
 * generate secondary income variables for index
 	gen 			wage_inc_ind = 1 if s06aq04b == 4 | s06aq04b == 5
@@ -230,6 +254,7 @@
 	
 * collapse to hh level 
 	collapse 		(sum) *_inc_ind, by(hhid)
+		*** obs == 1979
 	replace 		wage = 1 if wage > 1
 	replace 		farm = 1 if farm > 1
 	replace 		bus = 1 if bus > 1
@@ -239,24 +264,31 @@
 	save			`tempe'
 	
 
-* ***********************************************************************
-*  6 - merge
-* ***********************************************************************
+*************************************************************************
+**# - merge
+*************************************************************************
 
 * load cover data
 	use 		"$root/wave_0`w'/r`w'_sec0_cover", clear
+		*** obs == 2032
 	
 * merge formatted sections
 	foreach 		x in a b c e {
 	    merge 		1:1 hhid using `temp`x'', nogen
 	}
+		*** obs == 2032: 1979 matched, 53 unmatched temps a, b, c, e
 
 * merge in other sections
-	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec2b_sante_mentale", nogen		
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec2b_sante_mentale", nogen
+		*** obs == 2032: 1979 matched, 53 unmatched 
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec5_acces_service_base", nogen
+		*** obs == 2032: 1979 matched, 53 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6a_emplrev_general", nogen
+		*** obs == 2032: 1979 matched, 53 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6b_emplrev_travailsalarie", nogen
+		*** obs == 2032: 1979 matched, 53 unmatched
 	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec7_securite_alimentaire", nogen
+		*** obs == 2032: 1979 matched, 53 unmatched
 
 * clean variables inconsistent with other rounds
 	
@@ -267,6 +299,7 @@
 	* employment 
 	rename 			s06q04_0 emp_chg_why
 	drop 			s06q04_0_autre
+		*** obs == 2032
 	replace 		emp_chg_why = 96 if emp_chg_why == 13
 	
 * generate round variables

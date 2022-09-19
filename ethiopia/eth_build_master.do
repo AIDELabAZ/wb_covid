@@ -2,7 +2,7 @@
 * Created on: Oct 2020
 * Created by: jdm
 * Edited by: lirr
-* Last edit: Sep 2021
+* Last edit: 24 August 2022
 * Stata v.17.0
 
 * does
@@ -28,7 +28,7 @@
 * **********************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9"
+	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12"
 
 * define
 	global			root	=	"$data/ethiopia/raw"
@@ -57,11 +57,14 @@
 
 * append round datasets to build master panel
 	foreach 		r in "$waves" {
-	    if 			`r' == 1 {
-			use		"$export/wave_01/r1", clear
+	    if 				`r' == 1 {
+					use	"$export/wave_01/r1", clear
 		}
-		else {
-			append 	using "$export/wave_0`r'/r`r'"
+		if 				`r' > 1 & `r' < 10 {
+					append using "$export/wave_0`r'/r`r'"
+		}		
+		if 				`r' > 9  {
+					append using "$export/wave_`r'/r`r'"
 		}
 	}
 	compress
@@ -204,6 +207,19 @@
 		rename 			bh10_cov_vaccine_why_3 cov_vac_no_why_8
 		rename 			bh10_cov_vaccine_why_4 cov_vac_no_why_1
 		rename 			bh10_cov_vaccine_why_5 cov_vac_no_why_9
+		
+		rename			bh11_vaccine_no_2 cov_vac_no_why_2
+		rename			bh11_vaccine_no_3 cov_vac_no_why_3
+		rename			bh11_vaccine_no_4 cov_vac_no_why_6
+		rename			bh11_vaccine_no_5 cov_vac_no_why_4
+		rename			bh11_vaccine_no_6 cov_vac_no_why_5
+		
+		rename 			bh11_vaccine_notsure_1 cov_vac_dk_why_1
+		rename 			bh11_vaccine_notsure_2 cov_vac_dk_why_2
+		rename 			bh11_vaccine_notsure_3 cov_vac_dk_why_3
+		rename 			bh11_vaccine_notsure_4 cov_vac_dk_why_6
+		rename 			bh11_vaccine_notsure_5 cov_vac_dk_why_4
+		rename 			bh11_vaccine_notsure_6 cov_vac_dk_why_5
 
 	* education
 		rename			ac3_sch_child sch_child
@@ -830,8 +846,8 @@
 						sw7_purchase sw7_purchase_0 sw_duration roster_key lo5_protect ///
 						mig_name* mig5_reason_other* ph3_crops_area_u_other ///
 						ag4_crops_reas_fert_other lo7_support_other ph5_crops_harvest_u_other ///
-						ph8_crops_harvest_covid_how ag_live_affect_other em20a_farm other_access ///
-						submissiondate
+						ph8_crops_harvest_covid_how ag_live_affect_other em20a_farm ///
+						ac4_other_access_reason submissiondate bh11_*
 
 * rename regions
 	replace 		region = 1001 if region == 1
@@ -874,11 +890,11 @@
 		}
 		keep 		per*
 		foreach 	x in "$waves"  {
-			foreach q in "$waves"  {
-				gen flag_`var'_`q'`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
+			foreach 	q in "$waves"  {
+				gen f_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != . 
 			}
 		}
-		keep 		*flag*
+		keep 		*f*
 
 	* drop if all missing
 		foreach 	v of varlist _all {
@@ -902,15 +918,16 @@
 	foreach 		var in `r(varlist)' {
 		merge 		1:1 n using `temp`var'', nogen
 	}
-	reshape 		long flag_, i(n) j(variables) string
-	drop 			if flag_ == .
+	reshape 		long f_, i(n) j(variables) string
+	drop 			if f_ == .
 	drop 			n
 	sort 			variable
 	export 			excel using "$export/eth_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-
 */
+	
+
 * **********************************************************************
 * 5 - end matter, clean up to save
 * **********************************************************************
@@ -922,8 +939,8 @@
 	isid 			hhid_eth wave
 
 * save file
-	customsave, 	idvar(hhid_eth) filename("eth_panel.dta") ///
-					path("$export") dofile(eth_build_master) user($user)
+	* save file
+		save			"$export/eth_panel", replace
 
 * close the log
 	log	close

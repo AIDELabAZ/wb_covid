@@ -1,9 +1,9 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: alj
-* Edited by: jdm, amf
-* Last edited: November 2020
-* Stata v.16.1
+* Edited by: jdm, amf, lirr
+* Last edited: 23 Aug 2022
+* Stata v.17.0
 
 * does
 	* merges together each round
@@ -27,7 +27,7 @@
 * **********************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11"
+	global 			waves "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12"
 	
 * define
 	global	root	=	"$data/malawi/raw"
@@ -153,7 +153,7 @@
 	rename 			s3q3__98 gov_dnk
 	label var 		gov_dnk "do not know steps government has taken"	
  
-* govt perseption
+* govt perception
  * note: r1 has 5 step scale, r2 only 3 options, adjust here
 	forval x = 8/12 {
 		replace 		s3q`x' = . if s3q`x' == .a
@@ -961,6 +961,7 @@
 	order			region, after(sector)
 	lab var			region "Region"
 
+
 /*
 * **********************************************************************
 * 4 - QC check 
@@ -984,10 +985,10 @@
 		keep 		per*
 		foreach 	x in "$waves"  {
 			foreach q in "$waves"  {
-				gen flag_`var'_`q'`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
+				gen f_`var'_`q'_`x' = 1 if per_`q' - per_`x' > .25 & per_`q' != . & per_`x' != .
 			}
 		}	
-		keep 		*flag*
+		keep 		*f*
 
 	* drop if all missing	
 		foreach 	v of varlist _all {
@@ -1011,13 +1012,14 @@
 	foreach 		var in `r(varlist)' {
 		merge 		1:1 n using `temp`var'', nogen
 	}
-	reshape 		long flag_, i(n) j(variables) string 
-	drop 			if flag_ == .
+	reshape 		long f_, i(n) j(variables) string 
+	drop 			if f_ == .
 	drop 			n
 	sort 			variable	
 	export 			excel using "$export/mwi_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
+
 */
 
 * **********************************************************************
@@ -1032,8 +1034,7 @@
 	isid 			hhid_mwi wave
 	
 * save file
-		customsave , idvar(hhid_mwi) filename("mwi_panel.dta") ///
-			path("$export") dofile(mwi_build) user($user)
+	save			"$export/mwi_panel", replace
 
 * close the log
 	log	close

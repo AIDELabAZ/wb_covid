@@ -1,8 +1,8 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: jdm
-* Edited by: alj
-* Edited on: 4 January 2022
+* Edited by: lirr
+* Edited on: 18 August 2022
 * Stata v.17.0
 
 * does
@@ -27,8 +27,8 @@
 	global 			pack 	0
 
 * Specify Stata version in use
-  *  global stataVersion 17.0    // set Stata version
-  	global stataVersion 16.1 
+    global stataVersion 17.0    // set Stata version
+  *	global stataVersion 16.1 
     version $stataVersion
 
 
@@ -56,10 +56,10 @@
 		global 		output_f "G:/My Drive/wb_covid/output"
 	}
 
-	if `"`c(username)'"' == "Lorin Rudin-Rush" {
-		global 		code  	"C:/Users/Lorin Rudin-Rush/Documents/GitHub/wb_covid"
-		global 		data	"G:/My Drive/wb_covid/data"
-		global 		output_f "G:/My Drive/wb_covid/output"
+	if `"`c(username)'"' == "lirro" {
+		global 		code  	"C:/Users/lirro/Documents/GitHub/wb_covid"
+		global 		data	"G:/.shortcut-targets-by-id/1wmQb8xn5Qop-2J14D7Z2rdKxJhcwfP_q/wb_covid/data"
+		global 		output_f "G:/.shortcut-targets-by-id/1wmQb8xn5Qop-2J14D7Z2rdKxJhcwfP_q/wb_covid/output"
 	}
 
 
