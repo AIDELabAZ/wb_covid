@@ -56,7 +56,7 @@
 *************************************************************************	
 	
 * load data
-	use				"$root/wave_`w'/sect12_Interview_result_r`w'", clear
+	use				"$root/wave_`w'/sect12_interview_result_r`w'", clear
 		***obs == 1533
 
 * drop all but household respondant
@@ -65,7 +65,7 @@
 	isid			HHID
 
 * merge in household roster
-	merge 1:1 HHID PID using "$root/wave_`w'/sect2_Household_Roster_r`w'"
+	merge 1:1 HHID PID using "$root/wave_`w'/sect2_household_roster_r`w'"
 		***obs == 7793 | from master not matched - 1  | from using not matched - 6260 | matched == 1532
 	keep if			_merge == 3
 		*** obs == 1532
@@ -85,7 +85,7 @@
 *************************************************************************
 
 * load data
-	use				"$root/wave_`w'/sect2_Household_Roster_r`w'", clear
+	use				"$root/wave_`w'/sect2_household_roster_r`w'", clear
 		*** obs == 7792
 
 * rename other variables
@@ -214,7 +214,7 @@
 *************************************************************************
 
 * load data
-	use				"$root/wave_`w'/sect6e_Livestock_Products_r`w'", clear
+	use				"$root/wave_`w'/sect6e_livestock_products_r`w'", clear
 		*** obs == 6132
 
 * reshape wide
@@ -237,7 +237,7 @@
 *************************************************************************
 
 * load cover data
-	use				"$root/wave_`w'/secta_Cover_Page_r`w'", clear
+	use				"$root/wave_`w'/secta_cover_page_r`w'", clear
 		*** obs == 1698
 
 * merge formated sections
@@ -248,21 +248,21 @@
 		*** obs == 1698: 1533 matched, 165 unmatched temps d, g
 
 * merge in other sections
-	merge 1:1		HHID using "$root/wave_`w'/sect4_Behavior_r`w'", nogen
+	merge 1:1		HHID using "$root/wave_`w'/sect4_behavior_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect5_Access_r`w'", nogen
+	merge 1:1		HHID using "$root/wave_`w'/sect5_access_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect5d_ChildDevt_r`w'", nogen
+	merge 1:1		HHID using "$root/wave_`w'/sect5d_childdevt_r`w'", nogen
 		*** obs == 16898: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect6a_Employment2_r`w'", nogen
+	merge 1:1		HHID using "$root/wave_`w'/sect6a_employment2_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect6b_NFE_r`w'", nogen
+	merge 1:1		HHID using "$root/wave_`w'/sect6b_nfe_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect6e_Agriculture_r`w'", nogen
+	merge 1:1		HHID using "$root/wave_`w'/sect6e_agriculture_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
 	merge 1:1		HHID using "$root/wave_`w'/sect8_food_security_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect9_Concerns_r`w'", nogen
+	merge 1:1		HHID using "$root/wave_`w'/sect9_concerns_r`w'", nogen
 		*** obs == 16898: 1533 matched, 165 unmatched
 
 * rename variables inconsistent with other waves

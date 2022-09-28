@@ -44,7 +44,7 @@
 *************************************************************************
 	
 * load roster data
-	use				"$root/wave_`w'/210628_WB_LSMS_HFPM_HH_Survey_Roster-Round`w'_Clean-Public", clear
+	use				"$root/wave_`w'/wb_lsms_hfpm_hh_survey_roster_round`w'_clean_public", clear
 		*** obs == 4512
 	
 * rename house roster variables

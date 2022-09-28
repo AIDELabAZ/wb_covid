@@ -43,17 +43,17 @@
 *************************************************************************
 
 * load income data
-	use				"$root/wave_0`w'/sec6", clear
+	use				"$root/wave_0`w'/SEC6", clear
 		*** obs == 27300
 	
-* reformat HHID
-	format 			%12.0f HHID
+* reformat hhid
+	format 			%12.0f hhid
 
 * replace value for "other"
 	replace			income_loss__id = 96 if income_loss__id == -96
 
 * reshape data
-	reshape 		wide s6q01 s6q02 s6q03, i(HHID) j(income_loss__id)
+	reshape 		wide s6q01 s6q02 s6q03, i(hhid) j(income_loss__id)
 		*** obs == 2100
 
 * save temp file
@@ -69,8 +69,8 @@
 	use				"$root/wave_0`w'/SEC9A", clear
 		*** obs == 29400
 
-* reformat HHID
-	format 			%12.0f HHID
+* reformat hhid
+	format 			%12.0f hhid
 
 * drop other shock
 	drop			s9aq01_Other
@@ -179,7 +179,7 @@
 		*** obs == 29400
 
 * collapse to household level
-	collapse (max) cope_* shock_*, by(HHID)
+	collapse (max) cope_* shock_*, by(hhid)
 		*** obs == 2227
 	
 * generate any shock variable
@@ -201,11 +201,11 @@
 *************************************************************************
 
 * load safety net data 
-	use				"$root/wave_0`w'/sec10", clear
+	use				"$root/wave_0`w'/SEC10", clear
 		*** obs == 8396
 
-* reformat HHID
-	format 			%12.0f HHID
+* reformat hhid
+	format 			%12.0f hhid
 
 * drop other safety nets and missing values
 	drop			s10q02 s10q03__1 s10q03__2 s10q03__3 s10q03__4 ///
@@ -213,7 +213,7 @@
 		*** obs == 8396
 		
 * reshape data
-	reshape 		wide s10q01, i(HHID) j(safety_net__id)
+	reshape 		wide s10q01, i(hhid) j(safety_net__id)
 	*** obs == 2099 | note that cash = 102, food = 101, in-kind = 103 (unlike wave 1)
 
 
@@ -262,14 +262,14 @@
 		*** obs == 2100
 
 * drop all but household respondent
-	keep			HHID Rq09
+	keep			hhid Rq09
 		*** obs == 2100
 	rename			Rq09 hh_roster__id
 	
-	isid			HHID
+	isid			hhid
 
 * merge in household roster
-	merge 1:1		HHID hh_roster__id using "$root/wave_0`w'/SEC1"
+	merge 1:1		hhid hh_roster__id using "$root/wave_0`w'/SEC1"
 		*** obs == 11595: 2096 matched, 9499 unmatched
 	keep if			_merge == 3
 		*** obs == 2096
@@ -282,7 +282,7 @@
 	drop if			PID == .
 
 * drop all but gender and relation to HoH
-	keep			HHID PID sex age relate_hoh
+	keep			hhid PID sex age relate_hoh
 		*** obs == 2096
 
 * save temp file
@@ -330,13 +330,13 @@
 	
 	* why member left 
 		preserve
-			keep 		HHID s1q04 ind_id
+			keep 		hhid s1q04 ind_id
 				*** obs == 11591
 			keep 		if s1q04 < .
 				*** obs == 172
-			duplicates 	drop HHID s1q04, force
+			duplicates 	drop hhid s1q04, force
 				*** obs == 145
-			reshape 	wide ind_id, i(HHID) j(s1q04)
+			reshape 	wide ind_id, i(hhid) j(s1q04)
 				*** obs == 133
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
@@ -349,14 +349,14 @@
 	
 	* why new member 
 		preserve
-			keep 		HHID s1q08 ind_id
+			keep 		hhid s1q08 ind_id
 				*** obs == 11591
 			keep 		if s1q08 < .
 				*** obs == 299
-			duplicates 	drop HHID s1q08, force
+			duplicates 	drop hhid s1q08, force
 				*** obs == 168
 			replace 	s1q08 = 96 if s1q08 == -96
-			reshape 	wide ind_id, i(HHID) j(s1q08)
+			reshape 	wide ind_id, i(hhid) j(s1q08)
 				*** obs == 152
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
@@ -369,13 +369,13 @@
 	
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
-				(max) sexhh, by(HHID)
+				(max) sexhh, by(hhid)
 		*** obs == 2100
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
-	merge 		1:1 HHID using `new_mem', nogen
+	merge 		1:1 hhid using `new_mem', nogen
 		*** obs == 2100: 152 matched, 1948 unmatched
-	merge 		1:1 HHID using `mem_left', nogen
+	merge 		1:1 hhid using `mem_left', nogen
 		*** obs == 2100: 133 matched, 1967 unmatched
 	ds 			new_mem_why_* 
 	foreach		var in `r(varlist)' {
@@ -422,7 +422,7 @@
 		*** obs == 734 
 	drop 			livestock
 		*** obs == 734
-	reshape 		wide s5cq*, i(HHID) j(product) string
+	reshape 		wide s5cq*, i(hhid) j(product) string
 		*** obs == 557
 
 * save temp file part 1
@@ -437,20 +437,20 @@
 		*** obs == 734
 		
 * reshape wide
-	keep 			livestock HHID
+	keep 			livestock hhid
 	gen 			product = cond(livestock == -96, "other", cond(livestock == 1, ///
 					"milk",cond(livestock == 2, "eggs","meat")))
 		*** obs == 734
-	reshape 		wide livestock, i(HHID) j(product) string
+	reshape 		wide livestock, i(hhid) j(product) string
 		*** obs == 557
-	collapse 		(sum) livestock*, by (HHID)
+	collapse 		(sum) livestock*, by (hhid)
 		*** obs == 557
 	replace 		livestock_products__ideggs = 1 if livestock_products__ideggs != 0
 	replace 		livestock_products__idmeat = 1 if livestock_products__idmeat != 0
 	replace 		livestock_products__idmilk = 1 if livestock_products__idmilk != 0	
 
 * save temp file
-	merge			1:1 HHID using `templs1', nogen
+	merge			1:1 hhid using `templs1', nogen
 		*** obs == 557
 	tempfile		temp6
 	save			`temp6'
@@ -466,7 +466,7 @@
 
 	drop 			country round
 		*** obs == 2100
-	destring 		HHID, replace
+	destring 		hhid, replace
 
 * save temp file
 	tempfile		temp7
@@ -483,11 +483,11 @@
 	keep 			if s1cq09 != .
 		*** obs == 3819
 	replace 		s1cq09  = 0 if s1cq09  == 2
-	collapse		(sum) s1cq09, by(HHID)
+	collapse		(sum) s1cq09, by(hhid)
 		*** obs == 1570
 	gen 			edu_act = 1 if s1cq09 > 0 
 	replace 		edu_act = 0 if edu_act == .
-	keep 			HHID edu_act
+	keep 			hhid edu_act
 		*** obs == 1570
 	tempfile 		tempany
 	save 			`tempany'
@@ -501,7 +501,7 @@
 	forval 			x = 1/11 {
 		rename 		s1cq10__`x' edu_act_why_`x'
 	}
-	collapse 		(sum) edu* , by(HHID)
+	collapse 		(sum) edu* , by(hhid)
 		*** obs == 1165
 	forval 			x = 1/11 {
 		replace 		edu_act_why_`x' = 1 if edu_act_why_`x' >= 1
@@ -532,7 +532,7 @@
 	    replace 	s1cq12__`x' = 0 if s1cq12__`x' == 2
 	    rename 		s1cq12__`x' edu_chal_`x'
 	}
-	collapse 		(sum) edu* , by(HHID)
+	collapse 		(sum) edu* , by(hhid)
 		*** obs == 662
 	ds edu* 
 	foreach 		var in `r(varlist)' {
@@ -544,14 +544,14 @@
 * merge data together 
 	use				"$root/wave_0`w'/SEC1C", clear
 		*** obs == 11596
-	keep 			HHID 
+	keep 			hhid 
 	duplicates 		drop
 		*** obs == 2100
-	merge 			1:1 HHID using `tempany', nogen
+	merge 			1:1 hhid using `tempany', nogen
 		*** obs == 2100: 1570 matched, 530 unmatched
-	merge 			1:1 HHID using `tempactwhy', nogen
+	merge 			1:1 hhid using `tempactwhy', nogen
 		*** obs == 2100: 1165 matched, 935 unmatched
-	merge 			1:1 HHID using `tempedu', nogen
+	merge 			1:1 hhid using `tempedu', nogen
 
 		*** obs == 2100: 1438 matched, 662 unmatched
 
@@ -570,41 +570,41 @@
 		
 * merge in other sections
 	forval			x = 1/8{
-		merge			1:1 HHID using `temp`x'', nogen
+		merge			1:1 hhid using `temp`x'', nogen
 	}
 		*** obs == 2100: 2100 matched, 0 unmatched temps 1, 2, 5, 7 ,8
 		*** obs == 2100: 2099 matched, 1 unmatched temp 3
 		*** obs == 2100: 2096 matched, 4 unmatched temp 4
 		*** obs == 2100: 1543 matched, 557 unmatched temp 6
 		
-	merge 1:1			HHID using "$root/wave_0`w'/SEC1E", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC1E", nogen
 		*** obs == 2100: 1457 matched, 643 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC1G", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC1G", nogen
 		*** obs == 2100: 1457 matched, 643 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC3", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC3", nogen
 		*** obs == 2100: 2100 matched, 0 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC4_1", nogen 
+	merge 1:1			hhid using "$root/wave_0`w'/SEC4_1", nogen 
 		*** obs == 2100: 2100 matched, 0 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC4_2", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC4_2", nogen
 		*** obs == 2100: 1457 matched, 643 unmatched		
-	merge 1:1			HHID using "$root/wave_0`w'/SEC4A", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC4A", nogen
 		*** obs == 2100: 2100 matched 0 unmatched
-	* merge 1:1			HHID using "$root/wave_0`w'/SEC5_Other", nogen 
+	* merge 1:1			hhid using "$root/wave_0`w'/SEC5_Other", nogen 
 		* Note: repeated questions of employment from other family member
 		*** obs == 2100: 2020 matched, 80 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC5_Resp", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC5_Resp", nogen
 		*** obs == 2100: 2100 matched, 0 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC5A", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC5A", nogen
 		*** obs == 2100: 2100 matched, 0 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC5B", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC5B", nogen
 		*** obs == 2100: 2100 matched, 0 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC8", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC8", nogen
 		*** obs == 2100: 2100 matched, 0 unmatched
-	merge 1:1			HHID using "$root/wave_0`w'/SEC9", nogen
+	merge 1:1			hhid using "$root/wave_0`w'/SEC9", nogen
 		*** obs == 2100: 2100 matched, 0 unmatched
 
-* reformat HHID
-	format 			%12.0f HHID
+* reformat hhid
+	format 			%12.0f hhid
 
 * rename variables inconsistent with other waves	
 	* rename behavioral changes
@@ -727,12 +727,12 @@
 		
 * save panel		
 	* gen wave data
-		rename			baseline_hhid baseline_HHID
+		rename			baseline_hhid baseline_hhid
 		rename			wfinal phw_cs
 		lab var			phw "sampling weights - cross section"	
 		gen				wave = `w'
 		lab var			wave "Wave number"
-		order			baseline_HHID wave phw, after(HHID)
+		order			baseline_hhid wave phw, after(hhid)
 
 		
 	* save file
