@@ -7,14 +7,16 @@
 
 * does
 	* merges together each section of malawi data
-	* builds round 1
-	* outputs round 1
+	* builds round 12
+	* outputs round 12
 
 * assumes
 	* raw malawi data 
 
 * TO DO:
-	* everything
+	* find errors
+	* fix errors
+	
 	
 
 ************************************************************************
@@ -56,16 +58,26 @@
 *************************************************************************	
 	
 * load data
-	use				"$root/wave_`w'/sect12_interview_result_r`w'", clear
-		***obs == 1533
+	use				"$root/wave_`w'/sect1_interview_info_r`w'", clear
+		***obs == 3561 NOTE: was 1533
 
 * drop all but household respondant
-	keep			HHID s12q9
-	rename			s12q9 PID
-	isid			HHID
+	drop if			s1q8 != 1
+		*** obs == 1566	
+	keep			hhid s1q9 // NOTE: section 12 that was previously available is no longer, however s1q9 appears equivalent to s12q9 from the previous iteration
+	rename			s1q9 pid
+	duplicates 		drop
+		*** obs == 1534 // NOTE: there is one duplciate hhid where the HoH is interviewed and the wife/husband is interviewed, I am dropping the wife/husband for this merge
+	duplicates 		tag hhid, generate(dups)
+	drop if			dups == 1 & pid == 2
+	isid			hhid // note duplicates were dropped, however dates of interview are different, interviewee is the same
+	
+	compress		hhid
+	
+	
 
 * merge in household roster
-	merge 1:1 HHID PID using "$root/wave_`w'/sect2_household_roster_r`w'"
+	merge 1:1 hhid pid using "$root/wave_`w'/sect2_household_roster_r`w'"
 		***obs == 7793 | from master not matched - 1  | from using not matched - 6260 | matched == 1532
 	keep if			_merge == 3
 		*** obs == 1532
@@ -73,7 +85,7 @@
 		*** obs == 1532
 		
 * drop all but gender and relation to HoH
-	keep			HHID PID s2q5 s2q6 s2q7 s2q9
+	keep			hhid pid s2q5 s2q6 s2q7 s2q9
 
 * save temp file
 	tempfile		tempc
