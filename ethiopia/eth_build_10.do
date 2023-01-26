@@ -2,7 +2,7 @@
 * Created on: June 2022
 * Created by: lirr
 * Edited by: lirr
-* Last edit: 06 June 2022
+* Last edit: 26 Jan 2023
 * Stata v.17.0
 
 * does
@@ -113,7 +113,7 @@
 	rename			bh11_vaccine_no_1 bh10_cov_vaccine_why_4
 	
 * drop unneccesary variables
-	drop			bh12_*
+	drop			bh12_* ecd_rand_name cg_primoth2_other
 	 
 * destring vars to match other rounds
 	destring		cs5_eaid cs3b_kebeleid, replace

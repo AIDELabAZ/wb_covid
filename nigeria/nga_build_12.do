@@ -126,6 +126,8 @@
 		rename 			s5eq21 yae_job_how
 		rename 			s5eq22 yae_ed_asp
 		
+
+		
 		* create loops to extract yae_ed_cons values
 			gen				yae_ed_cons_1 = .
 			forval 			i = 1/20 {	
@@ -191,6 +193,8 @@
 		rename 			s5eq35 yae_mon
 		rename 			s5eq36 yae_mig
 		rename 			s5eq37__* yae_mig_where_*
+		
+		drop			s5eq* Sec5e_StartTime
 	
 	* covid vaccine likelihood to receive when advised
 		rename			s9aq4__* cov_vac_more_lik_*

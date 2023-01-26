@@ -84,7 +84,7 @@
 **# - format survey weights
 *************************************************************************	
 	
-* load microdata
+/* load microdata
 	use "$root/wave_`w'/HFPS-HH_weights_cross-section_R`w'", clear
 			*** obs == 881
 
@@ -92,14 +92,14 @@
 	tempfile		temp_weights
 	save			`temp_weights'
 		*** obs == 881
-
+*/
 
 *************************************************************************
 **# - format microdata 
 *************************************************************************
 
 * load microdata
-	use "$root/wave_`w'/210623_WB_LSMS_HFPM_HH_Survey-Round12_Clean-Public", clear
+	use "$root/wave_`w'/r12_wb_lsms_hfpm_hh_survey_public_microdata", clear
 			*** obs == 888
 	
 * generate round variable
@@ -120,9 +120,9 @@
 	use				`temp_hhsize', clear
 	merge			1:1 household_id using `temp_micro', assert(3) nogen
 		*** obs == 888
-	merge			1:1 household_id using `temp_weights', nogen
+	*merge			1:1 household_id using `temp_weights', nogen
 		*** obs == 881 NOTE: there are 8 households w/o r12 weights
-	merge			1:1 household_id using "$root/wave_`w'/HFPS-HH_weights_cross-section_R12", nogen
+	*merge			1:1 household_id using "$root/wave_`w'/HFPS-HH_weights_cross-section_R12", nogen
 	
 	rename			wfinal phw12
 
@@ -184,7 +184,7 @@
 		gen				yae_mig_where_96 = 1 if ya37_leave_where == -96
 		replace			yae_mig_where_96 = 0 if yae_mig_where_96 == .
 	
-	drop			*_other ya5_work_cur ya14_*
+	drop			*_other ya5_work_cur ya14_* ya24_job_30yrs
 	
 * destring vars to match other rounds
 

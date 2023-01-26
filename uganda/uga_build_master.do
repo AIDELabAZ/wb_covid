@@ -28,7 +28,7 @@
 * **********************************************************************
 
 * define list of waves
-	global 			waves "1" "2" "3" "4" "5" "6" "7"
+	global 			waves "1" "2" "3" "4" "5" "6" /* "7" */
 	
 * define
 	global	root	=	"$data/uganda/raw"
@@ -684,12 +684,12 @@
 	lab val			country country
 	lab var			country "Country"
 
-/*
+
 * **********************************************************************
 * 4 - QC check 
 * **********************************************************************
 
-* compare numerical variables to other rounds & flag if 25+ percentage points different
+/* compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)
 	foreach 		var in `r(varlist)' {
@@ -741,8 +741,8 @@
 	export 			excel using "$export/uga_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-
-*/	
+*/
+	
 	
 * **********************************************************************
 * 5 - end matter, clean up to save

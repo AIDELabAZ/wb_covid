@@ -327,8 +327,11 @@
 		*** obs == 11591
 	replace 		new_mem = 0 if new_mem == 2
 	replace 		mem_left = 0 if mem_left == 2
+
 	
-	* why member left 
+	*** NOTE: after reconstruction all new mem variables were replaced with dots unsure of how to proceed
+	
+	/* why member left 
 		preserve
 			keep 		hhid s1q04 ind_id
 				*** obs == 11591
@@ -345,7 +348,7 @@
 			rename 		ind_id* mem_left_why_*
 			tempfile 	mem_left
 			save 		`mem_left'
-		restore
+		restore 
 	
 	* why new member 
 		preserve
@@ -365,13 +368,13 @@
 			rename 		ind_id* new_mem_why_*
 			tempfile 	new_mem
 			save 		`new_mem'
-		restore
+		restore */
 	
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(hhid)
 		*** obs == 2100
-	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
+	/* replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
 	merge 		1:1 hhid using `new_mem', nogen
 		*** obs == 2100: 152 matched, 1948 unmatched
@@ -384,7 +387,8 @@
 	ds 			mem_left_why_* 
 	foreach		var in `r(varlist)' {
 		replace 	`var' = 0 if `var' >= . & mem_left == 1
-	}
+	} */
+	
 	lab var		hhsize "Household size"
 	lab var 	hhsize_adult "Household size - only adults"
 	lab var 	hhsize_child "Household size - children 0 - 18"
@@ -466,6 +470,7 @@
 
 	drop 			country round
 		*** obs == 2100
+	rename			HHID hhid
 	destring 		hhid, replace
 
 * save temp file
@@ -580,6 +585,8 @@
 	merge 1:1			hhid using "$root/wave_0`w'/SEC1E", nogen
 		*** obs == 2100: 1457 matched, 643 unmatched
 	merge 1:1			hhid using "$root/wave_0`w'/SEC1G", nogen
+		*** obs == 2100: 1457 matched, 643 unmatched
+	merge 1:1			hhid using "$root/wave_0`w'/SEC1H", nogen
 		*** obs == 2100: 1457 matched, 643 unmatched
 	merge 1:1			hhid using "$root/wave_0`w'/SEC3", nogen
 		*** obs == 2100: 2100 matched, 0 unmatched
@@ -727,12 +734,13 @@
 		
 * save panel		
 	* gen wave data
+		rename			hhid HHID
 		rename			baseline_hhid baseline_hhid
 		rename			wfinal phw_cs
 		lab var			phw "sampling weights - cross section"	
 		gen				wave = `w'
 		lab var			wave "Wave number"
-		order			baseline_hhid wave phw, after(hhid)
+		order			baseline_hhid wave phw, after(HHID)
 
 		
 	* save file

@@ -142,6 +142,9 @@
 	destring 		cs3c_* cs3b_kebeleid cs5_eaid cs6_hhid cs7_hhh_id ///
 						cs7a_hhh_age ii*, replace
 						
+* drop unneccesary variables
+	drop			pho1_where_other
+						
 * rename sampling weight
 	
 						
