@@ -516,7 +516,7 @@
 	drop 			s06dq01__1
 	drop  			s06a_filtre s06q03b_autre s06c_filtre s06q26_autre s06dq02 s06dq03
 	rename 			s06dq04 ag_main
-	drop	 		s06dq04_autre
+	drop	 		s06dq04_autre s06dq03_autre
 	gen 			temp = cond(s06dq05b == 2, 10000, cond(s06dq05b == 1,1,.))
 	gen 			ag_main_area = s06dq05a * temp
 	drop 			temp s06dq05a s06dq05b 
@@ -597,12 +597,12 @@
 	rename 			s11q06 hh_needs_met
 	drop 			s11q*_autre
 	
-/*
+
 ************************************************************************
 **# - QC check
 ************************************************************************
 
-* compare numerical variables to other rounds & flag if 25+ percentage points different
+/* compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)
 	foreach 		var in `r(varlist)' {
@@ -654,8 +654,8 @@
 	export 			excel using "$export/bf_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-*/
 	
+*/	
 	
 ************************************************************************
 **# - end matter, clean up to save

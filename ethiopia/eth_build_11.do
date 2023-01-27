@@ -44,7 +44,7 @@
 *************************************************************************
 
 * load roster data
-	use				"$root/wave_`w'/WB_LSMS_HFPM_HH_Survey_Roster-Round`w'_Clean-Public", clear
+	use				"$root/wave_`w'/wb_lsms_hfpm_hh_survey_roster_round`w'_clean_public", clear
 		*** obs == 8813
 	
 * rename house roster variables
@@ -87,7 +87,7 @@
 *************************************************************************
 
 * load microdata
-	use				"$root/wave_`w'/WB_LSMS_HFPM_HH_Survey-Round`w'_Clean-microdata", clear
+	use				"$root/wave_`w'/wb_lsms_hfpm_hh_survey_round11_clean_microdata", clear
 		*** obs == 1982
 
 * generate round variable
@@ -107,7 +107,7 @@
 *************************************************************************
 
 * load education data
-	use				"$root/wave_`w'/WB_LSMS_HFPM_HH_Survey-Round`w'_Education_Clean-microdata", clear
+	use				"$root/wave_`w'/wb_lsms_hfpm_hh_survey_round11_education_clean_microdata", clear
 		*** obs == 3831
 
 * format variables to match master
@@ -141,6 +141,9 @@
 * destring vars to match other rounds
 	destring 		cs3c_* cs3b_kebeleid cs5_eaid cs6_hhid cs7_hhh_id ///
 						cs7a_hhh_age ii*, replace
+						
+* drop unneccesary variables
+	drop			pho1_where_other
 						
 * rename sampling weight
 	

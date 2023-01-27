@@ -868,12 +868,12 @@
 						"Addis Ababa" 1011 "Dire Dawa"
 	lab val			region region
 
-/*
+
 * **********************************************************************
 * 4 - QC check
 * **********************************************************************
 
-* compare numerical variables to other rounds & flag if 25+ percentage points different
+/* compare numerical variables to other rounds & flag if 25+ percentage points different
 	tostring 		wave, replace
 	ds, 			has(type numeric)
 	foreach 		var in `r(varlist)' {
@@ -925,7 +925,7 @@
 	export 			excel using "$export/eth_qc_flags.xlsx", first(var) sheetreplace sheet(flags)
 	restore
 	destring 		wave, replace
-*/
+*/	
 	
 
 * **********************************************************************

@@ -46,8 +46,8 @@
 	use				"$root/wave_0`w'/SEC10_1", clear
 		*** obs == 7800
 
-* reformat HHID
-	format 			%12.0f HHID
+* reformat hhid
+	format 			%12.0f hhid
 
 * drop other safety nets and missing values
 	drop			s10q02 s10q03__1 s10q03__2 s10q03__3 s10q03__4 ///
@@ -55,7 +55,7 @@
 		*** obs == 7800
 		
 * reshape data
-	reshape 		wide s10q01, i(HHID) j(safety_net__id)
+	reshape 		wide s10q01, i(hhid) j(safety_net__id)
 	*** obs == 1950 | note that cash = 102, food = 101, in-kind = 103 (unlike wave 1)
 
 
@@ -104,14 +104,14 @@
 		*** obs == 1950
 
 * drop all but household respondent
-	keep			HHID Rq09
+	keep			hhid Rq09
 		*** obs == 1950
 	rename			Rq09 hh_roster__id
 	
-	isid			HHID
+	isid			hhid
 
 * merge in household roster
-	merge 1:1		HHID hh_roster__id using "$root/wave_0`w'/SEC1"
+	merge 1:1		hhid hh_roster__id using "$root/wave_0`w'/SEC1"
 		*** obs == 11121: 1942 matched, 9179 unmatched
 	keep if			_merge == 3
 		*** obs == 1942
@@ -124,7 +124,7 @@
 	drop if			PID == .
 
 * drop all but gender and relation to HoH
-	keep			HHID PID sex age relate_hoh
+	keep			hhid PID sex age relate_hoh
 		*** obs == 1942
 
 * save temp file
@@ -175,14 +175,14 @@
 			
 	* why new member 
 		preserve
-			keep 		HHID s1q08 ind_id
+			keep 		hhid s1q08 ind_id
 				*** obs == 11113
 			keep 		if s1q08 < .	
 				*** obs == 114
-			duplicates 	drop HHID s1q08, force
+			duplicates 	drop hhid s1q08, force
 				*** obs == 86
 			replace 	s1q08 = 96 if s1q08 == -96
-			reshape 	wide ind_id, i(HHID) j(s1q08)
+			reshape 	wide ind_id, i(hhid) j(s1q08)
 				*** obs == 63
 			ds 			ind_id*
 			foreach 	var in `r(varlist)' {
@@ -195,11 +195,11 @@
 	
 * collapse data to hh level and merge in why vars
 	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
-				(max) sexhh, by(HHID)
+				(max) sexhh, by(hhid)
 		*** obs == 1950
 	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
 	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
-	merge 		1:1 HHID using `new_mem', nogen
+	merge 		1:1 hhid using `new_mem', nogen
 		*** obs == 1950: 63 matched, 1887 unmatched
 	ds 			new_mem_why_* 
 	foreach		var in `r(varlist)' {
@@ -228,11 +228,11 @@
 	keep 			if s1cq09b != .
 		*** obs == 5406
 	replace 		s1cq09b  = 0 if s1cq09b  == 2
-	collapse		(sum) s1cq09b, by(HHID)
+	collapse		(sum) s1cq09b, by(hhid)
 		*** obs == 1676
 	gen 			edu_act = 1 if s1cq09b > 0 
 	replace 		edu_act = 0 if edu_act == .
-	keep 			HHID edu_act
+	keep 			hhid edu_act
 		*** obs == 1676
 	tempfile 		tempany
 	save 			`tempany'
@@ -246,7 +246,7 @@
 	forval 			x = 1/11 {
 		rename 		s1cq10__`x' edu_act_why_`x'
 	}
-	collapse 		(sum) edu* , by(HHID)
+	collapse 		(sum) edu* , by(hhid)
 		*** obs == 1403
 	forval 			x = 1/11 {
 		replace 		edu_act_why_`x' = 1 if edu_act_why_`x' >= 1
@@ -277,7 +277,7 @@
 	    replace 	s1cq12__`x' = 0 if s1cq12__`x' == 2
 	    rename 		s1cq12__`x' edu_chal_`x'
 	}
-	collapse 		(sum) edu* , by(HHID)
+	collapse 		(sum) edu* , by(hhid)
 		*** obs == 769
 	ds edu* 
 	foreach 		var in `r(varlist)' {
@@ -289,14 +289,14 @@
 * merge data together 
 	use				"$root/wave_0`w'/SEC1C", clear
 		*** obs == 11478
-	keep 			HHID 
+	keep 			hhid 
 	duplicates 		drop
 		*** obs == 1950
-	merge 			1:1 HHID using `tempany', nogen
+	merge 			1:1 hhid using `tempany', nogen
 		*** obs == 1950: 1676 matched, 274 unmatched
-	merge 			1:1 HHID using `tempactwhy', nogen
+	merge 			1:1 hhid using `tempactwhy', nogen
 		*** obs == 1950: 1403 matched, 547 unmatched
-	merge 			1:1 HHID using `tempedu', nogen
+	merge 			1:1 hhid using `tempedu', nogen
 		*** obs == 1950: 769 matched, 1181 unmatched
 
 * save temp file
@@ -312,12 +312,12 @@
 	use				"$root/wave_0`w'/SEC4_2", clear
 		*** obs == 15600
 	
-* reformat HHID
-	format			%12.0f HHID
+* reformat hhid
+	format			%12.0f hhid
 
 * reshape data
 	replace			medical_access__id = 96 if medical_access__id == -96
-	reshape			wide s4q2*, i(HHID) j(medical_access__id)
+	reshape			wide s4q2*, i(hhid) j(medical_access__id)
 		*** obs == 1950
 	
 * rename variables to match
@@ -347,8 +347,8 @@
 	use				"$root/wave_0`w'/SEC6E_2", clear
 		*** obs == 4312
 	
-* reformat HHID
-	format			%12.0f HHID
+* reformat hhid
+	format			%12.0f hhid
 	
 * generate ag_crop variable
 	replace			crop__id = 96 if crop__id == -96
@@ -358,7 +358,7 @@
 	*drop			s6eq21* interview__id
 	
 * reshape data to extract ag crops	
-	reshape			wide crop__id s6eq21*, i(HHID) j(ag_crop)
+	reshape			wide crop__id s6eq21*, i(hhid) j(ag_crop)
 
 */	
 	
@@ -372,34 +372,34 @@
 		
 * merge in other section
 	forval			x = 1/5 {
-		merge			1:1 HHID using `temp`x'', nogen
+		merge			1:1 hhid using `temp`x'', nogen
 	}
 		*** obs == 1950: 1950 matched, 0 unmatched temp 1,3,4,5
 		*** obs == 1950: 1942 matched, 8 unmatched temp 2
 		
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC2.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/SEC2.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC2B.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/SEC2B.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC3.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/SEC3.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC4_1.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/SEC4_1.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC5.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/SEC5.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC5A.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/SEC5A.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1		HHID using "$root/wave_0`w'/SEC6E_1", nogen
+	merge 1:1		hhid using "$root/wave_0`w'/SEC6E_1", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC8.dta", nogen
+	merge 1:1 		hhid using "$root/wave_0`w'/SEC8.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1 		HHID using "$root/wave_0`w'/SEC9.dta", nogen	
+	merge 1:1 		hhid using "$root/wave_0`w'/SEC9.dta", nogen	
 		*** obs == 1950: 1950 matched, 0 unmatched
-	merge 1:1		HHID using "$root/wave_0`w'/SEC10.dta", nogen
+	merge 1:1		hhid using "$root/wave_0`w'/SEC10.dta", nogen
 		*** obs == 1950: 1950 matched, 0 unmatched
 		
-* reformat HHID
-	format			%12.0f HHID
+* reformat hhid
+	format			%12.0f hhid
 	
 * rename variables to match other rounds or countries
 	* rename govt actions 
@@ -555,12 +555,12 @@
 
 * save panel		
 	* gen wave data
-		rename			baseline_hhid baseline_HHID
+		rename			baseline_hhid baseline_hhid
 		rename			wfinal phw_cs
 		lab var			phw "sampling weights - cross section"	
 		gen				wave = `w'
 		lab var			wave "Wave number"
-		order			baseline_HHID wave phw, after(HHID)
+		order			baseline_hhid wave phw, after(hhid)
 		
 	* save file
 		save			"$export/wave_0`w'/r`w'", replace

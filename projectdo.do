@@ -58,11 +58,11 @@
 
 	if `"`c(username)'"' == "lirro" {
 		global 		code  	"C:/Users/lirro/Documents/GitHub/wb_covid"
-		global 		data	"G:/.shortcut-targets-by-id/1wmQb8xn5Qop-2J14D7Z2rdKxJhcwfP_q/wb_covid/data"
-		global 		output_f "G:/.shortcut-targets-by-id/1wmQb8xn5Qop-2J14D7Z2rdKxJhcwfP_q/wb_covid/output"
+		global 		data	"G:/.shortcut-targets-by-id/1XcQAvrJb1mJEPSQMqrMmRpHBSrhhgt5-/wb_covid/data"
+		global 		output_f "G:/.shortcut-targets-by-id/1XcQAvrJb1mJEPSQMqrMmRpHBSrhhgt5-/wb_covid/data"
 	}
-
-
+	
+	
 ************************************************************************
 **# 0 (b) - Check if any required packages are installed:
 ************************************************************************

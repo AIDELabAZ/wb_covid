@@ -7,14 +7,16 @@
 
 * does
 	* merges together each section of malawi data
-	* builds round 1
-	* outputs round 1
+	* builds round 12
+	* outputs round 12
 
 * assumes
 	* raw malawi data 
 
 * TO DO:
-	* everything
+	* find errors
+	* fix errors
+	
 	
 
 ************************************************************************
@@ -56,24 +58,43 @@
 *************************************************************************	
 	
 * load data
-	use				"$root/wave_`w'/sect12_Interview_result_r`w'", clear
-		***obs == 1533
+	use				"$root/wave_`w'/sect1_interview_info_r`w'", clear
+		***obs == 3561 NOTE: was 1533
 
 * drop all but household respondant
-	keep			HHID s12q9
-	rename			s12q9 PID
-	isid			HHID
+	drop if			s1q8 != 1
+		*** obs == 1566	
+	keep			hhid s1q9 // NOTE: section 12 that was previously available is no longer, however s1q9 appears equivalent to s12q9 from the previous iteration
+	rename			s1q9 pid
+	duplicates 		drop
+		*** obs == 1534 // NOTE: there is one duplciate hhid where the HoH is interviewed and the wife/husband is interviewed, I am dropping the wife/husband for this merge
+	duplicates 		tag hhid, generate(dups)
+	drop if			dups == 1 & pid == 2
+	drop			dups
+	isid			hhid // note duplicates were dropped, however dates of interview are different, interviewee is the same
+	
+	compress		hhid
+	
+* preserve restore to compress and merge by hhid household roster
+	preserve
+		use				"$root/wave_`w'/sect2_household_roster_r`w'", clear
+	* drop all but gender and relation to HoH
+		keep			hhid pid s2q5 s2q6 s2q7 s2q9
+		compress		hhid
+		
+	* save temp file
+		tempfile		temp_hhroster
+		save			`temp_hhroster'
+	restore
 
 * merge in household roster
-	merge 1:1 HHID PID using "$root/wave_`w'/sect2_Household_Roster_r`w'"
-		***obs == 7793 | from master not matched - 1  | from using not matched - 6260 | matched == 1532
+	merge 1:1 hhid pid using `temp_hhroster'
+		***obs == 7793 | from master not matched - 0  | from using not matched - 6259 | matched == 1533
 	keep if			_merge == 3
 		*** obs == 1532
 	drop			_merge
 		*** obs == 1532
 		
-* drop all but gender and relation to HoH
-	keep			HHID PID s2q5 s2q6 s2q7 s2q9
 
 * save temp file
 	tempfile		tempc
@@ -85,11 +106,12 @@
 *************************************************************************
 
 * load data
-	use				"$root/wave_`w'/sect2_Household_Roster_r`w'", clear
+	use				"$root/wave_`w'/sect2_household_roster_r`w'", clear
 		*** obs == 7792
+	compress		hhid
 
 * rename other variables
-	rename			PID ind_id
+	rename			pid ind_id
 	rename			s2q3 curr_mem
 	replace			curr_mem = 1 if s2q2 == 1
 	rename			s2q5 sex_mem
@@ -157,7 +179,7 @@
 
 * collapse data to hh level and merge in why vars
 	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild ///
-		new_mem mem_left (max) sexhh, by(HHID y4)
+		new_mem mem_left (max) sexhh, by(hhid y4)
 			*** obs == 1533
 
 	replace			new_mem = 1 if new_mem > 0 & new_mem < .
@@ -214,8 +236,9 @@
 *************************************************************************
 
 * load data
-	use				"$root/wave_`w'/sect6e_Livestock_Products_r`w'", clear
+	use				"$root/wave_`w'/sect6e_livestock_products_r`w'", clear
 		*** obs == 6132
+	compress		hhid
 
 * reshape wide
 	gen 			product = cond(LivestockPr == 555, "other", cond(LivestockPr == 1, ///
@@ -224,7 +247,7 @@
 		
 	drop 			Livestock
 	
-	reshape 		wide s6qe*, i(HHID y4_hhid) j(product) string
+	reshape 		wide s6qe*, i(hhid y4_hhid) j(product) string
 		*** obs == 1533
 
 * save temp file
@@ -233,37 +256,91 @@
 	
 
 *************************************************************************
+**# - compress hhid for section
+*************************************************************************
+
+* load behavior data
+	use				"$root/wave_`w'/sect4_behavior_r`w'", clear
+	compress		hhid
+	tempfile		temph
+	save			`temph'
+
+* load access data
+	use				"$root/wave_`w'/sect5_access_r`w'", clear
+	compress		hhid
+	tempfile		tempi
+	save			`tempi'
+
+* load child development data
+	use				"$root/wave_`w'/sect5d_childdevt_r`w'", clear
+	compress		hhid
+	tempfile		tempj
+	save			`tempj'
+
+* load employment data
+	use				"$root/wave_`w'/sect6a_employment2_r`w'", clear
+	compress		hhid
+	tempfile		tempk
+	save			`tempk'
+
+* load non-farm employment data
+	use				"$root/wave_`w'/sect6b_nfe_r`w'", clear
+	compress		hhid
+	tempfile		templ
+	save			`templ'
+	
+* load agriculture data
+	use				"$root/wave_`w'/sect6e_agriculture_r`w'", clear
+	compress		hhid
+	tempfile		tempm
+	save			`tempm'
+
+* load food security data
+	use				"$root/wave_`w'/sect8_food_security_r`w'", clear
+	compress		hhid
+	tempfile		tempn
+	save			`tempn'
+
+* load concerns data
+	use				"$root/wave_`w'/sect9_concerns_r`w'", clear
+	compress		hhid
+	tempfile		tempo
+	save			`tempo'
+	
+
+*************************************************************************
 **# - merge to build complete dataset for the round 
 *************************************************************************
 
 * load cover data
-	use				"$root/wave_`w'/secta_Cover_Page_r`w'", clear
+	use				"$root/wave_`w'/secta_cover_page_r`w'", clear
 		*** obs == 1698
-
+	compress		hhid
+	
 * merge formated sections
-	foreach		x in c d g {
-		merge		1:1 HHID using `temp`x'', nogen
+	foreach		x in c d g h i j k l m n o {
+		merge		1:1 hhid using `temp`x'', nogen
 	}
 		*** obs == 1698: 1532 matched, 166 unmatched temp c
-		*** obs == 1698: 1533 matched, 165 unmatched temps d, g
+		*** obs == 1698: 1533 matched, 165 unmatched temps d - o
 
-* merge in other sections
-	merge 1:1		HHID using "$root/wave_`w'/sect4_Behavior_r`w'", nogen
+/* merge in other sections
+	merge 1:1		hhid using "$root/wave_`w'/sect4_behavior_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect5_Access_r`w'", nogen
+	merge 1:1		hhid using "$root/wave_`w'/sect5_access_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect5d_ChildDevt_r`w'", nogen
+	merge 1:1		hhid using "$root/wave_`w'/sect5d_childdevt_r`w'", nogen
 		*** obs == 16898: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect6a_Employment2_r`w'", nogen
+	merge 1:1		hhid using "$root/wave_`w'/sect6a_employment2_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect6b_NFE_r`w'", nogen
+	merge 1:1		hhid using "$root/wave_`w'/sect6b_nfe_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect6e_Agriculture_r`w'", nogen
+	merge 1:1		hhid using "$root/wave_`w'/sect6e_agriculture_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect8_food_security_r`w'", nogen
+	merge 1:1		hhid using "$root/wave_`w'/sect8_food_security_r`w'", nogen
 		*** obs == 1698: 1533 matched, 165 unmatched
-	merge 1:1		HHID using "$root/wave_`w'/sect9_Concerns_r`w'", nogen
-		*** obs == 16898: 1533 matched, 165 unmatched
+	merge 1:1		hhid using "$root/wave_`w'/sect9_concerns_r`w'", nogen
+		*** obs == 16898: 1533 matched, 165 unmatched */
 
 * rename variables inconsistent with other waves
 	* behavior
@@ -352,7 +429,7 @@
 		replace			s6qe4__3 = 1 if s6aq11 == 3
 		replace			s6qe4__3 = 0 if s6qe4__3 == .
 		
-		drop			s6aq3a s6aq4 s6aq5_* s6aq3__2 /// note unsure of what to do with q8/8b in 6e-12
+		drop			s6aq3a s6aq4 s6aq5_* s6aq3__2 s6aq8b /// note unsure of what to do with q8/8b in 6e-12
 	
 * generate round variables
 	gen				wave = `w'
@@ -360,6 +437,7 @@
 	lab var			wave "Wave number"
 	rename			wt_round`w' phw_cs
 	label var		phw "sampling weights - cross section"
+	rename			hhid HHID
 	
 * save round file
 	save			"$export/wave_`w'/r`w'", replace

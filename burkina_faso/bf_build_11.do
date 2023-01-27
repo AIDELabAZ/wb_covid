@@ -318,7 +318,7 @@
 * clean variables inconsistent with other rounds
 		* employment 
 	rename 			s06q04_0 emp_chg_why
-	drop 			s06q04_0_autre
+	drop 			s06q04_0_autre s09bq03_autre
 		*** obs == 1986
 	replace 		emp_chg_why = 96 if emp_chg_why == 13
 	
