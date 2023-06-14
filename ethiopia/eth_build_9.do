@@ -2,8 +2,8 @@
 * Created on: Oct 2020
 * Created by: jdm
 * Edited by: lirr
-* Last edit:  02 June 2022
-* Stata v.17.0
+* Last edit:  14 June 2023
+* Stata v.18.0
 
 * does
 	* reads in ninth round of Ethiopia data
@@ -91,6 +91,33 @@
 	use				"$root/wave_0`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear
 	*** obs == 2077
 
+* replace variable names to match conversion factor
+	rename			cs1_region region
+	rename			cs2_zoneid zone
+	rename			cs3_woredaid woreda
+	gen				local_unit = ph3_crops_area_u			
+	
+* merge in conversion factors
+	merge			m:1 region zone woreda local_unit ///
+							using "$root/wave_00/ET_local_area_unit_conversion"
+			*** obs == 2298; 103 matched dropping 221 obs from using ds
+			
+* drop obs from using only
+	drop if			_merge == 2
+	
+* construct conversion factors	
+	replace			conversion = 10000 if local_unit == 1 & conversion == .
+		*** 253 changes made
+	
+	replace			conversion = 1 if local_unit == 2 & conversion == .
+	gen				crop_area_sqm = conversion * ph3_crops_area_q
+
+	gen				main_crop_area = crop_area_sqm * 0.0001
+	lab var			main_crop_area "Crop Area (ha)"
+	
+* drop region identifiers
+	drop			region zone woreda local_unit
+	
 * generate round variable
 	gen				wave = `w'
 	lab var			wave "Wave number"
