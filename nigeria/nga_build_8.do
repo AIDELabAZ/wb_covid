@@ -213,11 +213,83 @@
 * 2 - FIES score
 * ***********************************************************************
 
+
 * not available for round
 
+
+*************************************************************************
+**# 3 - Impute missing crop area values
+*************************************************************************
+
+* load data
+	use				"$root/wave_0`w'/r`w'_sect_a_2_5c_6_12", clear
+			*** obs == 1810
+			
+* isolate agriculture and crop variables	
+	keep			zone state lga sector ea hhid s6a*
+		*** obs == 1810
+	sort			hhid
+	
+* merg in conversion factors
+	merge			m:1 zone using "$root/wave_00/land-conversion"
+		*** all 1810 obs match
 		
+* rename and replace important variables to match baseline
+	rename			s6aq5b local_unit
+	replace			acrecon = 0.404686 // matches acre conversion with baseline
+		
+* construc area measures
+	gen				selfreport_ha = heapcon * s6aq5a if local_unit == 1
+	replace			selfreport_ha = ridgecon * s6aq5a if local_unit == 2 ///
+						& selfreport_ha == .
+	replace			selfreport_ha = standcon * s6aq5a if local_unit == 3 ///		
+						& selfreport_ha == .
+	replace			selfreport_ha = acrecon * s6aq5a if local_unit == 5 ///		
+						& selfreport_ha == .					
+	replace			selfreport_ha = hectarecon * s6aq5a if local_unit == 6 ///		
+						& selfreport_ha == .					
+	replace			selfreport_ha = sqmcon * s6aq5a if local_unit == 7 ///		
+						& selfreport_ha == .					
+	sum				selfreport_ha, detail					
+
+* drop observations with no crop response
+	drop if			s6aq4 == .
+		*** obs == 1291
+	mdesc			selfreport_ha
+		*** 26 missing obs 2.01%
+		
+* impute values	
+	mi set			wide // declare data to be wide
+	mi xtset,		clear // precautionary clear any xtset in place
+	mi register		imputed selfreport_ha
+	
+	sort			zone state hhid, stable // sort to ensure same order as baseline and reporducibility
+	mi impute		pmm selfreport_ha i.state, add(1) rseed(441244) ///
+						noisily dots force knn(5) bootstrap
+						
+	mi unset
+	
+* look at data to evaluate
+	tab				mi_miss
+	
+	tabstat			selfreport_ha selfreport_ha_1_ s6aq5a, by(mi_miss) ///
+						statistics(n mean min max) columns(statistics) longstub ///
+						format(%9.3g)
+	
+	sum				selfreport_ha_1_ selfreport_ha
+	rename			selfreport_ha_1_ imp_crop_area
+	rename			selfreport_ha ag_main_area_ha
+	
+* keep necessary variables
+	keep			hhid imp_* ag_main* 
+
+* save temp
+	tempfile			temp_crop
+	save				`temp_crop'
+	
+	
 * ***********************************************************************
-* 3 - merge sections into panel and save
+* 4 - merge sections into panel and save
 * ***********************************************************************
 
 * merge sections based on hhid
@@ -226,6 +298,10 @@
 	    merge		1:1 hhid using `temp`s'', nogen
 	}
 	
+* merge in crop data
+	merge			1:1 hhid using `temp_crop', nogen
+		*** obs == 1810; 1291 matched same # of obs in temp_crop
+
 * generate round variable
 	gen				wave = `w'
 	lab var			wave "Wave number"	

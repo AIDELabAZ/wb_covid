@@ -2,7 +2,7 @@
 * Created on: Oct 2020
 * Created by: jdm
 * Edited by: lirr
-* Last edit:  14 June 2023
+* Last edit:  20 June 2023
 * Stata v.18.0
 
 * does
@@ -83,41 +83,14 @@
 	*** obs == 2077
 	
 	
-* ***********************************************************************
-* 2 - format microdata
-* ***********************************************************************
+*************************************************************************
+**# 2 - format microdata
+*************************************************************************
 
 * load microdata
 	use				"$root/wave_0`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear
 	*** obs == 2077
 
-* replace variable names to match conversion factor
-	gen 			region = cs1_region 
-	gen				zone = cs2_zoneid 
-	gen				woreda = cs3_woredaid  
-	gen				local_unit = ph3_crops_area_u			
-	
-* merge in conversion factors
-	merge			m:1 region zone woreda local_unit ///
-							using "$root/wave_00/ET_local_area_unit_conversion"
-			*** obs == 2298; 103 matched dropping 221 obs from using ds
-		
-* drop obs from using only
-	drop if			_merge == 2
-	
-* construct conversion factors	
-	replace			conversion = 10000 if local_unit == 1 & conversion == .
-		*** 253 changes made
-	
-	replace			conversion = 1 if local_unit == 2 & conversion == .
-	gen				crop_area_sqm = conversion * ph3_crops_area_q
-
-	gen				main_crop_area = crop_area_sqm * 0.0001
-	lab var			main_crop_area "Crop Area (ha)"
-	
-* drop region identifiers
-	drop			region zone woreda local_unit
-	
 * generate round variable
 	gen				wave = `w'
 	lab var			wave "Wave number"
@@ -127,9 +100,9 @@
 	save 			`temp_micro'	
 
 	
-* ***********************************************************************
-* 3 - FIES score
-* ***********************************************************************	
+*************************************************************************
+**# 3 - FIES score
+*************************************************************************	
 /*	
 * load FIES score data
 	use				"$fies/ET_FIES_round`w'.dta", clear
@@ -143,6 +116,103 @@
 	save 			`temp_fies'
 	
 */	
+
+	
+*************************************************************************
+**# 4 - Crop data score
+*************************************************************************	
+
+* load microdata
+	use				"$root/wave_0`w'/r`w'_wb_lsms_hfpm_hh_survey_public_microdata", clear
+		*** obs == 2077
+
+* replace variable names to match conversion factor
+	gen 			region = cs1_region 
+	gen				zone = cs2_zoneid 
+	gen				woreda = cs3_woredaid  
+	gen				local_unit = ph3_crops_area_u
+	
+	
+* keep necessary variables
+	keep			household_id region zone woreda local_ ph1_* ph2_* ph3_*
+		*** obs == 2077
+		
+* drop observations with no crops
+	drop if			ph2_crops_main == .
+		*** obs == 649
+		
+* merge in conversion factors
+	merge			m:1 region zone woreda local_unit ///
+							using "$root/wave_00/ET_local_area_unit_conversion"
+			*** obs == 870; 103 matched, 546 unmatched from master
+		
+* drop obs from using only
+	drop if			_merge == 2
+		*** obs == 649 
+	drop			_m
+		
+* set up for imputation
+	sort			household_id
+	egen			district_id = group(region zone)
+	lab var			district_id "Unique region identifier"
+	distinct		region zone, joint // unique vals of dist should be same as this value
+		*** 80 distinct districts
+
+* construct conversion factors	
+	replace			conversion = 10000 if local_unit == 1 & conversion == .
+		*** 253 changes made
+	replace			conversion = 1 if local_unit == 2 & conversion == .
+		*** 2 changes made
+	gen				crop_area_sqm = conversion * ph3_crops_area_q
+		*** 291 missing values little less than half of all observations
+
+	gen				selfreport_ha = crop_area_sqm * 0.0001
+	lab var			selfreport_ha "Crop Area (ha) self reported"
+	gen				plotsize_sr = selfreport_ha
+	
+* check summary stats of crop area varaibles
+	sum				plotsize_sr
+		*** mean = 1.409, min 0.0025 max 10
+	
+* impute missing plot sizes with predictive mean matching
+	mi set			wide // declare data to be wide
+	mi xtset,		clear // precautionary clear of xtset
+	mi register		imputed plotsize_sr // identify self reported plotsize as variable to be imputed
+	
+	sort			household_id, stable // sorts for reproducibility
+	
+	mi impute		pmm plotsize_sr i.district_id i.local_unit, add(1) rseed(441244) ///
+						noisily dots force knn(5) bootstrap
+	
+	mi				unset					
+	
+* summarize imputation results
+	tab				mi_miss // binary = 1 for full set where plotsize_sr is missng
+	tabstat			plotsize_sr plotsize_sr_1_ crop_area_sqm selfreport_ha, ///
+						by(mi_miss) statistics(n mean min max) columns(statistics) longstub ///
+						format(%9.3g)
+		*** 291 values imputed				
+		
+* drop and replace plotsize variables to match other variables
+
+	rename			plotsize_sr_1_ imp_crop_area
+	lab var			imp_crop_area "Imputed crop area (ha) self reported r9"
+	sum				imp_crop_area, detail
+	
+* check correlation between imp_crop_area and selfreport_ha
+	corr			imp_crop_area selfreport_ha plotsize_sr
+		*** corr = 1 very high, worringly high maybe
+
+* drop	unncessary variables
+	drop			region zone* woreda* local_unit district_id mi_miss conv_id ph* ///
+						conversion
+	
+* save temp
+	tempfile		temp_crops
+	save			`temp_crops'
+	
+
+
 * ***********************************************************************
 * 4 - merge to build complete dataset for the round 
 * ***********************************************************************	
@@ -152,6 +222,8 @@
 	merge 			1:1 household_id using `temp_micro', assert(3) nogen
 	//merge 			1:1 household_id using `temp_fies', nogen
 					*** obs == 2077
+	merge			1:1 household_id using `temp_crops',  nogen
+		*** obs == 2077; 649 matched as seen above
 
 * rename variables inconsistent with other rounds	
 	* livestock 
