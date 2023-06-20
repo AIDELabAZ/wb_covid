@@ -1,22 +1,22 @@
 * Project: WB COVID
-* Created on: July 2022
-* Created by: lirr
+* Created on: April 2021
+* Created by: amf
 * Edited by: lirr
 * Last edit: 19 June 2023
-* Stata v.18.0
+* Stata v.17.0
 
 * does
-	* reads in eleventh round of BF data
-	* builds round 11
-	* outputs round 11
+	* reads in third round of BF data
+	* builds round 3
+	* outputs round 3
 
 * assumes
 	* raw BF data
 
 * TO DO:
-	* everything
-	
-	
+	* complete
+
+
 ************************************************************************
 **# - setup
 ************************************************************************
@@ -32,40 +32,40 @@
 	log using		"$logout/bf_build", append
 
 * set local wave number & file number
-	local			w = 11
+	local			w = 3
 	
 * make wave folder within refined folder if it does not already exist 
-	capture mkdir 	"$export/wave_`w'" 
+	capture mkdir 	"$export/wave_0`w'" 
 
 	
 *************************************************************************
 **# - get respondent data
 *************************************************************************	
 
-* load respondent id data
-	use				"$root/wave_`w'/r`w'_sec1a_info_entretien_tentative", clear
-		*** obs == 2552
-	keep			if s01aq08 == 1
-		*** obs == 1931
-	rename			s01aq09 membres__id
+* load respondant id data	
+	use 			"$root/wave_0`w'/r`w'_sec1a_info_entretien_tentative", clear
+		*** obs == 3686
+	keep 			if s01aq08 == 1
+		*** obs == 2051
+	rename 			s01aq09 membres__id
 	duplicates 		drop hhid membres__id, force
-		*** obs == 1926
+		*** obs == 2019
 	duplicates		tag hhid, gen(dups)
-	replace			membres__id = -96 if dups > 0
+	replace 		membres__id = -96 if dups > 0
 	duplicates 		drop hhid membres__id, force
-		*** obs == 1924
-	lab def			mem -96 "multiple respondents"
-	lab val			membres__id mem
-	keep			hhid membres__id
-		*** obs == 1924
-		
+		*** obs == 2013
+	lab def 		mem -96 "multiple respondents"
+	lab val 		membres__id mem
+	keep 			hhid membres__id
+		*** obs == 2013
+
 * load roster data with gender
-	merge 1:1		hhid membres__id using "$root/wave_`w'/r`w'_sec2_liste_membre_menage"
-		*** obs == 12964: 1922 matched, 11042 unmatched
-	keep			if _m == 1 | _m == 3
-		*** obs == 1924
-	keep			hhid s02q05 membres__id s02q07 s02q06
-		*** obs == 1924
+	merge 1:1		hhid membres__id using "$root/wave_0`w'/r`w'_sec2_liste_membre_menage"
+		*** obs == 13455: 1999 matched, 11456 unmatched
+	keep 			if _m == 1 | _m == 3
+		*** obs == 2013
+	keep 			hhid s02q05 membres__id s02q07 s02q06
+		*** obs == 2013
 	rename 			membres__id resp_id
 	rename 			s02q05 sex
 	rename 			s02q06 age
@@ -78,100 +78,100 @@
 
 *************************************************************************
 **# - get household size and gender of HOH
-*************************************************************************
+*************************************************************************	
 
-* load roster data
-	use			"$root/wave_`w'/r`w'_sec2_liste_membre_menage", clear
-		*** obs == 12962
-
-* rename other variables
-	rename		membres__id ind_id
-	rename		s02q03 curr_mem
-	replace		curr_mem = 1 if s02q02 == 1
-	rename		s02q05 sex_mem
-	rename		s02q06 age_mem
-	rename		s02q07 relat_mem
-	replace		relat_mem = s02q09b if relat_mem == .
-
+* load roster data	
+	use 			"$root/wave_0`w'/r`w'_sec2_liste_membre_menage", clear
+		*** obs == 13441
+	
+* rename other variables 
+	rename 			membres__id ind_id 
+	rename 			s02q03 curr_mem
+	replace 		curr_mem = 1 if s02q02 == 1
+	rename 			s02q05 sex_mem
+	rename 			s02q06 age_mem
+	rename 			s02q07 relat_mem
+	replace			relat_mem = s02q09b if relat_mem == . 
+	
 * generate counting variables
-	gen			hhsize = 1 if curr_mem == 1
-	gen			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
-	gen			hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem < .
-	gen			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19
-		*** obs == 12962
-
+	gen				hhsize = 1 if curr_mem == 1
+	gen 			hhsize_adult = 1 if curr_mem == 1 & age_mem > 18 & age_mem < .
+	gen				hhsize_child = 1 if curr_mem == 1 & age_mem < 19 & age_mem != . 
+	gen 			hhsize_schchild = 1 if curr_mem == 1 & age_mem > 4 & age_mem < 19
+		*** obs == 13441
+	
 * generate hh head gender variable
-	gen			sexhh = .
-	replace		sexhh = sex_mem if relat_mem == 1
-	lab var		sexhh "Sex of household head"
-
+	gen 			sexhh = .
+	replace 		sexhh = sex_mem if relat_mem== 1
+	lab var 		sexhh "Sex of household head"
+	
 * generate migration vars
-	rename		s02q02 new_mem
-	replace		new_mem = 0 if s02q08 == 10
-	replace		s02q08 = . if s02q08 == 10
-	gen			mem_left = 1 if curr_mem == 2
-	replace		new_mem = 0 if new_mem == 2
-	replace		mem_left = 0 if mem_left == 2
+	rename 			s02q02 new_mem
+	replace 		new_mem = 0 if s02q08 == 10
+	replace 		s02q08 = . if s02q08 == 10
+	gen 			mem_left = 1 if curr_mem == 2
+	replace 		new_mem = 0 if new_mem == 2
+	replace 		mem_left = 0 if mem_left == 2
 	
-	replace		s02q04 = 123 if s02q04 == 2
-	replace		s02q04 = 2 if s02q04 == 3
-	replace		s02q04 = 3 if s02q04 == 123
-	
+	replace 		s02q04 = 123 if s02q04 == 2
+	replace 		s02q04 = 2 if s02q04 == 3
+	replace 		s02q04 = 3 if s02q04 == 123
+		
 	* why member left
 		preserve
-			keep			hhid s02q04 ind_id
-				*** obs == 12962
-			keep			if s02q04 != .
-				*** obs == 25
-			duplicates drop	hhid s02q04, force
-				*** obs == 19
-			reshape			wide ind_id, i(hhid) j(s02q04)
-				*** obs == 18
-			ds				ind_id*
-			foreach			var in `r(varlist)' {
-				replace			`var' = 1 if `var' != .
+			keep 		hhid s02q04 ind_id
+				*** obs == 13441
+			keep 		if s02q04 != .
+				*** obs == 81
+			duplicates 	drop hhid s02q04, force
+				*** obs == 70
+			reshape 	wide ind_id, i(hhid) j(s02q04)
+				*** obs == 59
+			ds 			ind_id*
+			foreach 	var in `r(varlist)' {
+				replace 	`var' = 1 if `var' != .
 			}
-			rename			ind_id* mem_left_why_*
-			tempfile		mem_left
-			save			`mem_left'
+			rename 		ind_id* mem_left_why_*
+			tempfile 	mem_left
+			save 		`mem_left'
 		restore
-		
-	* why new member
+	
+	* why new member 
 		preserve
-			keep			hhid s02q08 ind_id
-				*** obs == 12962
-			keep			if s02q08 != .
-				*** obs == 45
-			duplicates drop	hhid s02q08, force
-				*** obs == 40
-			reshape			wide ind_id, i(hhid) j(s02q08)
-				*** obs == 36
-			ds				ind_id*
-			foreach			var in `r(varlist)' {
-				replace		`var' = 1 if `var' != .
+			keep 		hhid s02q08 ind_id
+				*** obs == 13441
+			keep 		if s02q08 != .
+				*** obs == 154
+			duplicates 	drop hhid s02q08, force
+				*** obs == 111
+			reshape 	wide ind_id, i(hhid) j(s02q08)
+				*** obs == 98
+			ds 			ind_id*
+			foreach 	var in `r(varlist)' {
+				replace 	`var' = 1 if `var' != .
 			}
-			rename			ind_id* new_mem_why_*
-			tempfile		new_mem
-			save			`new_mem'
+			rename 		ind_id* new_mem_why_*
+			tempfile 	new_mem
+			save 		`new_mem'
 		restore
 	
 * collapse data to hh level and merge in why vars
-	collapse		(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
+	collapse	(sum) hhsize hhsize_adult hhsize_child hhsize_schchild new_mem mem_left ///
 				(max) sexhh, by(hhid)
-		*** obs == 1924
-	replace			new_mem = 1 if new_mem > 0 & new_mem < .
-	replace			mem_left = 1 if mem_left > 0 & new_mem < .
-	merge			1:1 hhid using `new_mem', nogen
-		*** obs == 1924: 36 matched, 1888 unmatched
-	merge		1:1 hhid using `mem_left', nogen
-		*** obs == 1924: 18 matched, 1906 unmatched
-	ds				new_mem_why_*
-	foreach			var in `r(varlist)' {
-		replace			`var' = 0 if `var' >= . & new_mem == 1
+		*** obs == 2011
+	replace 	new_mem = 1 if new_mem > 0 & new_mem < .
+	replace 	mem_left = 1 if mem_left > 0 & new_mem < .	
+	merge 		1:1 hhid using `new_mem', nogen
+		*** obs == 2011: 98 matched, 1913 unmatched
+	merge 		1:1 hhid using `mem_left', nogen
+		*** obs == 2011: 59 matched, 1952 unmatched
+	ds 			new_mem_why_* 
+	foreach		var in `r(varlist)' {
+		replace 	`var' = 0 if `var' >= . & new_mem == 1
 	}
-	ds				mem_left_why_*
-	foreach			var in `r(varlist)' {
-		replace			`var' = 0 if `var' >= . & mem_left == 1
+	ds 			mem_left_why_* 
+	foreach		var in `r(varlist)' {
+		replace 	`var' = 0 if `var' >= . & mem_left == 1
 	}
 	lab var		hhsize "Household size"
 	lab var 	hhsize_adult "Household size - only adults"
@@ -187,128 +187,111 @@
 	
 *************************************************************************
 **# - other revenues
-*************************************************************************
-
-* load data
-	use			"$root/wave_`w'/r`w'_sec8_autres_revenu", clear
-		*** obs == 17316
-
+*************************************************************************		
+	
+* load data	
+	use 		"$root/wave_0`w'/r`w'_sec8_autres_revenu", clear
+		*** obs == 10065
+	
 * drop other vars
-	keep		hhid revenu__id s08q0*
-		*** obs == 17316
-
-* reshape
-	reshape		wide s08q0*, i(hhid) j(revenu__id)
-		*** obs == 1924
-
+	keep 		hhid revenu__id s08q0*
+		*** obs == 10065
+	
+* reshape 
+	reshape 	wide s08q0*, i(hhid) j(revenu__id)
+		*** obs == 2013
+	
 * format vars
-	rename 		s08q011 rem_for
-	rename 		s08q012 rem_dom
-	rename 		s08q013 asst_inc
-	rename 		s08q014 isp_inc
-	rename 		s08q015 pen_inc
-	rename 		s08q016 farm_inc
-	rename 		s08q017 bus_inc
-	rename 		s08q018 wage_inc
+	rename 		s08q011 oth_inc_1
+	rename 		s08q012 oth_inc_2
+	rename 		s08q013 oth_inc_3
+	rename 		s08q014 oth_inc_4
+	rename 		s08q015 oth_inc_5
 	
-	rename 		s08q021 rem_for_chg
-	rename 		s08q022 rem_dom_chg
-	rename 		s08q023 asst_chg
-	rename 		s08q024 isp_chg
-	rename 		s08q025 pen_chg
-	rename 		s08q026 farm_chg
-	rename 		s08q027 bus_chg
-	rename 		s08q028 wage_chg
-	rename		s08q029 hh_inc_chg
-	
-	rename 		s08q031 rem_for_chg_cov
-	rename 		s08q032 rem_dom_chg_cov
-	rename 		s08q033 asst_chg_cov
-	rename 		s08q034 isp_chg_cov
-	rename 		s08q035 pen_chg_cov
-	rename 		s08q036 farm_chg_cov
-	rename 		s08q037 bus_chg_cov
-	rename 		s08q038 wage_chg_cov
-	rename		s08q039 hh_inc_chg_cov
-	
-	drop		s08q019 // there are no observations, answers not applicable to question asked
+	rename 		s08q021 oth_inc_chg_1
+	rename 		s08q022 oth_inc_chg_2
+	rename 		s08q023 oth_inc_chg_3
+	rename 		s08q024 oth_inc_chg_4
+	rename 		s08q025 oth_inc_chg_5
 	
 * save temp file
-	tempfile	tempc
-	save		`tempc'
-		
-		
+	tempfile		tempc
+	save			`tempc'
+	
+	
 *************************************************************************
 **# - assistance
-*************************************************************************			
+*************************************************************************
 
-* load data
-	use			"$root/wave_`w'/r`w'_sec10_protection_sociale", clear
-		*** obs == 5772
-
+* load data	
+	use 		"$root/wave_0`w'/r`w'_sec10_protection_sociale", clear
+		*** obs == 6039
+	
 * drop other vars
-	keep		hhid assistance__id s10q01 // note: s10q01 for r11 has changed recall time
-		*** obs == 5772
-		
-* reshape
-	reshape		wide s10q01, i(hhid) j(assistance__id)
-		*** obs == 1924
+	keep 		hhid assistance__id s10q01
+		*** obs == 6039
+	
+* reshape 
+	reshape 	wide s10q01, i(hhid) j(assistance__id)
+		*** obs == 2013
 
 * format vars
-	rename		s10q01101 asst_food
-	rename		s10q01102 asst_cash
-	rename		s10q01103 asst_kind
+	rename 		s10q01101 asst_food
+	rename 		s10q01102 asst_cash
+	rename 		s10q01103 asst_kind
 	
-	replace		asst_food = 0 if asst_food == 2
-	replace		asst_cash = 0 if asst_cash == 2
-	replace		asst_kind = 0 if asst_kind == 2
+	replace 	asst_food = 0 if asst_food == 2
+	replace 	asst_cash = 0 if asst_cash == 2
+	replace 	asst_kind = 0 if asst_kind == 2
 	
-	gen			asst_any = 0 if asst_food == 0 | asst_cash == 0 | asst_kind == 0
-	replace		asst_any = 1 if asst_food == 1 | asst_cash == 1 | asst_kind == 1
+	gen				asst_any = 0 if asst_food == 0 | asst_cash == 0 | ///
+						asst_kind == 0
+	replace 		asst_any = 1 if asst_food == 1 | asst_cash == 1 | ///
+						asst_kind == 1
 
 * save temp file
-	tempfile	tempd
-	save		`tempd'
-
+	tempfile		tempd
+	save			`tempd'
+	
 
 *************************************************************************
 **# - FIES
-*************************************************************************		
-/*
+*************************************************************************	
+
 * load data
-	use 			"$fies/BFA_FIES_round`w'", clear
+	use 			"$fies/BF_FIES_round`w'", clear
+		*** obs == 2011
 	
 * format hhid & vars
 	destring 		HHID, gen(hhid)
 	drop 			country round HHID
+		*** obs == 2011
 	
 * save temp file
 	tempfile		tempe
 	save			`tempe'	
-
-*/
-
-
+	
+	
 *************************************************************************
-**# - Ag and Crop info
-*************************************************************************	
-
+**# - Top crops and cropcodes
+*************************************************************************		
+	
 * load data
-	use				"$data/burkina_faso/raw/wave_`w'/r`w'_sec6d_emplrev_agr", clear
-		*** obs == 1924
-		
-* keep variables with crop id codes
-	keep			hhid s06dq03_*
-	drop			s06dq03_autre
+	use				"$data/burkina_faso/raw/wave_0`w'/r`w'_sec6d_emplrev_agr", clear
+		*** obs == 2013
 
+
+* keep variables with crop id codes
+	keep			hhid s06q16_*
+	drop			s06q16_autre
 
 	forval			i = 1/55 {
-		replace			s06dq03__`i' = . if s06dq03__`i' == 0
+		replace			s06q16__`i' = . if s06q16__`i' == 0
 	}
 
 	
 * extract variables from list of crops
-	ds				s06dq03_* // creates r class variable for looping over crop vars
+	ds				s06q16_* // creates r class variable for looping over crop vars
 	gen				cc_1 = "." // itermediate step to get all crop codes
  
 
@@ -317,7 +300,7 @@
 		replace				cc_1 = "`var'" if `var' == 1
 	}
 	
-	ds				s06dq03_*
+	ds				s06q16_*
 
 * loop to replace variable to ensure all crops accounted for
 	foreach			var in `r(varlist)' {
@@ -330,7 +313,7 @@
 	sort			cc_1
 	
 * extract variables from list of crops
-	ds				s06dq03_* // creates r class variable for looping over crop vars
+	ds				s06q16_* // creates r class variable for looping over crop vars
 	gen				cc_2 = "." // itermediate step to get all crop codes
  
 
@@ -339,7 +322,7 @@
 		replace				cc_2 = "`var'" if `var' == 1
 	}
 	
-	ds				s06dq03_*
+	ds				s06q16_*
 
 * loop to replace variable to ensure all crops accounted for
 	foreach			var in `r(varlist)' {
@@ -352,7 +335,7 @@
 	sort			cc_2
 	
 * extract variables from list of crops
-	ds				s06dq03_* // creates r class variable for looping over crop vars
+	ds				s06q16_* // creates r class variable for looping over crop vars
 	gen				cc_3 = "." // itermediate step to get all crop codes
  
 
@@ -361,7 +344,7 @@
 		replace				cc_3 = "`var'" if `var' == 1
 	}
 	
-	ds				s06dq03_*
+	ds				s06q16_*
 
 * loop to replace variable to ensure all crops accounted for
 	foreach			var in `r(varlist)' {
@@ -568,49 +551,82 @@
 	tempfile		tempf
 	save			`tempf'	
 			
-			
+
 *************************************************************************
 **# - merge
 *************************************************************************
 
 * load cover data
-	use			"$root/wave_`w'/r`w'_sec0_cover", clear
-		*** obs == 1971
-
-* mrege formatted sections
-	foreach		x in a b c d f {
-		merge 		1:1 hhid using `temp`x'', nogen
+	use 		"$root/wave_0`w'/r`w'_sec0_cover", clear
+		*** obs == 2120
+	
+* merge formatted sections
+	foreach 		x in a b c d e f {
+	    merge 		1:1 hhid using `temp`x'', nogen
 	}
-		*** obs == 1971: 1924 matched, 47 unmatched for temps a, b, c, d
+		*** obs == 2120: 2013 matched, 107 unmatched temps a, c, d, f
+		*** obs == 2120: 2011 matched, 109 unmatched temps b, e
 
 * merge in other sections
-	merge 1:1 	hhid using "$root/wave_`w'/r`w'_sec5_acces_service_base", nogen
-		*** obs == 1971: 1924 matched, 47 unmatched
-	merge 1:1	hhid using "$root/wave_`w'/r`w'_sec6a_emplrev_general", nogen
-		*** obs == 1971: 1924 matched, 47 unmatched
-	merge 1:1	hhid using "$root/wave_`w'/r`w'_sec6d_emplrev_agr", nogen
-		*** obs == 1971: 1924 matched, 47 unmatched
-	merge 1:1	hhid using "$root/wave_`w'/r`w'_sec7_securite_alimentaire", nogen
-		*** obs == 1971: 1924 matched, 47 unmatched
-	merge 1:1	hhid using "$root/wave_`w'/r`w'_sec9b_inquietudes", nogen
-		*** obs == 1971: 1924 matched, 47 unmatched
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec3_connaisance_covid19", nogen
+		*** obs == 2120: 2013 matched, 107 unmatched
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec4_comportaments", nogen
+		*** obs == 2120: 2013 matched, 107 unmatched
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec5_acces_service_base", nogen
+		*** obs == 2120: 2013 matched, 107 unmatched
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6a_emplrev_general", nogen
+		*** obs == 2120: 2013 matched, 107 unmatched
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6b_emplrev_travailsalarie", nogen
+		*** obs == 2120: 2013 matched, 107 unmatched
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6c_emplrev_nonagr", nogen
+		*** obs == 2120: 2013 matched, 107 unmatched
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec6d_emplrev_agr", nogen
+		*** obs == 2120: 2013 matched, 107 unmatched
+	merge 1:1 	hhid using "$root/wave_0`w'/r`w'_sec7_securite_alimentaire", nogen
+		*** obs == 2120: 2013 matched, 107 unmatched
 
 * clean variables inconsistent with other rounds
-		* employment 
+	* ac_med
+	rename 			s05q01a ac_med		
+	replace 		ac_med = 1 if ac_med == 2 | ac_med == 3
+	replace 		ac_med = 2 if ac_med == 4
+	replace 		ac_med = 3 if ac_med == 5
+	
+	rename 			s05q03e ac_medserv_why
+	replace 		ac_medserv_why = . if ac_medserv_why == 4
+	rename 			s05q03d ac_medserv_oth
+	
+	* employment 
 	rename 			s06q04_0 emp_chg_why
-	drop 			s06q04_0_autre s09bq03_autre
-		*** obs == 1986
 	replace 		emp_chg_why = 96 if emp_chg_why == 13
 	
+	* agriculture
+	rename 			s06q23 ag_crop_lost
+	rename 			s06q24 ag_live
+	rename 			s06q25 ag_live_chg
+	forval 			x = 1/7 {
+		rename 		s06q26__`x' ag_live_chg_`x'
+	}
+	rename 			s06q27 ag_live_loc
+	rename 			s06q14 ag_crop
+	rename			cc_1 ag_crop_a // using a to denote that there is no hierarchy
+	rename			cc_2 ag_crop_aa
+	rename			cc_3 ag_crop_aaa
+	rename			fao_1 ag_FAO_a
+	rename			fao_2 ag_FAO_aa
+	rename			fao_3 ag_FAO_aaa
+	
+	drop			s06q16* // these are y/n crop variables 
+
 * generate round variables
-	gen			wave = `w'
-	lab var		wave "Wave number"
-	rename 		hhwcovid_r`w'_cs phw_cs
-	rename 		hhwcovid_r`w'_pnl phw_pnl
-	lab var		phw_cs "sampling weights- cross section"
-	lab var		phw_pnl "sampling weights- panel"
+	gen				wave = `w'
+	lab var			wave "Wave number"
+	rename 			hhwcovid_r`w'_cs phw_cs
+	rename 			hhwcovid_r`w'_pnl phw_pnl
+	label var		phw_cs "sampling weights- cross section"
+	label var		phw_pnl "sampling weights- panel"
 	
 * save round file
-	save			"$export/wave_`w'/r`w'", replace
-	
-/* END */
+	save			"$export/wave_0`w'/r`w'", replace
+
+/* END */		

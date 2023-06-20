@@ -615,8 +615,8 @@
 	replace			ag_main_FAO = 40403 if ag_main == 51 
 	replace			ag_main_FAO = 904 if ag_main == 52 
 	replace			ag_main_FAO = 302 if ag_main == 53 
-	replace			ag_main_FAO = 30106 if ag_main == 54 
-	replace			ag_main_FAO = 99 if ag_main == 55 
+	replace			 = 30106 if ag_main == 54 
+	replace			crop_code = 99 if ag_main == 55 
 	
 	
 	drop 			s06dq20_* s06dq21_*

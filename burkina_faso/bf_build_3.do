@@ -1,8 +1,8 @@
 * Project: WB COVID
 * Created on: April 2021
 * Created by: amf
-* Edited by: amf, lirr (style edits)
-* Last edit: 25 July 2022
+* Edited by: lirr
+* Last edit: 19 June 2023
 * Stata v.17.0
 
 * does
@@ -271,6 +271,285 @@
 	tempfile		tempe
 	save			`tempe'	
 	
+	
+*************************************************************************
+**# - Top crops and cropcodes
+*************************************************************************		
+	
+* load data
+	use				"$data/burkina_faso/raw/wave_0`w'/r`w'_sec6d_emplrev_agr", clear
+		*** obs == 2013
+
+* keep variables with crop id codes
+	keep			hhid s06q16_*
+	drop			s06q16_autre
+
+	forval			i = 1/55 {
+		replace			s06q16__`i' = . if s06q16__`i' == 0
+	}
+
+	
+* extract variables from list of crops
+	ds				s06q16_* // creates r class variable for looping over crop vars
+	gen				cc_1 = "." // itermediate step to get all crop codes
+ 
+
+* create loop to extract variable name
+	foreach			var in `r(varlist)' {
+		replace				cc_1 = "`var'" if `var' == 1
+	}
+	
+	ds				s06q16_*
+
+* loop to replace variable to ensure all crops accounted for
+	foreach			var in `r(varlist)' {
+		replace			`var' = . if cc_1 == "`var'"
+	}
+
+* trim unnecessary string characters	
+	ereplace		cc_1 = ends(cc_1), punct(__) last
+	destring		cc_1, replace
+	sort			cc_1
+	
+* extract variables from list of crops
+	ds				s06q16_* // creates r class variable for looping over crop vars
+	gen				cc_2 = "." // itermediate step to get all crop codes
+ 
+
+* create loop to extract variable name
+	foreach			var in `r(varlist)' {
+		replace				cc_2 = "`var'" if `var' == 1
+	}
+	
+	ds				s06q16_*
+
+* loop to replace variable to ensure all crops accounted for
+	foreach			var in `r(varlist)' {
+		replace			`var' = . if cc_2 == "`var'"
+	}
+	
+* trim unnecessary string characters	
+	ereplace		cc_2 = ends(cc_2), punct(__) last
+	destring		cc_2, replace
+	sort			cc_2
+	
+* extract variables from list of crops
+	ds				s06q16_* // creates r class variable for looping over crop vars
+	gen				cc_3 = "." // itermediate step to get all crop codes
+ 
+
+* create loop to extract variable name
+	foreach			var in `r(varlist)' {
+		replace				cc_3 = "`var'" if `var' == 1
+	}
+	
+	ds				s06q16_*
+
+* loop to replace variable to ensure all crops accounted for
+	foreach			var in `r(varlist)' {
+		replace			`var' = . if cc_3 == "`var'"
+	}
+	
+* trim unnecessary string characters	
+	ereplace		cc_3 = ends(cc_3), punct(__) last
+	destring		cc_3, replace
+
+* drop irrelevant variables
+	drop			s06*
+	
+* generate FAO consistent variables
+	gen				fao_1 = cc_1
+	gen				fao_2 = cc_2
+	gen				fao_3 = cc_3
+	
+* replace bf cc_1 with icc1.1 style crop codes
+	replace			fao_1 = 108 if cc_1 == 1 
+	replace			fao_1 = 104 if cc_1 == 2 
+	replace			fao_1 = 103 if cc_1 == 3 
+	replace			fao_1 = 102 if cc_1 == 4 
+	replace			fao_1 = 59 if cc_1 == 5 
+	replace			fao_1 = 102 if cc_1 == 6 
+	replace			fao_1 = 111 if cc_1 == 7 
+	replace			fao_1 = 704 if cc_1 == 8 
+	replace			fao_1 = 709 if cc_1 == 9 
+	replace			fao_1 = 402 if cc_1 == 10 
+	
+	replace			fao_1 = 20205 if cc_1 == 11 
+	replace			fao_1 = 9020102 if cc_1 == 12 
+	replace			fao_1 = 40307 if cc_1 == 13 
+	replace			fao_1 = 503 if cc_1 == 14 
+	replace			fao_1 = 504 if cc_1 == 15 
+	replace			fao_1 = 501 if cc_1 == 16 
+	replace			fao_1 = 6020201 if cc_1 == 17 
+	replace			fao_1 = 6020205 if cc_1 == 18 
+	replace			fao_1 = 6020204 if cc_1 == 19 
+	replace			fao_1 = 9030101 if cc_1 == 20 
+
+	replace			fao_1 = 20106 if cc_1 == 21 
+	replace			fao_1 = 20190 if cc_1 == 22 
+	replace			fao_1 = 6020102 if cc_1 == 23 
+	replace			fao_1 = 6020101 if cc_1 == 24 
+	replace			fao_1 = 20502 if cc_1 == 25 
+	replace			fao_1 = 20501 if cc_1 == 26 
+	replace			fao_1 = 20105 if cc_1 == 27 
+	replace			fao_1 = 20103 if cc_1 == 28 
+	replace			fao_1 = 20203 if cc_1 == 29 
+	replace			fao_1 = 20301 if cc_1 == 30 
+	
+	replace			fao_1 = 20202 if cc_1 == 31 
+	replace			fao_1 = 20202 if cc_1 == 32 
+	replace			fao_1 = 20304 if cc_1 == 33 
+	replace			fao_1 = 20201 if cc_1 == 34 
+	replace			fao_1 = 20204 if cc_1 == 35 
+	replace			fao_1 = 20303 if cc_1 == 36 
+	replace			fao_1 = 701 if cc_1 == 37 
+	replace			fao_1 = 20204 if cc_1 == 38 
+	replace			fao_1 = 20309 if cc_1 == 39 
+	replace			fao_1 = 20302 if cc_1 == 40 
+
+	replace			fao_1 = 20305 if cc_1 == 41 
+	replace			fao_1 = 9020101 if cc_1 == 43 
+	replace			fao_1 = 801 if cc_1 == 44 
+	replace			fao_1 = 20302 if cc_1 == 45 
+	replace			fao_1 = 505 if cc_1 == 46 
+	replace			fao_1 = 504 if cc_1 == 47 
+	replace			fao_1 = 60104 if cc_1 == 48 
+	replace			fao_1 = 60101 if cc_1 == 49 
+	replace			fao_1 = 60102 if cc_1 == 50 
+	
+	replace			fao_1 = 40403 if cc_1 == 51 
+	replace			fao_1 = 904 if cc_1 == 52 
+	replace			fao_1 = 302 if cc_1 == 53 
+	replace			fao_1 = 30106 if cc_1 == 54 
+	replace			fao_1 = 99 if cc_1 == 55 
+	
+* replace bf cc_2 with icc1.1 style crop codes
+	replace			fao_2 = 108 if cc_2 == 1 
+	replace			fao_2 = 104 if cc_2 == 2 
+	replace			fao_2 = 103 if cc_2 == 3 
+	replace			fao_2 = 102 if cc_2 == 4 
+	replace			fao_2 = 59 if cc_2 == 5 
+	replace			fao_2 = 102 if cc_2 == 6 
+	replace			fao_2 = 111 if cc_2 == 7 
+	replace			fao_2 = 704 if cc_2 == 8 
+	replace			fao_2 = 709 if cc_2 == 9 
+	replace			fao_2 = 402 if cc_2 == 10 
+	
+	replace			fao_2 = 20205 if cc_2 == 11 
+	replace			fao_2 = 9020102 if cc_2 == 12 
+	replace			fao_2 = 40307 if cc_2 == 13 
+	replace			fao_2 = 503 if cc_2 == 14 
+	replace			fao_2 = 504 if cc_2 == 15 
+	replace			fao_2 = 501 if cc_2 == 16 
+	replace			fao_2 = 6020201 if cc_2 == 17 
+	replace			fao_2 = 6020205 if cc_2 == 18 
+	replace			fao_2 = 6020204 if cc_2 == 19 
+	replace			fao_2 = 9030101 if cc_2 == 20 
+
+	replace			fao_2 = 20106 if cc_2 == 21 
+	replace			fao_2 = 20190 if cc_2 == 22 
+	replace			fao_2 = 6020102 if cc_2 == 23 
+	replace			fao_2 = 6020101 if cc_2 == 24 
+	replace			fao_2 = 20502 if cc_2 == 25 
+	replace			fao_2 = 20501 if cc_2 == 26 
+	replace			fao_2 = 20105 if cc_2 == 27 
+	replace			fao_2 = 20103 if cc_2 == 28 
+	replace			fao_2 = 20203 if cc_2 == 29 
+	replace			fao_2 = 20301 if cc_2 == 30 
+	
+	replace			fao_2 = 20202 if cc_2 == 31 
+	replace			fao_2 = 20202 if cc_2 == 32 
+	replace			fao_2 = 20304 if cc_2 == 33 
+	replace			fao_2 = 20201 if cc_2 == 34 
+	replace			fao_2 = 20204 if cc_2 == 35 
+	replace			fao_2 = 20303 if cc_2 == 36 
+	replace			fao_2 = 701 if cc_2 == 37 
+	replace			fao_2 = 20204 if cc_2 == 38 
+	replace			fao_2 = 20309 if cc_2 == 39 
+	replace			fao_2 = 20302 if cc_2 == 40 
+
+	replace			fao_2 = 20305 if cc_2 == 41 
+	replace			fao_2 = 9020101 if cc_2 == 43 
+	replace			fao_2 = 801 if cc_2 == 44 
+	replace			fao_2 = 20302 if cc_2 == 45 
+	replace			fao_2 = 505 if cc_2 == 46 
+	replace			fao_2 = 504 if cc_2 == 47 
+	replace			fao_2 = 60104 if cc_2 == 48 
+	replace			fao_2 = 60101 if cc_2 == 49 
+	replace			fao_2 = 60102 if cc_2 == 50 
+	
+	replace			fao_2 = 40403 if cc_2 == 51 
+	replace			fao_2 = 904 if cc_2 == 52 
+	replace			fao_2 = 302 if cc_2 == 53 
+	replace			fao_2 = 30106 if cc_2 == 54 
+	replace			fao_2 = 99 if cc_2 == 55 
+		
+* replace bf cc_3 with icc1.1 style crop codes
+	replace			fao_3 = 108 if cc_3 == 1 
+	replace			fao_3 = 104 if cc_3 == 2 
+	replace			fao_3 = 103 if cc_3 == 3 
+	replace			fao_3 = 102 if cc_3 == 4 
+	replace			fao_3 = 59 if cc_3 == 5 
+	replace			fao_3 = 102 if cc_3 == 6 
+	replace			fao_3 = 111 if cc_3 == 7 
+	replace			fao_3 = 704 if cc_3 == 8 
+	replace			fao_3 = 709 if cc_3 == 9 
+	replace			fao_3 = 402 if cc_3 == 10 
+	
+	replace			fao_3 = 20205 if cc_3 == 11 
+	replace			fao_3 = 9020102 if cc_3 == 12 
+	replace			fao_3 = 40307 if cc_3 == 13 
+	replace			fao_3 = 503 if cc_3 == 14 
+	replace			fao_3 = 504 if cc_3 == 15 
+	replace			fao_3 = 501 if cc_3 == 16 
+	replace			fao_3 = 6020201 if cc_3 == 17 
+	replace			fao_3 = 6020205 if cc_3 == 18 
+	replace			fao_3 = 6020204 if cc_3 == 19 
+	replace			fao_3 = 9030101 if cc_3 == 20 
+
+	replace			fao_3 = 20106 if cc_3 == 21 
+	replace			fao_3 = 20190 if cc_3 == 22 
+	replace			fao_3 = 6020102 if cc_3 == 23 
+	replace			fao_3 = 6020101 if cc_3 == 24 
+	replace			fao_3 = 20502 if cc_3 == 25 
+	replace			fao_3 = 20501 if cc_3 == 26 
+	replace			fao_3 = 20105 if cc_3 == 27 
+	replace			fao_3 = 20103 if cc_3 == 28 
+	replace			fao_3 = 20203 if cc_3 == 29 
+	replace			fao_3 = 20301 if cc_3 == 30 
+	
+	replace			fao_3 = 20202 if cc_3 == 31 
+	replace			fao_3 = 20202 if cc_3 == 32 
+	replace			fao_3 = 20304 if cc_3 == 33 
+	replace			fao_3 = 20201 if cc_3 == 34 
+	replace			fao_3 = 20204 if cc_3 == 35 
+	replace			fao_3 = 20303 if cc_3 == 36 
+	replace			fao_3 = 701 if cc_3 == 37 
+	replace			fao_3 = 20204 if cc_3 == 38 
+	replace			fao_3 = 20309 if cc_3 == 39 
+	replace			fao_3 = 20302 if cc_3 == 40 
+
+	replace			fao_3 = 20305 if cc_3 == 41 
+	replace			fao_3 = 9020101 if cc_3 == 43 
+	replace			fao_3 = 801 if cc_3 == 44 
+	replace			fao_3 = 20302 if cc_3 == 45 
+	replace			fao_3 = 505 if cc_3 == 46 
+	replace			fao_3 = 504 if cc_3 == 47 
+	replace			fao_3 = 60104 if cc_3 == 48 
+	replace			fao_3 = 60101 if cc_3 == 49 
+	replace			fao_3 = 60102 if cc_3 == 50 
+	
+	replace			fao_3 = 40403 if cc_3 == 51 
+	replace			fao_3 = 904 if cc_3 == 52 
+	replace			fao_3 = 302 if cc_3 == 53 
+	replace			fao_3 = 30106 if cc_3 == 54 
+	replace			fao_3 = 99 if cc_3 == 55 
+		
+	
+* save temp file
+	tempfile		tempf
+	save			`tempf'	
+			
 
 *************************************************************************
 **# - merge
@@ -281,10 +560,10 @@
 		*** obs == 2120
 	
 * merge formatted sections
-	foreach 		x in a b c d e {
+	foreach 		x in a b c d e f {
 	    merge 		1:1 hhid using `temp`x'', nogen
 	}
-		*** obs == 2120: 2013 matched, 107 unmatched temps a, c, d
+		*** obs == 2120: 2013 matched, 107 unmatched temps a, c, d, f
 		*** obs == 2120: 2011 matched, 109 unmatched temps b, e
 
 * merge in other sections
@@ -329,11 +608,15 @@
 	}
 	rename 			s06q27 ag_live_loc
 	rename 			s06q14 ag_crop
+	rename			cc_1 ag_crop_a // using a to denote that there is no hierarchy
+	rename			cc_2 ag_crop_aa
+	rename			cc_3 ag_crop_aaa
+	rename			fao_1 ag_FAO_a
+	rename			fao_2 ag_FAO_aa
+	rename			fao_3 ag_FAO_aaa
 	
-* drop 55 variables re main type of crop grown
-	drop 			s06q16_*
-		*** obs == 2120
-	
+	drop			s06q16* // these are y/n crop variables 
+
 * generate round variables
 	gen				wave = `w'
 	lab var			wave "Wave number"

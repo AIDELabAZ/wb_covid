@@ -94,7 +94,7 @@
 * replace variable names to match conversion factor
 	gen 			region = cs1_region 
 	gen				zone = cs2_zoneid 
-	gen				woreda = cs3_woredaid  
+	ge			woreda = cs3_woredaid  
 	gen				local_unit = ph3_crops_area_u			
 	
 * merge in conversion factors

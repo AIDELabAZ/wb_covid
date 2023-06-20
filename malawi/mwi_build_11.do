@@ -2,8 +2,8 @@
 * Created on: Aug 2021
 * Created by: amf
 * Edited by: amf, lirr (style edits)
-* Last edited: 13 July 2022
-* Stata v.17.0
+* Last edited: 19 JUne 2023
+* Stata v.18.0
 
 * does
 	* merges together each section of malawi data
@@ -285,6 +285,26 @@
 		rename 			s6eq19e__5 ag_ac_anim_why_3
 		rename 			s6eq19e__6 ag_ac_anim_why_6
 		rename 			s6eq19e__7 ag_ac_anim_why_7
+		
+		* generate FAO crop code
+		gen				ag_main_FAO = ag_main
+		
+		replace			ag_main_FAO = 102 if ag_main == 1
+		replace			ag_main_FAO = 701 if ag_main == 2
+		replace			ag_main_FAO = 402 if ag_main == 3		
+		replace			ag_main_FAO = 707 if ag_main == 4
+		replace			ag_main_FAO = 401 if ag_main == 5
+		replace			ag_main_FAO = 503 if ag_main == 6
+		replace			ag_main_FAO = 402 if ag_main == 7
+		replace			ag_main_FAO = 501 if ag_main == 8
+		replace			ag_main_FAO = 906 if ag_main == 10
+		replace			ag_main_FAO = 802 if ag_main == 11
+		replace			ag_main_FAO = 2   if ag_main == 12
+		replace			ag_main_FAO = 103 if ag_main == 13
+		replace			ag_main_FAO = 104 if ag_main == 15
+		replace			ag_main_FAO = 108 if ag_main == 16
+		replace			ag_main_FAO = 99 if ag_main == 555 | ag_main == 556
+		
 		
 		drop 			s6eq3a s6eq4 s6eq7_units_ot s6eq5_ot s6eq5_ot2 ///
 							s6eq9a s6eq9b s6eq9b_ot s6eq9c s6eq17c *_96 *_ot ///
