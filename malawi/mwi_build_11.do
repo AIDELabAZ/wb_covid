@@ -305,6 +305,12 @@
 		replace			ag_main_FAO = 108 if ag_main == 16
 		replace			ag_main_FAO = 99 if ag_main == 555 | ag_main == 556
 		
+		* generate ag_main_ha variable
+		gen				ag_main_area_ha = ag_main_area if ag_main_area_unit == 2
+		replace			ag_main_area_ha = ag_main_area * 0.001 if ag_main_area_unit == 3
+		replace			ag_main_area_ha = ag_main_area * 0.404686 if ag_main_area_unit == 1
+		
+		
 		
 		drop 			s6eq3a s6eq4 s6eq7_units_ot s6eq5_ot s6eq5_ot2 ///
 							s6eq9a s6eq9b s6eq9b_ot s6eq9c s6eq17c *_96 *_ot ///
@@ -321,4 +327,5 @@
 * save round file
 	save			"$export/wave_`w'/r`w'", replace
 
+	
 /* END */		

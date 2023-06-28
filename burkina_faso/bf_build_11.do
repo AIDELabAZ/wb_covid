@@ -296,7 +296,7 @@
 * load data
 	use				"$data/burkina_faso/raw/wave_`w'/r`w'_sec6d_emplrev_agr", clear
 		*** obs == 1924
-		fff
+		
 * keep variables with crop id codes
 	keep			hhid s06dq03_*
 	drop			s06dq03_autre
@@ -563,7 +563,7 @@
 	replace			fao_3 = 30106 if cc_3 == 54 
 	replace			fao_3 = 99 if cc_3 == 55 
 		
-	ffff
+
 * save temp file
 	tempfile		tempf
 	save			`tempf'	
