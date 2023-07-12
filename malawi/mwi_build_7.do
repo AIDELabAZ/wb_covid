@@ -1,8 +1,8 @@
 * Project: WB COVID
 * Created on: July 2020
 * Created by: alj
-* Edited by: jdm, amf, lirr (style edits)
-* Last edited: 13 July 2022
+* Edited by: lirr
+* Last edited: 11 July 2023
 * Stata v.17.0
 
 * does
@@ -15,6 +15,7 @@
 
 * TO DO:
 	* ADD FIES
+	* finish ag crops
 
 
 ************************************************************************
@@ -232,11 +233,11 @@
 
 * load data
 	use				"$root/wave_0`w'/sect10_Coping_r`w'", clear
-		*** obs == 15600
+		*** obs == 1560
 
 * drop other shock
 	drop			shock_id_os s10q3_os
-		*** obs == 15600
+		*** obs == 1560
 
 * generate shock variables
 	foreach 		i in 5 6 7 8 10 11 12 13 95 {
@@ -252,6 +253,106 @@
 * save temp file
 	tempfile		tempf
 	save			`tempf'
+	
+	
+*************************************************************************
+**# - reshape section on ag wide data
+*************************************************************************
+
+* load ag data
+	use				"$root/wave_0`w'/sect6e_Agriculture_r`w'", clear
+		*** obs == 1560
+
+* keep crop variables
+	keep			y4_hhid HHID s6qe4_*
+	rename			s6qe4__555 s6qe4__17
+	rename			s6qe4__556 s6qe4__18
+	
+/* generate row sum variable
+	egen			num_crop = rowtotal(s6qe4__*)
+	tab				num_crop // check to see if max 3 crops per household
+	drop			num_crop // max is 3 */
+	
+* replace zero values with missing
+	forval			i = 1/18 {
+		replace			s6qe4__`i' = . if s6qe4__`i' == 0
+	}
+
+* extract variables from list of crops
+	ds				s6qe4__* // creates r class variable for looping over crop vars
+	gen				cc_1 = "." // itermediate step to get all crop codes
+ 
+* create loop to extract variable name
+	foreach			var in `r(varlist)' {
+		replace				cc_1 = "`var'" if `var' == 1
+	}
+	
+	ds				s6qe4__*
+	
+* loop to replace variable to ensure all crops accounted for	
+	foreach			var in `r(varlist)' {
+		replace			`var' = . if cc_1 == "`var'"
+	}
+	
+* trim unnecessary string characters	
+	ereplace		cc_1 = ends(cc_1), punct(__) last
+	destring		cc_1, replace
+	sort			cc_1
+	
+* extract variables from list of crops
+	ds				s6qe4__* // creates r class variable for looping over crop vars
+	gen				cc_2 = "." // itermediate step to get all crop codes
+ 
+* create loop to extract variable name
+	foreach			var in `r(varlist)' {
+		replace				cc_2 = "`var'" if `var' == 1
+	}
+	
+	ds				s6qe4__*
+	
+* loop to replace variable to ensure all crops accounted for	
+	foreach			var in `r(varlist)' {
+		replace			`var' = . if cc_2 == "`var'"
+	}
+	
+* trim unnecessary string characters	
+	ereplace		cc_2 = ends(cc_2), punct(__) last
+	destring		cc_2, replace
+	sort			cc_2
+		
+* extract variables from list of crops
+	ds				s6qe4__* // creates r class variable for looping over crop vars
+	gen				cc_3 = "." // itermediate step to get all crop codes
+ 
+* create loop to extract variable name
+	foreach			var in `r(varlist)' {
+		replace				cc_3 = "`var'" if `var' == 1
+	}
+	
+	ds				s6qe4__*
+	
+* loop to replace variable to ensure all crops accounted for	
+	foreach			var in `r(varlist)' {
+		replace			`var' = . if cc_3 == "`var'"
+	}
+	
+* trim unnecessary string characters	
+	ereplace		cc_3 = ends(cc_3), punct(__) last
+	destring		cc_3, replace
+	sort			cc_3
+				
+* drop irrelevant variables
+	drop			s6qe4_*
+	
+* generate FAO consistent variables
+	gen				fao_1 = cc_1
+	gen				fao_2 = cc_2
+	gen				fao_3 = cc_3		
+	
+* replace mwi cc_1 
+	replace			fao_1 = 
+
+	
 	
 	
 *************************************************************************
@@ -290,7 +391,7 @@
 		*** obs == 1701: 1560 matched, 141 unmatched
 	merge 1:1 		HHID using "$root/wave_0`w'/sect9_Concerns_r`w'.dta", nogen
 		*** obs == 1701: 1560 matched, 141 unmatched
-	
+
 * rename variables inconsistent with other waves
 	* knowledge/gov
 		rename 		s3q1 vac
