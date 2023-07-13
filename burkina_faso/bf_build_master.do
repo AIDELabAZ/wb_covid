@@ -509,7 +509,15 @@
 	}
 	
 	replace 		ag_ac_seed_why_6 = 1 if s06q16a == 1
-	drop 			s06q16a s06q16a_autre	
+	drop 			s06q16a s06q16a_autre
+	
+	rename			cc_1 ag_crop_a // using a to denote that there is no hierarchy
+	rename			cc_2 ag_crop_aa
+	rename			cc_3 ag_crop_aaa
+	rename			fao_1 ag_FAO_a
+	rename			fao_2 ag_FAO_aa
+	rename			fao_3 ag_FAO_aaa
+	
 	
 	* round 6 ag vars
 	rename 			s06dq01__0 ag_crop_who
