@@ -3,7 +3,7 @@
 * Created by: amf
 * Edited by: lirr
 * Last edit: 12 July 2023
-* Stata v.1.0
+* Stata v.18.0
 
 * does
 	* reads in third round of BF data
@@ -368,14 +368,14 @@
 	replace			fao_1 = 103 if cc_1 == 3 
 	replace			fao_1 = 102 if cc_1 == 4 
 	replace			fao_1 = 59 if cc_1 == 5 
-	replace			fao_1 = 102 if cc_1 == 6 
+	replace			fao_1 = 101 if cc_1 == 6 
 	replace			fao_1 = 111 if cc_1 == 7 
 	replace			fao_1 = 704 if cc_1 == 8 
 	replace			fao_1 = 709 if cc_1 == 9 
 	replace			fao_1 = 402 if cc_1 == 10 
 	
 	replace			fao_1 = 20205 if cc_1 == 11 
-	replace			fao_1 = 9020102 if cc_1 == 12 
+	replace			fao_1 = 20190 if cc_1 == 12 
 	replace			fao_1 = 40307 if cc_1 == 13 
 	replace			fao_1 = 503 if cc_1 == 14 
 	replace			fao_1 = 504 if cc_1 == 15 
@@ -429,14 +429,14 @@
 	replace			fao_2 = 103 if cc_2 == 3 
 	replace			fao_2 = 102 if cc_2 == 4 
 	replace			fao_2 = 59 if cc_2 == 5 
-	replace			fao_2 = 102 if cc_2 == 6 
+	replace			fao_2 = 101 if cc_2 == 6 
 	replace			fao_2 = 111 if cc_2 == 7 
 	replace			fao_2 = 704 if cc_2 == 8 
 	replace			fao_2 = 709 if cc_2 == 9 
 	replace			fao_2 = 402 if cc_2 == 10 
 	
 	replace			fao_2 = 20205 if cc_2 == 11 
-	replace			fao_2 = 9020102 if cc_2 == 12 
+	replace			fao_2 = 20190 if cc_2 == 12 
 	replace			fao_2 = 40307 if cc_2 == 13 
 	replace			fao_2 = 503 if cc_2 == 14 
 	replace			fao_2 = 504 if cc_2 == 15 
@@ -490,14 +490,14 @@
 	replace			fao_3 = 103 if cc_3 == 3 
 	replace			fao_3 = 102 if cc_3 == 4 
 	replace			fao_3 = 59 if cc_3 == 5 
-	replace			fao_3 = 102 if cc_3 == 6 
+	replace			fao_3 = 101 if cc_3 == 6 
 	replace			fao_3 = 111 if cc_3 == 7 
 	replace			fao_3 = 704 if cc_3 == 8 
 	replace			fao_3 = 709 if cc_3 == 9 
 	replace			fao_3 = 402 if cc_3 == 10 
 	
 	replace			fao_3 = 20205 if cc_3 == 11 
-	replace			fao_3 = 9020102 if cc_3 == 12 
+	replace			fao_3 = 20190 if cc_3 == 12 
 	replace			fao_3 = 40307 if cc_3 == 13 
 	replace			fao_3 = 503 if cc_3 == 14 
 	replace			fao_3 = 504 if cc_3 == 15 

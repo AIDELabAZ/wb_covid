@@ -571,14 +571,14 @@
 	replace			ag_main_FAO = 103 if ag_main == 3 
 	replace			ag_main_FAO = 102 if ag_main == 4 
 	replace			ag_main_FAO = 59 if ag_main == 5 
-	replace			ag_main_FAO = 102 if ag_main == 6 
+	replace			ag_main_FAO = 101 if ag_main == 6 
 	replace			ag_main_FAO = 111 if ag_main == 7 
 	replace			ag_main_FAO = 704 if ag_main == 8 
 	replace			ag_main_FAO = 709 if ag_main == 9 
 	replace			ag_main_FAO = 402 if ag_main == 10 
 	
 	replace			ag_main_FAO = 20205 if ag_main == 11 
-	replace			ag_main_FAO = 9020102 if ag_main == 12 
+	replace			ag_main_FAO = 20190 if ag_main == 12 
 	replace			ag_main_FAO = 40307 if ag_main == 13 
 	replace			ag_main_FAO = 503 if ag_main == 14 
 	replace			ag_main_FAO = 504 if ag_main == 15 
