@@ -497,6 +497,8 @@
 	    rename 		s06q19__`x' ag_covid_`x'
 	}
 	drop 			s06q19__10
+	lab var			ag_covid_5 "Unable to acquire/transport fertilizer"
+
 	
 	rename 			s06q20 fam_asst
 	rename 			s06q21 fam_asst_amt

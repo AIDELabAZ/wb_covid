@@ -297,8 +297,8 @@
 	use				"$data/burkina_faso/raw/wave_`w'/r`w'_sec6d_emplrev_agr", clear
 		*** obs == 1924
 		
-* keep variables with crop id codes
-	keep			hhid s06dq03_*
+* keep variables for crop and ag input info
+	keep			hhid s06dq03_* 
 	drop			s06dq03_autre
 
 
@@ -601,6 +601,14 @@
 	drop 			s06q04_0_autre s09bq03_autre
 		*** obs == 1986
 	replace 		emp_chg_why = 96 if emp_chg_why == 13
+	
+	* agriculture
+	rename			s06dq02__* s06q15_1__*
+	rename			s06dq04__* s06q19__*
+	rename			s06dq04_1__* s06q20__*
+	rename			s06dq04_2__* s06q21__*
+	rename			s06dq04_3__* s06q22__*
+	rename			s06dq05 harv
 	
 * generate round variables
 	gen			wave = `w'

@@ -608,6 +608,7 @@
 	rename			s06dq04_1__* s06q20__*
 	rename			s06dq04_2__* s06q21__*
 	rename			s06dq04_3__* s06q22__*
+	rename			s06dq05 harv_sell_norm
 	
 * generate round variables
 	gen			wave = `w'
